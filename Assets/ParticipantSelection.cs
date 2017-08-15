@@ -6,6 +6,7 @@ public class ParticipantSelection : MonoBehaviour
 {
 	public UnityEngine.UI.InputField participantNameInput;
 	public UnityEngine.UI.InputField wordsSeenInput;
+	public UnityEngine.UI.InputField randomSeedInput;
 
 	void Start ()
 	{
@@ -32,15 +33,18 @@ public class ParticipantSelection : MonoBehaviour
 		{
 			wordsSeenInput.text = "0";
 			participantNameInput.text = "New participant";
+			randomSeedInput.text = Random.Range (0, 65535).ToString();
 		}
 		else
 		{
 			string participantName = dropdown.options [dropdown.value].text;
 			string filepath = System.IO.Path.Combine (Application.persistentDataPath, participantName);
-			string fileContents = System.IO.File.ReadAllText (filepath);
-			int wordsSeen = int.Parse (fileContents);
+			string[] fileContents = System.IO.File.ReadAllLines (filepath);
+			ushort wordsSeen = ushort.Parse (fileContents[0]);
+			ushort randomSeed = ushort.Parse (fileContents [1]);
 			wordsSeenInput.text = wordsSeen.ToString ();
 			participantNameInput.text = participantName;
+			randomSeedInput.text = randomSeed.ToString ();
 		}
 	}
 }

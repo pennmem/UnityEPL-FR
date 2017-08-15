@@ -6,13 +6,17 @@ public class LaunchExperiment : MonoBehaviour
 {
 	public UnityEngine.UI.InputField participantNameInput;
 	public UnityEngine.UI.InputField wordsSeenInput;
-	public string experimentScene = "fr1_experiment";
+	public UnityEngine.UI.InputField randomSeedInput;
+	public string experimentScene = "fr1";
 
 	public void DoLaunchExperiment()
 	{
-		int wordsSeen = int.Parse(wordsSeenInput.text);
+		ushort wordsSeen = ushort.Parse(wordsSeenInput.text);
+		ushort randomSeed = ushort.Parse (randomSeedInput.text);
 		EditableExperiment.ResetWordsSeen(wordsSeen);
+		EditableExperiment.ResetRandomSeed (randomSeed);
 		UnityEPL.AddParticipant(participantNameInput.text);
 		EditableExperiment.SaveState();
+		UnityEngine.SceneManagement.SceneManager.LoadScene (experimentScene);
 	}
 }
