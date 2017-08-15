@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.4465934, g: 0.49642956, b: 0.57482487, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657844, g: 0.49641222, b: 0.57481694, a: 1}
 --- !u!157 &3
 LightmapSettings:
   m_ObjectHideFlags: 0
@@ -273,6 +273,55 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+--- !u!114 &87903709 stripped
+MonoBehaviour:
+  m_PrefabParentObject: {fileID: 114924137073979980, guid: e6672ad97ff294adba0eb53a61d1502f,
+    type: 2}
+  m_PrefabInternal: {fileID: 621434364}
+  m_Script: {fileID: 11500000, guid: f180c8d2d8e804d2ca402600895da790, type: 3}
+--- !u!1 &91538649
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 5
+  m_Component:
+  - component: {fileID: 91538651}
+  - component: {fileID: 91538650}
+  m_Layer: 0
+  m_Name: InputReporter
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &91538650
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 91538649}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fc02aa99eda484118b9b9999cec05ac7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  reportKeyStrokes: 1
+  reportMouseClicks: 0
+  reportMousePosition: 0
+--- !u!4 &91538651
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 91538649}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 79.54874, y: 0, z: 638.1535}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 7
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &131819156
 GameObject:
   m_ObjectHideFlags: 0
@@ -310,6 +359,37 @@ MonoBehaviour:
     type: 2}
   m_PrefabInternal: {fileID: 874305714}
   m_Script: {fileID: 11500000, guid: 0f2e2e18bd2f640ea9df7204bbfd0ee2, type: 3}
+--- !u!1 &616190102
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 1508595072399222, guid: 45ba32d8a228147e0a8fa7274e1f854c,
+    type: 2}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 5
+  m_Component:
+  - component: {fileID: 616190103}
+  - component: {fileID: 2025745181}
+  m_Layer: 0
+  m_Name: SoundRecorder
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &616190103
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 4057627549068922, guid: 45ba32d8a228147e0a8fa7274e1f854c,
+    type: 2}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 616190102}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 3
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &621434364
 Prefab:
   m_ObjectHideFlags: 0
@@ -898,51 +978,65 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &1747525716
-Prefab:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 4057627549068922, guid: 45ba32d8a228147e0a8fa7274e1f854c, type: 2}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4057627549068922, guid: 45ba32d8a228147e0a8fa7274e1f854c, type: 2}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4057627549068922, guid: 45ba32d8a228147e0a8fa7274e1f854c, type: 2}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4057627549068922, guid: 45ba32d8a228147e0a8fa7274e1f854c, type: 2}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4057627549068922, guid: 45ba32d8a228147e0a8fa7274e1f854c, type: 2}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4057627549068922, guid: 45ba32d8a228147e0a8fa7274e1f854c, type: 2}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4057627549068922, guid: 45ba32d8a228147e0a8fa7274e1f854c, type: 2}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4057627549068922, guid: 45ba32d8a228147e0a8fa7274e1f854c, type: 2}
-      propertyPath: m_RootOrder
-      value: 3
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-  m_ParentPrefab: {fileID: 100100000, guid: 45ba32d8a228147e0a8fa7274e1f854c, type: 2}
-  m_IsPrefabParent: 0
---- !u!114 &2025745181 stripped
+--- !u!114 &2025745181
 MonoBehaviour:
+  m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 114833583114952270, guid: 45ba32d8a228147e0a8fa7274e1f854c,
     type: 2}
-  m_PrefabInternal: {fileID: 1747525716}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 616190102}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 34942a3aeb56d41ce820605ff9127a45, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outputPath: /Users/exp/Documents/UnityEPL-FR1-master/data
+--- !u!1 &2092815019
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  serializedVersion: 5
+  m_Component:
+  - component: {fileID: 2092815021}
+  - component: {fileID: 2092815020}
+  m_Layer: 0
+  m_Name: DataHandler
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2092815020
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2092815019}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17d89e96b72454e66ae192a0d543f267, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  reportersToHandle:
+  - {fileID: 91538650}
+  - {fileID: 87903709}
+  outputFormat: 0
+  rootDirectory: /Users/exp/Documents/UnityEPL-FR1-master/data
+  useDirectoryStructure: 1
+  participantFirst: 0
+  writeAutomatically: 1
+  framesPerWrite: 30
+--- !u!4 &2092815021
+Transform:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2092815019}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 79.54874, y: 0, z: 638.1535}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 6
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
