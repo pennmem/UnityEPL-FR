@@ -8,9 +8,10 @@ public class SoundRecorder : MonoBehaviour
 
 	private AudioClip recording;
 
-	public void StartRecording()
+	//using the system's default device
+	public void StartRecording(int secondsLength)
 	{
-		recording = Microphone.Start ("", true, 1, 44100);
+		recording = Microphone.Start ("", true, secondsLength, 44100);
 	}
 
 	public void StopRecording()

@@ -122,7 +122,6 @@ public class WriteToDiskHandler : DataHandler
 					break;
 			}
 			System.IO.File.AppendAllText(filePath, writeMe + System.Environment.NewLine);
-			Debug.Log (filePath);
 		}
 	}
 }
