@@ -2,11 +2,36 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class WordListGenerator : MonoBehaviour 
+public abstract class WordListGenerator : MonoBehaviour 
 {
 	public string[] unshuffled_words;
 
-	public string[,] GenerateLists(ushort randomSeed, int numberOfLists, int lengthOfEachList)
+	public abstract string UsedInExperiment();
+
+	public abstract string[,] GenerateLists (int randomSeed, int numberOfLists, int lengthOfEachList);
+
+	public string[] ShuffledWords(System.Random random)
+	{
+		string[] shuffled_words = (string[])unshuffled_words.Clone();
+		for (int swaper = 0; swaper < shuffled_words.Length; swaper++)
+		{
+			int swapee = random.Next(swaper, shuffled_words.Length);
+			string swapee_word = shuffled_words[swapee];
+			shuffled_words[swapee] = shuffled_words[swaper];
+			shuffled_words[swaper] = swapee_word;  
+		} 
+		return shuffled_words;
+	}
+}
+
+public class FR1ListGenerator : WordListGenerator
+{
+	public override string UsedInExperiment()
+	{
+		return "FR1";
+	}
+
+	public override string[,] GenerateLists (int randomSeed, int numberOfLists, int lengthOfEachList)
 	{
 		if ((numberOfLists * lengthOfEachList) > unshuffled_words.Length)
 			throw new UnityException("There aren't enough words for those parameters");
@@ -26,18 +51,5 @@ public class WordListGenerator : MonoBehaviour
 		}
 
 		return lists;
-	}
-
-	public string[] ShuffledWords(System.Random random)
-	{
-		string[] shuffled_words = (string[])unshuffled_words.Clone();
-		for (int swaper = 0; swaper < shuffled_words.Length; swaper++)
-		{
-			int swapee = random.Next(swaper, shuffled_words.Length);
-			string swapee_word = shuffled_words[swapee];
-			shuffled_words[swapee] = shuffled_words[swaper];
-			shuffled_words[swaper] = swapee_word;  
-		} 
-		return shuffled_words;
 	}
 }

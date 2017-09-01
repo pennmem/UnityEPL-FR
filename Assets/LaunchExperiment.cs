@@ -4,19 +4,29 @@ using UnityEngine;
 
 public class LaunchExperiment : MonoBehaviour
 {
+	public GameObject cantGoPrompt;
 	public UnityEngine.UI.InputField participantNameInput;
 	public UnityEngine.UI.InputField wordsSeenInput;
-	public UnityEngine.UI.InputField randomSeedInput;
 	public string experimentScene = "fr1";
 
 	public void DoLaunchExperiment()
 	{
-		ushort wordsSeen = ushort.Parse(wordsSeenInput.text);
-		ushort randomSeed = ushort.Parse (randomSeedInput.text);
-		EditableExperiment.ResetWordsSeen(wordsSeen);
-		EditableExperiment.ResetRandomSeed (randomSeed);
+		ushort wordsSeen;
+		if (participantNameInput.text.Equals (""))
+		{
+			cantGoPrompt.GetComponent<UnityEngine.UI.Text> ().text = "Please enter a participant";
+			cantGoPrompt.SetActive (true);
+			return;
+		}
+		if (!ushort.TryParse (wordsSeenInput.text, out wordsSeen))
+		{
+			cantGoPrompt.GetComponent<UnityEngine.UI.Text> ().text = "Please enter words seen or 0 to start at the beginning";
+			cantGoPrompt.SetActive (true);
+			return;
+		}
 		UnityEPL.AddParticipant(participantNameInput.text);
-		EditableExperiment.SaveState();
+		EditableExperiment.ResetWordsSeen(wordsSeen);
+
 		UnityEngine.SceneManagement.SceneManager.LoadScene (experimentScene);
 	}
 }

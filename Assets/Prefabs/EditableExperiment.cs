@@ -2,10 +2,25 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+public struct ExperimentSettings
+{
+	public WordListGenerator wordListGenerator;
+	public string experimentName;
+	public int numberOfLists;
+	public int wordsPerList;
+	public int countdownLength;
+	public float countdownTick;
+	public float wordPresentationLength;
+	public float minISI;
+	public float maxISI;
+	public float distractionLength;
+	public float answerConfirmationTime;
+	public float recallLength;
+}
+
 public class EditableExperiment : MonoBehaviour
 {
 	private static ushort wordsSeen;
-	private static ushort randomSeed;
 
 	public TextDisplayer textDisplayer;
 	public SoundRecorder soundRecorder;
@@ -17,17 +32,7 @@ public class EditableExperiment : MonoBehaviour
 	private string[,] words;
 	private bool paused = false;
 
-	private const int numberOfLists = 25;
-	private const int wordsPerList = 12;
-
-	private const int countdownLength = 10;
-	private const float countdownTick = 1f;
-	private const float wordPresentationLength = 1.6f;
-	private const float minISI = 0.75f;
-	private const float maxISI = 1f;
-	private const float distractionLength = 20f;
-	private const float answerConfirmationTime = 1f;
-	private const float recallLength = 30f;
+	private ExperimentSettings currentSettings;
 
 	//use update to collect user input every frame
 	void Update()
@@ -55,7 +60,7 @@ public class EditableExperiment : MonoBehaviour
 	{
 		UnityEPL.SetExperimentName ("FR1");
 
-		words = wordListGenerator.GenerateLists (randomSeed, numberOfLists, wordsPerList);
+		words = wordListGenerator.GenerateLists (UnityEngine.Random.Range(int.MinValue, int.MaxValue), currentSettings.numberOfLists, currentSettings.wordsPerList);
 
 		//start video player and wait for it to stop playing
 		videoPlayer.StartVideo();
@@ -63,9 +68,9 @@ public class EditableExperiment : MonoBehaviour
 			yield return null;
 
 		//starting from the beginning of the latest uncompleted list, do lists until the experiment is finished or stopped
-		int startList = wordsSeen / wordsPerList;
+		int startList = wordsSeen / currentSettings.wordsPerList;
 
-		for (int i = startList; i < numberOfLists; i++)
+		for (int i = startList; i < currentSettings.numberOfLists; i++)
 		{
 			yield return DoCountdown ();
 			yield return DoEncoding ();
@@ -78,31 +83,31 @@ public class EditableExperiment : MonoBehaviour
 
 	private IEnumerator DoCountdown()
 	{
-		for (int i = 0; i < countdownLength; i++)
+		for (int i = 0; i < currentSettings.countdownLength; i++)
 		{
-			textDisplayer.DisplayText ("countdown display", (countdownLength - i).ToString ());
-			yield return PausableWait (countdownTick);
+			textDisplayer.DisplayText ("countdown display", (currentSettings.countdownLength - i).ToString ());
+			yield return PausableWait (currentSettings.countdownTick);
 		}
 	}
 
 	private IEnumerator DoEncoding()
 	{
-		int currentList = wordsSeen / wordsPerList;
-		wordsSeen = (ushort)(currentList * wordsPerList);
+		int currentList = wordsSeen / currentSettings.wordsPerList;
+		wordsSeen = (ushort)(currentList * currentSettings.wordsPerList);
 		Debug.Log ("Beginning list index " + currentList.ToString());
-		for (int i = 0; i < wordsPerList; i++)
+		for (int i = 0; i < currentSettings.wordsPerList; i++)
 		{
 			textDisplayer.DisplayText ("word stimulus", words [currentList, i]);
 			IncrementWordsSeen();
-			yield return PausableWait (wordPresentationLength);
+			yield return PausableWait (currentSettings.wordPresentationLength);
 			textDisplayer.ClearText ();
-			yield return PausableWait (Random.Range (minISI, maxISI));
+			yield return PausableWait (Random.Range (currentSettings.minISI, currentSettings.maxISI));
 		}
 	}
 
 	private IEnumerator DoDistractor()
 	{
-		float endTime = Time.time + distractionLength;
+		float endTime = Time.time + currentSettings.distractionLength;
 		float answerTime = 0;
 
 		string distractor = "";
@@ -122,7 +127,7 @@ public class EditableExperiment : MonoBehaviour
 			{
 				answerTime += Time.deltaTime;
 			}
-			if (Time.time - answerTime > answerConfirmationTime && answered)
+			if (Time.time - answerTime > currentSettings.answerConfirmationTime && answered)
 			{
 				textDisplayer.textElement.color = Color.white;
 				answered = false;
@@ -164,7 +169,7 @@ public class EditableExperiment : MonoBehaviour
 	{
 		textDisplayer.DisplayText ("display recall text", "* * *");
 		soundRecorder.StartRecording (30);
-		yield return PausableWait(recallLength);
+		yield return PausableWait(currentSettings.recallLength);
 		soundRecorder.StopRecording();
 		textDisplayer.ClearText ();
 	}
@@ -215,15 +220,11 @@ public class EditableExperiment : MonoBehaviour
 		SaveState ();
 	}
 
-	public static void ResetRandomSeed(ushort newRandomSeed)
-	{
-		randomSeed = newRandomSeed;
-	}
-
 	public static void SaveState()
 	{
-		string filePath = System.IO.Path.Combine (Application.persistentDataPath, UnityEPL.GetParticipants()[0]);
-		string[] lines = new string[] { wordsSeen.ToString (), randomSeed.ToString () };
+		string filePath = System.IO.Path.Combine (Application.persistentDataPath, UnityEPL.GetExperimentName());
+		filePath = System.IO.Path.Combine (filePath, UnityEPL.GetParticipants()[0]);
+		string[] lines = new string[] { wordsSeen.ToString () };
 		System.IO.File.WriteAllLines (filePath, lines);
 	}
 }
