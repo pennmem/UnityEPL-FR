@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657844, g: 0.49641222, b: 0.57481694, a: 1}
+  m_IndirectSpecularColor: {r: 0.4465934, g: 0.49642956, b: 0.57482487, a: 1}
 --- !u!157 &3
 LightmapSettings:
   m_ObjectHideFlags: 0
@@ -990,7 +990,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 34942a3aeb56d41ce820605ff9127a45, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  outputPath: /Users/exp/Documents/UnityEPL-FR1-master/data
+  outputPath: /Users/solbergh/Desktop/data/recordings
 --- !u!1 &2092815019
 GameObject:
   m_ObjectHideFlags: 0
@@ -1000,6 +1000,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2092815021}
   - component: {fileID: 2092815020}
+  - component: {fileID: 2092815022}
   m_Layer: 0
   m_Name: DataHandler
   m_TagString: Untagged
@@ -1022,7 +1023,7 @@ MonoBehaviour:
   - {fileID: 91538650}
   - {fileID: 87903709}
   outputFormat: 0
-  rootDirectory: /Users/exp/Documents/UnityEPL-FR1-master/data
+  rootDirectory: /Users/solbergh/Desktop/data
   useDirectoryStructure: 1
   participantFirst: 0
   writeAutomatically: 1
@@ -1040,3 +1041,16 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2092815022
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2092815019}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0bf0398ac0f42476681d03e21fa57605, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  reportersToHandle:
+  - {fileID: 91538650}

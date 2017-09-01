@@ -88,7 +88,7 @@ public class WriteToDiskHandler : DataHandler
 	public void DoWrite()
 	{
 		string directory = rootDirectory;
-		string filePath = directory + "unnamed.file";
+		string filePath = System.IO.Path.Combine (directory, "unnamed.file");
 		if (ParticipantFirst () && UseDirectoryStructure()) 
 		{
 			directory = System.IO.Path.Combine (directory, string.Join ("", UnityEPL.GetParticipants ()));
@@ -122,6 +122,7 @@ public class WriteToDiskHandler : DataHandler
 					break;
 			}
 			System.IO.File.AppendAllText(filePath, writeMe + System.Environment.NewLine);
+			Debug.Log (filePath);
 		}
 	}
 }

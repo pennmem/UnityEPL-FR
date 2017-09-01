@@ -142,7 +142,7 @@ public class EditableExperiment : MonoBehaviour
 				if (Input.GetKeyDown (KeyCode.Backspace) && !answer.Equals(""))
 				{
 					answer = answer.Substring (0, answer.Length - 1);
-					textDisplayer.DisplayText ("modify distractor answer", distractor);
+					textDisplayer.DisplayText ("modify distractor answer", distractor + answer);
 				}
 				if (Input.GetKeyDown (KeyCode.Return) && !answer.Equals(""))
 				{
