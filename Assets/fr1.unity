@@ -884,6 +884,48 @@ MonoBehaviour:
   - 297
   - 298
   - 299
+--- !u!1001 &1222569297
+Prefab:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 4722822286672226, guid: b593be3339cd548a6bd6fc689cb80b2b, type: 2}
+      propertyPath: m_LocalPosition.x
+      value: 459.95032
+      objectReference: {fileID: 0}
+    - target: {fileID: 4722822286672226, guid: b593be3339cd548a6bd6fc689cb80b2b, type: 2}
+      propertyPath: m_LocalPosition.y
+      value: 338.37833
+      objectReference: {fileID: 0}
+    - target: {fileID: 4722822286672226, guid: b593be3339cd548a6bd6fc689cb80b2b, type: 2}
+      propertyPath: m_LocalPosition.z
+      value: 1150.9867
+      objectReference: {fileID: 0}
+    - target: {fileID: 4722822286672226, guid: b593be3339cd548a6bd6fc689cb80b2b, type: 2}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4722822286672226, guid: b593be3339cd548a6bd6fc689cb80b2b, type: 2}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4722822286672226, guid: b593be3339cd548a6bd6fc689cb80b2b, type: 2}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4722822286672226, guid: b593be3339cd548a6bd6fc689cb80b2b, type: 2}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4722822286672226, guid: b593be3339cd548a6bd6fc689cb80b2b, type: 2}
+      propertyPath: m_RootOrder
+      value: 8
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_ParentPrefab: {fileID: 100100000, guid: b593be3339cd548a6bd6fc689cb80b2b, type: 2}
+  m_IsPrefabParent: 0
 --- !u!224 &1429963131 stripped
 RectTransform:
   m_PrefabParentObject: {fileID: 224464771732933280, guid: e6672ad97ff294adba0eb53a61d1502f,
@@ -990,7 +1032,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 34942a3aeb56d41ce820605ff9127a45, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  outputPath: /Users/solbergh/Desktop/data/recordings
 --- !u!1 &2092815019
 GameObject:
   m_ObjectHideFlags: 0
@@ -1023,7 +1064,6 @@ MonoBehaviour:
   - {fileID: 91538650}
   - {fileID: 87903709}
   outputFormat: 0
-  rootDirectory: /Users/solbergh/Desktop/data
   useDirectoryStructure: 1
   participantFirst: 0
   writeAutomatically: 1
@@ -1052,5 +1092,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0bf0398ac0f42476681d03e21fa57605, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  reportersToHandle:
-  - {fileID: 91538650}
+  reportersToHandle: []
