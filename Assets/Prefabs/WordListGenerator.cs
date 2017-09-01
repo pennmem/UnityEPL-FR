@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class WordListGenerator : MonoBehaviour 
+public abstract class WordListGenerator
 {
-	public string[] unshuffled_words;
+	public string[] unshuffled_words = new string[] {"Apple", "Cat", "Russia"};
 
 	public abstract string UsedInExperiment();
 

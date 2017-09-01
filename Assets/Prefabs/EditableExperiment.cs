@@ -25,7 +25,6 @@ public class EditableExperiment : MonoBehaviour
 	public TextDisplayer textDisplayer;
 	public SoundRecorder soundRecorder;
 	public VideoControl videoPlayer;
-	public WordListGenerator wordListGenerator;
 	public KeyCode pauseKey = KeyCode.P;
 	public GameObject pauseIndicator;
 
@@ -58,10 +57,9 @@ public class EditableExperiment : MonoBehaviour
 
 	IEnumerator Start()
 	{
-		//setup and save
+		//setup - start from the right place in the list based on previous sessions
 		currentSettings = FRExperimentSettings.GetSettingsByName (UnityEPL.GetExperimentName ());
-		words = wordListGenerator.GenerateLists (UnityEngine.Random.Range(int.MinValue, int.MaxValue), currentSettings.numberOfLists, currentSettings.wordsPerList);
-		SaveState ();
+		LoadOrCreateState();
 
 		//start video player and wait for it to stop playing
 		videoPlayer.StartVideo();
@@ -227,5 +225,12 @@ public class EditableExperiment : MonoBehaviour
 		filePath = System.IO.Path.Combine (filePath, UnityEPL.GetParticipants()[0]);
 		string[] lines = new string[] { wordsSeen.ToString () };
 		System.IO.File.WriteAllLines (filePath, lines);
+	}
+
+	public void LoadOrCreateState()
+	{
+		//TODO: this
+		words = currentSettings.wordListGenerator.GenerateLists (UnityEngine.Random.Range(int.MinValue, int.MaxValue), currentSettings.numberOfLists, currentSettings.wordsPerList);
+		SaveState ();
 	}
 }
