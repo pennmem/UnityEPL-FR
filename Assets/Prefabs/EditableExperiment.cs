@@ -58,9 +58,10 @@ public class EditableExperiment : MonoBehaviour
 
 	IEnumerator Start()
 	{
-		UnityEPL.SetExperimentName ("FR1");
-
+		//setup and save
+		currentSettings = FRExperimentSettings.GetSettingsByName (UnityEPL.GetExperimentName ());
 		words = wordListGenerator.GenerateLists (UnityEngine.Random.Range(int.MinValue, int.MaxValue), currentSettings.numberOfLists, currentSettings.wordsPerList);
+		SaveState ();
 
 		//start video player and wait for it to stop playing
 		videoPlayer.StartVideo();

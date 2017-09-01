@@ -2,24 +2,42 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ExperimentSelection : MonoBehaviour
+public class ParticipantSelection : MonoBehaviour
 {
 	public UnityEngine.UI.InputField participantNameInput;
 	public UnityEngine.UI.InputField wordsSeenInput;
 
-	void Start ()
+	public void FindParticipants ()
 	{
 		UnityEngine.UI.Dropdown dropdown = GetComponent<UnityEngine.UI.Dropdown> ();
 
-		string[] experiments;
+		string participantDirectory = System.IO.Path.Combine (UnityEPL.GetDataPath (), UnityEPL.GetExperimentName ());
+		System.IO.Directory.CreateDirectory (participantDirectory);
+		string[] filepaths = System.IO.Directory.GetFiles (participantDirectory);
+		string[] filenames = new string[filepaths.Length];
 
-		dropdown.AddOptions (new List<string>(experiments));
+		for (int i = 0; i < filepaths.Length; i++)
+			filenames [i] = System.IO.Path.GetFileName (filepaths [i]);
+
+		dropdown.AddOptions (new List<string>(filenames));
 	}
 
-	public void SetExperiment()
+	public void LoadParticipant()
 	{
 		UnityEngine.UI.Dropdown dropdown = GetComponent<UnityEngine.UI.Dropdown> ();
-		UnityEPL.SetExperimentName (dropdown.captionText.text);
-		Debug.Log ("Now using experiment: " + UnityEPL.GetExperimentName ());
+		if (dropdown.value <= 1)
+		{
+			wordsSeenInput.text = "0";
+			participantNameInput.text = "New participant";
+		}
+		else
+		{
+			string participantName = dropdown.options [dropdown.value].text;
+			string filepath = System.IO.Path.Combine (Application.persistentDataPath, participantName);
+			string[] fileContents = System.IO.File.ReadAllLines (filepath);
+			ushort wordsSeen = ushort.Parse (fileContents[0]);
+			wordsSeenInput.text = wordsSeen.ToString ();
+			participantNameInput.text = participantName;
+		}
 	}
 }
