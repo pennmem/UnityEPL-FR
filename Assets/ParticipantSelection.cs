@@ -42,9 +42,6 @@ public class ParticipantSelection : MonoBehaviour
 		}
 		else
 		{
-			string participantName = dropdown.options [dropdown.value].text;
-			UnityEPL.ClearParticipants ();
-			UnityEPL.AddParticipant (participantName);
 			LoadParticipant ();
 		}
 	}
