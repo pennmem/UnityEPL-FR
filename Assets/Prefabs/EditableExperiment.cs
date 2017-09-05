@@ -21,6 +21,9 @@ public struct ExperimentSettings
 public class EditableExperiment : MonoBehaviour
 {
 	private static ushort wordsSeen;
+	private static ushort session;
+	private static string[,] words;
+	private static ExperimentSettings currentSettings;
 
 	public TextDisplayer textDisplayer;
 	public SoundRecorder soundRecorder;
@@ -28,10 +31,7 @@ public class EditableExperiment : MonoBehaviour
 	public KeyCode pauseKey = KeyCode.P;
 	public GameObject pauseIndicator;
 
-	private string[,] words;
 	private bool paused = false;
-
-	private ExperimentSettings currentSettings;
 
 	//use update to collect user input every frame
 	void Update()
@@ -57,9 +57,8 @@ public class EditableExperiment : MonoBehaviour
 
 	IEnumerator Start()
 	{
-		//setup - start from the right place in the list based on previous sessions
-		currentSettings = FRExperimentSettings.GetSettingsByName (UnityEPL.GetExperimentName ());
-		LoadOrCreateState();
+		if (currentSettings.Equals(default(ExperimentSettings)))
+			throw new UnityException ("Please call ConfigureExperiment before loading the experiment scene.");
 
 		//start video player and wait for it to stop playing
 		videoPlayer.StartVideo();
@@ -203,16 +202,6 @@ public class EditableExperiment : MonoBehaviour
 		return new int[] { Random.Range (1, 9), Random.Range (1, 9), Random.Range (1, 9) };
 	}
 
-	public static ushort WordsSeen()
-	{
-		return wordsSeen;
-	}
-
-	public static void ResetWordsSeen(ushort newWordsSeen)
-	{
-		wordsSeen = newWordsSeen;
-	}
-
 	private static void IncrementWordsSeen()
 	{
 		wordsSeen++;
@@ -221,16 +210,62 @@ public class EditableExperiment : MonoBehaviour
 
 	public static void SaveState()
 	{
-		string filePath = System.IO.Path.Combine (Application.persistentDataPath, UnityEPL.GetExperimentName());
-		filePath = System.IO.Path.Combine (filePath, UnityEPL.GetParticipants()[0]);
-		string[] lines = new string[] { wordsSeen.ToString () };
+		string filePath = SessionFilePath (session, UnityEPL.GetParticipants()[0]);
+		string[] lines = new string[currentSettings.numberOfLists*currentSettings.wordsPerList+3];
+		lines [0] = session.ToString ();
+		lines [1] = wordsSeen.ToString ();
+		lines [2] = (currentSettings.numberOfLists * currentSettings.wordsPerList).ToString ();
+		if (words == null)
+			throw new UnityException ("I can't save the state because a word list has not yet been generated");
+		for (int i = 0; i < words.GetLength(0); i++)
+			for (int j = 0; j < words.GetLength(1); j++)
+			{
+				lines[i*currentSettings.numberOfLists+j+3] = (words [i, j]);
+			}
+		System.IO.Directory.CreateDirectory (System.IO.Path.GetDirectoryName(filePath));
 		System.IO.File.WriteAllLines (filePath, lines);
 	}
 
-	public void LoadOrCreateState()
+	public static string SessionFilePath(int sessionNumber, string participantName)
 	{
-		//TODO: this
-		words = currentSettings.wordListGenerator.GenerateLists (UnityEngine.Random.Range(int.MinValue, int.MaxValue), currentSettings.numberOfLists, currentSettings.wordsPerList);
+		string filePath = ParticipantFolderPath(participantName);
+		filePath = System.IO.Path.Combine (filePath, sessionNumber.ToString() + ".session");
+		return filePath;
+	}
+
+	public static string ParticipantFolderPath (string participantName)
+	{
+		return System.IO.Path.Combine (CurrentExperimentFolderPath(), participantName);
+	}
+
+	public static string CurrentExperimentFolderPath()
+	{
+		return System.IO.Path.Combine (Application.persistentDataPath, UnityEPL.GetExperimentName());
+	}
+
+	public static void SetWords(string[,] newWords)
+	{
+		words = newWords;
+	}
+
+	public static bool SessionComplete(int sessionNumber, string participantName)
+	{
+		string sessionFilePath = EditableExperiment.SessionFilePath (sessionNumber, participantName);
+		if (!System.IO.File.Exists(sessionFilePath))
+			return false;
+		string[] loadedState = System.IO.File.ReadAllLines(sessionFilePath);
+		int wordsSeen = int.Parse(loadedState [1]);
+		int wordCount = int.Parse(loadedState [2]);
+		return wordsSeen >= wordCount;
+	}
+
+	public static void ConfigureExperiment(ushort newWordsSeen, ushort newSessionNumber)
+	{
+		wordsSeen = newWordsSeen;
+		session = newSessionNumber;
+		currentSettings = FRExperimentSettings.GetSettingsByName (UnityEPL.GetExperimentName ());
+		if (words == null)
+			words = currentSettings.wordListGenerator.GenerateLists (Random.Range (int.MinValue, int.MaxValue), currentSettings.numberOfLists, currentSettings.wordsPerList);
 		SaveState ();
 	}
 }
