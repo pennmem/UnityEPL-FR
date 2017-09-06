@@ -25,6 +25,7 @@ public class EditableExperiment : MonoBehaviour
 	private static string[,] words;
 	private static ExperimentSettings currentSettings;
 
+	public RamulatorInterface ramulatorInterface;
 	public TextDisplayer textDisplayer;
 	public SoundRecorder soundRecorder;
 	public VideoControl videoPlayer;
@@ -60,6 +61,8 @@ public class EditableExperiment : MonoBehaviour
 		if (currentSettings.Equals(default(ExperimentSettings)))
 			throw new UnityException ("Please call ConfigureExperiment before loading the experiment scene.");
 
+		yield return ramulatorInterface.BeginNewSession (session);
+
 		//starting from the beginning of the latest uncompleted list, do lists until the experiment is finished or stopped
 		int startList = wordsSeen / currentSettings.wordsPerList;
 
@@ -71,6 +74,7 @@ public class EditableExperiment : MonoBehaviour
 			if (i == startList && i != 0)
 				yield return PressAnyKey ("Once you're ready, press any key to begin.");
 
+			ramulatorInterface.BeginNewTrial (i);
 			yield return DoCountdown ();
 			yield return DoEncoding ();
 			yield return DoDistractor ();
@@ -141,9 +145,11 @@ public class EditableExperiment : MonoBehaviour
 		for (int i = 0; i < currentSettings.wordsPerList; i++)
 		{
 			textDisplayer.DisplayText ("word stimulus", words [currentList, i]);
+			ramulatorInterface.SetState ("WORD", true);
 			IncrementWordsSeen();
 			yield return PausableWait (currentSettings.wordPresentationLength);
 			textDisplayer.ClearText ();
+			ramulatorInterface.SetState ("WORD", false);
 			yield return PausableWait (Random.Range (currentSettings.minISI, currentSettings.maxISI));
 		}
 	}
