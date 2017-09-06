@@ -19,7 +19,7 @@ public static class FRExperimentSettings
 				return GetFR6Settings ();
 		}
 		throw new UnityException ("No settings found with that name");
-		return GetFR1Settings();
+		//return GetFR1Settings();
 	}
 
 	public static ExperimentSettings GetFR1Settings()
@@ -27,8 +27,8 @@ public static class FRExperimentSettings
 		ExperimentSettings FR1Settings = new ExperimentSettings();
 		FR1Settings.experimentName = "FR1";
 		FR1Settings.wordListGenerator = new FR1ListGenerator();
-		FR1Settings.numberOfLists = 2;
-		FR1Settings.wordsPerList = 2;
+		FR1Settings.numberOfLists = 25;
+		FR1Settings.wordsPerList = 12;
 		FR1Settings.countdownLength = 10;
 		FR1Settings.countdownTick = 1f;
 		FR1Settings.wordPresentationLength = 1.6f;

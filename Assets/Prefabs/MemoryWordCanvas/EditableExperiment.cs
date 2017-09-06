@@ -60,23 +60,68 @@ public class EditableExperiment : MonoBehaviour
 		if (currentSettings.Equals(default(ExperimentSettings)))
 			throw new UnityException ("Please call ConfigureExperiment before loading the experiment scene.");
 
-		//start video player and wait for it to stop playing
-		videoPlayer.StartVideo();
-		while (videoPlayer.IsPlaying())
-			yield return null;
-
 		//starting from the beginning of the latest uncompleted list, do lists until the experiment is finished or stopped
 		int startList = wordsSeen / currentSettings.wordsPerList;
 
+		if (startList == 0)
+			yield return DoIntroductionVideo ();
+
 		for (int i = startList; i < currentSettings.numberOfLists; i++)
 		{
+			if (i == startList && i != 0)
+				yield return PressAnyKey ("Once you're ready, press any key to begin.");
+
 			yield return DoCountdown ();
 			yield return DoEncoding ();
 			yield return DoDistractor ();
 			yield return DoRecall ();
+
+			if (i == 0)
+				yield return PressAnyKey ("Please let the experimenter know \n" +
+					"if you have any questions about \n" +
+					"what you just did.\n\n" +
+					"If you think you understand, \n" +
+					"Please explain the task to the \n" +
+					"experimenter in your own words.\n\n" +
+					"Press any key to continue \n" +
+					"to the first list");
+
 		}
 
 		textDisplayer.DisplayText ("display end message", "Woo!  The experiment is over.");
+	}
+
+	private IEnumerator DoIntroductionVideo()
+	{
+		yield return PressAnyKey ("Press any key to play movie");
+
+		bool replay = false;
+		do 
+		{
+			//start video player and wait for it to stop playing
+			videoPlayer.StartVideo ();
+			while (videoPlayer.IsPlaying ())
+				yield return null;
+
+			textDisplayer.DisplayText("repeat video prompt", "Press Y to continue to practice list, \n Press N to replay instructional video");
+			while (!Input.GetKeyDown(KeyCode.Y) && !Input.GetKeyDown(KeyCode.N))
+			{
+				yield return null;
+			}
+			replay = Input.GetKey(KeyCode.N);
+
+		}
+		while (replay);
+
+	}
+
+	private IEnumerator PressAnyKey(string displayText)
+	{
+		yield return null;
+		textDisplayer.DisplayText ("press any key prompt", displayText);
+		while (!Input.anyKeyDown)
+			yield return null;
+		textDisplayer.ClearText ();
 	}
 
 	private IEnumerator DoCountdown()
@@ -220,7 +265,8 @@ public class EditableExperiment : MonoBehaviour
 		for (int i = 0; i < words.GetLength(0); i++)
 			for (int j = 0; j < words.GetLength(1); j++)
 			{
-				lines[i*currentSettings.numberOfLists+j+3] = (words [i, j]);
+				int lineNumber = i * currentSettings.wordsPerList + j + 3;
+				lines[lineNumber] = (words [i, j]);
 			}
 		System.IO.Directory.CreateDirectory (System.IO.Path.GetDirectoryName(filePath));
 		System.IO.File.WriteAllLines (filePath, lines);

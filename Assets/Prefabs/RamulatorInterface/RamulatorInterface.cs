@@ -60,7 +60,7 @@ public class RamulatorInterface : MonoBehaviour
 		ramulatorWarningText.text = "Waiting on Ramulator";
 		yield return null;
 		string receivedMessage;
-		bool timedOut = zmqSocket.TryReceiveFrameString(new System.TimeSpan(0, 0, 5), out receivedMessage);
+		zmqSocket.TryReceiveFrameString(new System.TimeSpan(0, 0, 5), out receivedMessage);
 		if (receivedMessage != null)
 			Debug.Log ("received: " + receivedMessage.ToString ());
 		else
