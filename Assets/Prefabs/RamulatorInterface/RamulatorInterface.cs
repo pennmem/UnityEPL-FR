@@ -61,11 +61,17 @@ public class RamulatorInterface : MonoBehaviour
 		yield return null;
 		string receivedMessage;
 		zmqSocket.TryReceiveFrameString(new System.TimeSpan(0, 0, timeoutDelay), out receivedMessage);
-		if (receivedMessage != null)
+		if (receivedMessage != null) 
+		{
 			Debug.Log ("received: " + receivedMessage.ToString ());
+			ramulatorWarning.SetActive (false);
+		}
 		else
+		{
 			Debug.Log ("Timed out waiting for Ramulator");
-		ramulatorWarning.SetActive(false);
+			ramulatorWarningText.text = "Ramulator not connected";
+		}
+		
 
 
 
