@@ -59,18 +59,23 @@ public class RamulatorInterface : MonoBehaviour
 		ramulatorWarning.SetActive (true);
 		ramulatorWarningText.text = "Waiting on Ramulator";
 		yield return null;
-		string receivedMessage;
-		zmqSocket.TryReceiveFrameString(new System.TimeSpan(0, 0, timeoutDelay), out receivedMessage);
-		if (receivedMessage != null) 
+		string receivedMessage = "";
+		while (!receivedMessage.Contains ("START"))
 		{
-			Debug.Log ("received: " + receivedMessage.ToString ());
-			ramulatorWarning.SetActive (false);
+			zmqSocket.TryReceiveFrameString (new System.TimeSpan (0, 0, timeoutDelay), out receivedMessage);
+			if (receivedMessage == null)
+			{
+				Debug.Log ("Timed out waiting for Ramulator");
+				ramulatorWarningText.text = "Ramulator not connected";
+				break;
+			}
+			else
+			{
+				Debug.Log ("received: " + receivedMessage.ToString ());
+				ramulatorWarning.SetActive (false);
+			}
 		}
-		else
-		{
-			Debug.Log ("Timed out waiting for Ramulator");
-			ramulatorWarningText.text = "Ramulator not connected";
-		}
+
 		
 
 
@@ -110,6 +115,6 @@ public class RamulatorInterface : MonoBehaviour
 	private void SendMessageToRamulator(string message)
 	{
 		bool wouldNotHaveBlocked = zmqSocket.TrySendFrame(message, more: false);
-		Debug.Log ("Tried to send a message.  WouldNotHaveBlocked: " + wouldNotHaveBlocked.ToString());
+		Debug.Log ("Tried to send a message: " + message + " \nWouldNotHaveBlocked: " + wouldNotHaveBlocked.ToString());
 	}
 }
