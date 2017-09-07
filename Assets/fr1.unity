@@ -491,6 +491,11 @@ Prefab:
       propertyPath: pauseIndicator
       value: 
       objectReference: {fileID: 35931089}
+    - target: {fileID: 114864122344205036, guid: e6672ad97ff294adba0eb53a61d1502f,
+        type: 2}
+      propertyPath: ramulatorInterface
+      value: 
+      objectReference: {fileID: 1222569298}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: e6672ad97ff294adba0eb53a61d1502f, type: 2}
   m_IsPrefabParent: 0
@@ -582,6 +587,12 @@ Prefab:
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: b593be3339cd548a6bd6fc689cb80b2b, type: 2}
   m_IsPrefabParent: 0
+--- !u!114 &1222569298 stripped
+MonoBehaviour:
+  m_PrefabParentObject: {fileID: 114094435386673154, guid: b593be3339cd548a6bd6fc689cb80b2b,
+    type: 2}
+  m_PrefabInternal: {fileID: 1222569297}
+  m_Script: {fileID: 11500000, guid: 486e54f8403ba471383efdf3a6ef7c92, type: 3}
 --- !u!224 &1429963131 stripped
 RectTransform:
   m_PrefabParentObject: {fileID: 224464771732933280, guid: e6672ad97ff294adba0eb53a61d1502f,
