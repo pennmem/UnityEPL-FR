@@ -80,13 +80,23 @@ public class ParticipantSelection : MonoBehaviour
 			int wordCount = int.Parse(loadedState [2]);
 			if (currentSettings.numberOfLists * currentSettings.wordsPerList != wordCount)
 				throw new UnityException ("Mismatch between saved word list and experiment settings.");
-			int wordLine = 3;
-				string[,] words = new string[currentSettings.numberOfLists, currentSettings.wordsPerList];
-			for (int i = 0; i < currentSettings.numberOfLists; i++)
-			for (int j = 0; j < currentSettings.wordsPerList; j++)
+			int wordStartLine = 3;
+			IronPython.Runtime.List words = new IronPython.Runtime.List();
+			for (int i = wordStartLine; i < currentSettings.numberOfLists * currentSettings.wordsPerList+wordStartLine; i++)
 			{
-				words [i, j] = loadedState [wordLine];
-				wordLine++;
+				string wordString = loadedState [i];
+
+				IronPython.Runtime.PythonDictionary word = new IronPython.Runtime.PythonDictionary ();
+				string[] keyValues = wordString.Split (';');
+				foreach (string keyValue in keyValues)
+				{
+					if (keyValue.Equals (""))
+						continue;
+					string[] keyValuePair = keyValue.Split (':');
+					word [keyValuePair [0]] = keyValuePair [1];
+				}
+
+				words.Add (word);
 			}
 			EditableExperiment.SetWords (words);
 		}
@@ -95,7 +105,5 @@ public class ParticipantSelection : MonoBehaviour
 			currentSessionInput.text = sessionNumber.ToString();
 			wordsSeenInput.text = "0";
 		}
-
-		
 	}
 }

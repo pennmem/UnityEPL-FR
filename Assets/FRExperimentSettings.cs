@@ -27,7 +27,7 @@ public static class FRExperimentSettings
 		ExperimentSettings FR1Settings = new ExperimentSettings();
 		FR1Settings.experimentName = "FR1";
 		FR1Settings.wordListGenerator = new FR1ListGenerator();
-		FR1Settings.numberOfLists = 25;
+		FR1Settings.numberOfLists = 26;
 		FR1Settings.wordsPerList = 12;
 		FR1Settings.countdownLength = 10;
 		FR1Settings.countdownTick = 1f;
@@ -44,8 +44,8 @@ public static class FRExperimentSettings
 	{
 		ExperimentSettings FR1Settings = new ExperimentSettings();
 		FR1Settings.experimentName = "FR6";
-		FR1Settings.wordListGenerator = new FR1ListGenerator();
-		FR1Settings.numberOfLists = 25;
+		FR1Settings.wordListGenerator = new FR6ListGenerator();
+		FR1Settings.numberOfLists = 42;
 		FR1Settings.wordsPerList = 12;
 		FR1Settings.countdownLength = 10;
 		FR1Settings.countdownTick = 1f;

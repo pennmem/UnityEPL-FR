@@ -22,7 +22,7 @@ public class EditableExperiment : MonoBehaviour
 {
 	private static ushort wordsSeen;
 	private static ushort session;
-	private static string[,] words;
+	private static IronPython.Runtime.List words;
 	private static ExperimentSettings currentSettings;
 
 	public RamulatorInterface ramulatorInterface;
@@ -61,7 +61,8 @@ public class EditableExperiment : MonoBehaviour
 		if (currentSettings.Equals(default(ExperimentSettings)))
 			throw new UnityException ("Please call ConfigureExperiment before loading the experiment scene.");
 
-		yield return ramulatorInterface.BeginNewSession (session);
+		if (ramulatorInterface != null)
+			yield return ramulatorInterface.BeginNewSession (session);
 
 		//starting from the beginning of the latest uncompleted list, do lists until the experiment is finished or stopped
 		int startList = wordsSeen / currentSettings.wordsPerList;
@@ -74,7 +75,8 @@ public class EditableExperiment : MonoBehaviour
 			if (i == startList && i != 0)
 				yield return PressAnyKey ("Once you're ready, press any key to begin.");
 
-			ramulatorInterface.BeginNewTrial (i);
+			if (ramulatorInterface != null)
+				ramulatorInterface.BeginNewTrial (i);
 			yield return DoCountdown ();
 			yield return DoEncoding ();
 			yield return DoDistractor ();
@@ -139,17 +141,24 @@ public class EditableExperiment : MonoBehaviour
 
 	private IEnumerator DoEncoding()
 	{
+		List<IronPython.Runtime.PythonDictionary> dotNetWords = new List<IronPython.Runtime.PythonDictionary> ();
+		foreach (IronPython.Runtime.PythonDictionary word in words)
+			dotNetWords.Add (word);
+
 		int currentList = wordsSeen / currentSettings.wordsPerList;
 		wordsSeen = (ushort)(currentList * currentSettings.wordsPerList);
 		Debug.Log ("Beginning list index " + currentList.ToString());
 		for (int i = 0; i < currentSettings.wordsPerList; i++)
 		{
-			textDisplayer.DisplayText ("word stimulus", words [currentList, i]);
-			ramulatorInterface.SetState ("WORD", true);
+			string word = (string)dotNetWords[wordsSeen]["word"];
+			textDisplayer.DisplayText ("word stimulus", word);
+			if (ramulatorInterface != null)
+				ramulatorInterface.SetState ("WORD", true, dotNetWords[wordsSeen]);
 			IncrementWordsSeen();
 			yield return PausableWait (currentSettings.wordPresentationLength);
 			textDisplayer.ClearText ();
-			ramulatorInterface.SetState ("WORD", false);
+			if (ramulatorInterface != null)
+				ramulatorInterface.SetState ("WORD", false, dotNetWords[wordsSeen]);
 			yield return PausableWait (Random.Range (currentSettings.minISI, currentSettings.maxISI));
 		}
 	}
@@ -268,12 +277,16 @@ public class EditableExperiment : MonoBehaviour
 		lines [2] = (currentSettings.numberOfLists * currentSettings.wordsPerList).ToString ();
 		if (words == null)
 			throw new UnityException ("I can't save the state because a word list has not yet been generated");
-		for (int i = 0; i < words.GetLength(0); i++)
-			for (int j = 0; j < words.GetLength(1); j++)
+		int i = 3;
+		foreach (IronPython.Runtime.PythonDictionary word in words)
+		{
+			foreach (string key in word.Keys)
 			{
-				int lineNumber = i * currentSettings.wordsPerList + j + 3;
-				lines[lineNumber] = (words [i, j]);
+				string value_string = word[key] == null ? "" : word [key].ToString ();
+				lines [i] = lines [i] + key + ":" + value_string + ";";
 			}
+			i++;
+		}
 		System.IO.Directory.CreateDirectory (System.IO.Path.GetDirectoryName(filePath));
 		System.IO.File.WriteAllLines (filePath, lines);
 	}
@@ -295,7 +308,7 @@ public class EditableExperiment : MonoBehaviour
 		return System.IO.Path.Combine (Application.persistentDataPath, UnityEPL.GetExperimentName());
 	}
 
-	public static void SetWords(string[,] newWords)
+	public static void SetWords(IronPython.Runtime.List newWords)
 	{
 		words = newWords;
 	}
@@ -306,9 +319,9 @@ public class EditableExperiment : MonoBehaviour
 		if (!System.IO.File.Exists(sessionFilePath))
 			return false;
 		string[] loadedState = System.IO.File.ReadAllLines(sessionFilePath);
-		int wordsSeen = int.Parse(loadedState [1]);
+		int wordsSeenInFile = int.Parse(loadedState [1]);
 		int wordCount = int.Parse(loadedState [2]);
-		return wordsSeen >= wordCount;
+		return wordsSeenInFile >= wordCount;
 	}
 
 	public static void ConfigureExperiment(ushort newWordsSeen, ushort newSessionNumber)
