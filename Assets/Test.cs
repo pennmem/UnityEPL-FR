@@ -5,12 +5,40 @@ using NetMQ;
 
 public class Test : MonoBehaviour
 {
+	private NetMQ.Sockets.PairSocket zmqSocket;
+
+	void OnApplicationQuit()
+	{
+		if (zmqSocket != null)
+			zmqSocket.Close ();
+		NetMQConfig.Cleanup();
+	}
+
 	void Start ()
 	{
-		NetMQ.Sockets.PairSocket zmqSocket = new NetMQ.Sockets.PairSocket ();
+		zmqSocket = new NetMQ.Sockets.PairSocket ();
 		zmqSocket.Bind ("tcp://*:8889");
-		string message = "0.1;SESSION;{\"session\":1,\"subject\":\"{{ subject }}\",\"name\":\"{{ experiment }}\", \"version\":\"3.1.0\"}";
-		Debug.Log (message);
-		Debug.Log(zmqSocket.TrySendFrame(message, more: false));
+	}
+
+	void Update()
+	{
+		//////////////////////////////////////////////////receive
+		string receivedMessage = "";
+		zmqSocket.TryReceiveFrameString(out receivedMessage);
+		if (receivedMessage != null)
+		{
+			Debug.Log ("received: " + receivedMessage.ToString ());
+		}
+
+
+
+
+		/////////////////////////////////////////////////send
+		if (Input.GetKeyDown (KeyCode.Space))
+		{
+			string message = "0.1;SESSION;{\"session\":1,\"subject\":\"{{ subject }}\",\"name\":\"{{ experiment }}\", \"version\":\"3.1.0\"}";
+			Debug.Log (message);
+			Debug.Log (zmqSocket.TrySendFrame (message, more: false));
+		}
 	}
 }
