@@ -154,11 +154,11 @@ public class EditableExperiment : MonoBehaviour
 			textDisplayer.DisplayText ("word stimulus", word);
 			if (ramulatorInterface != null)
 				ramulatorInterface.SetState ("WORD", true, dotNetWords[wordsSeen]);
-			IncrementWordsSeen();
 			yield return PausableWait (currentSettings.wordPresentationLength);
 			textDisplayer.ClearText ();
 			if (ramulatorInterface != null)
 				ramulatorInterface.SetState ("WORD", false, dotNetWords[wordsSeen]);
+			IncrementWordsSeen();
 			yield return PausableWait (Random.Range (currentSettings.minISI, currentSettings.maxISI));
 		}
 	}
