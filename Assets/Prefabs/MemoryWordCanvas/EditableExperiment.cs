@@ -226,7 +226,7 @@ public class EditableExperiment : MonoBehaviour
 	private IEnumerator DoRecall()
 	{
 		textDisplayer.DisplayText ("display recall text", "* * *");
-		soundRecorder.StartRecording (30);
+		soundRecorder.StartRecording (currentSettings.recallLength);
 		yield return PausableWait(currentSettings.recallLength);
 		soundRecorder.StopRecording();
 		textDisplayer.ClearText ();

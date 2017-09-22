@@ -5,6 +5,40 @@ using NetMQ;
 
 public class Test : MonoBehaviour
 {
+
+	private void TestNondecreasingTimings()
+	{
+		//perform test
+	}
+
+	private void TestWordpoolCompleteness()
+	{
+		//perform test
+	}
+
+	private void TestDistractorLogic()
+	{
+		//perform test
+	}
+
+	private void TestKeystrokeDistractorMatching()
+	{
+		//perform test
+	}
+
+	private void TestRecordingCount()
+	{
+		//perform test
+	}
+
+	private void TestNonsilentRecordings()
+	{
+		//perform test
+	}
+
+
+
+
 	private NetMQ.Sockets.PairSocket zmqSocket;
 
 	void OnApplicationQuit()
@@ -41,4 +75,5 @@ public class Test : MonoBehaviour
 			Debug.Log (zmqSocket.TrySendFrame (message, more: false));
 		}
 	}
+
 }
