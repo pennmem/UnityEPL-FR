@@ -5,6 +5,16 @@ using NetMQ;
 
 public class Test : MonoBehaviour
 {
+	
+	//this will be executed after the test session is complete to validate
+	//the output from the session.
+	public void RunTests()
+	{
+		//use simple reflection to run each of the methods beginning with "test"
+		//these methods will throw errors if they discover something wrong
+	}
+
+
 
 	private void TestNondecreasingTimings()
 	{
@@ -32,6 +42,11 @@ public class Test : MonoBehaviour
 	}
 
 	private void TestNonsilentRecordings()
+	{
+		//perform test
+	}
+
+	private void TestMatchesRamtransferInterface()
 	{
 		//perform test
 	}
