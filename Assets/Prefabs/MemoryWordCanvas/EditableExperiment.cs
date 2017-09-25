@@ -228,8 +228,31 @@ public class EditableExperiment : MonoBehaviour
 		textDisplayer.DisplayText ("display recall text", "* * *");
 		soundRecorder.StartRecording (Mathf.CeilToInt(currentSettings.recallLength));
 		yield return PausableWait(currentSettings.recallLength);
-		soundRecorder.StopRecording();
+
+		//path
+		int listno = (wordsSeen/12) - 1;
+		string output_directory = System.IO.Path.Combine (UnityEPL.GetDataPath(), "recordings/" + UnityEPL.GetExperimentName() + "/" + UnityEPL.GetParticipants()[0] + "/");
+		string wavFilePath = System.IO.Path.Combine (output_directory, listno.ToString());
+		string lstFilePath = System.IO.Path.Combine (output_directory, listno.ToString () + ".lst");
+		WriteLstFile (lstFilePath);
+
+		soundRecorder.StopRecording(wavFilePath);
 		textDisplayer.ClearText ();
+	}
+
+	private void WriteLstFile(string lstFilePath)
+	{
+		string[] lines = new string[currentSettings.wordsPerList];
+		IronPython.Runtime.List lastTwelveWords = (IronPython.Runtime.List)words.__getslice__ (wordsSeen - currentSettings.wordsPerList, wordsSeen);
+		int i = 0;
+		foreach (IronPython.Runtime.PythonDictionary word in lastTwelveWords)
+		{
+			lines [i] = (string)word["word"];
+			i++;
+		}
+		System.IO.FileInfo lstFile = new System.IO.FileInfo(lstFilePath);
+		lstFile.Directory.Create();
+		System.IO.File.WriteAllLines (lstFile.FullName, lines);
 	}
 
 	private int GetNumberInput()

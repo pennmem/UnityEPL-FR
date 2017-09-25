@@ -45,7 +45,6 @@ public class RamulatorInterface : MonoBehaviour
 
 
 		yield return WaitForMessage ("CONNECTED", "Ramulated not connected.");
-		Debug.Log ("Connection success");
 
 
 		//Begin Heartbeats///////////////////////////////////////////////////////////////////////
@@ -96,7 +95,8 @@ public class RamulatorInterface : MonoBehaviour
 			if (Time.time > startTime + timeoutDelay)
 			{
 				ramulatorWarningText.text = errorMessage;
-				throw new UnityException ("Timed out waiting for ramulator");
+				Debug.LogWarning ("Timed out waiting for ramulator");
+				break;
 			}
 			yield return null;
 		}
