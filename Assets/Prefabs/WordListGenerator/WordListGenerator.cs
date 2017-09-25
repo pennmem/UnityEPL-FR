@@ -75,6 +75,9 @@ public class FR1ListGenerator : WordListGenerator
 
 		IronPython.Runtime.List practice_words = ReadWordsFromPoolTxt (practice_pool_path);
 		IronPython.Runtime.List main_words = ReadWordsFromPoolTxt (main_pool_path);
+		System.Random rng = new System.Random ();
+		practice_words = Shuffled (rng, practice_words);
+		main_words = Shuffled (rng, main_words);
 
 
 		////////////////////////////////////////////Call list creation functions from python
@@ -85,7 +88,6 @@ public class FR1ListGenerator : WordListGenerator
 
 		//////////////////////Build type lists and assign tpyes
 		IronPython.Runtime.List stim_nostim_list = new IronPython.Runtime.List ();
-		System.Random rng = new System.Random ();
 		for (int i = 0; i < STIM_LIST_COUNT; i++)
 			stim_nostim_list.Add ("STIM");
 		for (int i = 0; i < NONSTIM_LIST_COUNT; i++)
