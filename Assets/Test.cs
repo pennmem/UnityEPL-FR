@@ -85,10 +85,37 @@ public class Test : MonoBehaviour
 		/////////////////////////////////////////////////send
 		if (Input.GetKeyDown (KeyCode.Space))
 		{
-			string message = "0.1;SESSION;{\"session\":1,\"subject\":\"{{ subject }}\",\"name\":\"{{ experiment }}\", \"version\":\"3.1.0\"}";
+			DataPoint connected = new DataPoint ("CONNECTED", DataReporter.RealWorldTime (), new Dictionary<string, string> ());
+			string message = connected.ToJSON ();
 			Debug.Log (message);
 			Debug.Log (zmqSocket.TrySendFrame (message, more: false));
+			InvokeRepeating ("SendHeartbeat", 0, 1);
+		}
+
+		if (Input.GetKeyDown (KeyCode.N))
+		{
+			System.Collections.Generic.Dictionary<string, string> sessionData = new Dictionary<string, string>();
+			sessionData.Add ("name", "FR1");
+			sessionData.Add ("version", Application.version);
+			sessionData.Add ("subject", "R1337E");
+			sessionData.Add ("session_number", "0");
+			DataPoint sessionDataPoint = new DataPoint ("SESSION", DataReporter.RealWorldTime (), sessionData);
+			string message = sessionDataPoint.ToJSON ();
+			Debug.Log (message);
+			Debug.Log (zmqSocket.TrySendFrame (message, more: false));
+
 		}
 	}
 
+	private void SendHeartbeat()
+	{
+		DataPoint sessionDataPoint = new DataPoint ("HEARTBEAT", DataReporter.RealWorldTime (), null);
+		SendMessageToRamulator (sessionDataPoint.ToJSON ());
+	}
+
+	private void SendMessageToRamulator(string message)
+	{
+		bool wouldNotHaveBlocked = zmqSocket.TrySendFrame(message, more: false);
+		Debug.Log ("Tried to send a message: " + message + " \nWouldNotHaveBlocked: " + wouldNotHaveBlocked.ToString());
+	}
 }

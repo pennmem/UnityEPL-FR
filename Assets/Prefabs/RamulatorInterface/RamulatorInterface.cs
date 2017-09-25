@@ -44,6 +44,20 @@ public class RamulatorInterface : MonoBehaviour
 		Debug.Log ("socket bound");
 
 
+		yield return WaitForMessage ("CONNECTED", "Ramulated not connected.");
+		Debug.Log ("Connection success");
+
+
+		//Begin Heartbeats///////////////////////////////////////////////////////////////////////
+		InvokeRepeating ("SendHeartbeat", 0, 1);
+
+
+		//SendConnectedEvent////////////////////////////////////////////////////////////////////
+		DataPoint connected = new DataPoint ("CONNECTED", DataReporter.RealWorldTime (), new Dictionary<string, string> ());
+		SendMessageToRamulator (connected.ToJSON ());
+		yield return null;
+
+
 		//SendSessionEvent//////////////////////////////////////////////////////////////////////
 		System.Collections.Generic.Dictionary<string, string> sessionData = new Dictionary<string, string>();
 		sessionData.Add ("name", UnityEPL.GetExperimentName ());
@@ -52,39 +66,41 @@ public class RamulatorInterface : MonoBehaviour
 		sessionData.Add ("session_number", sessionNumber.ToString());
 		DataPoint sessionDataPoint = new DataPoint ("SESSION", DataReporter.RealWorldTime (), sessionData);
 		SendMessageToRamulator (sessionDataPoint.ToJSON ());
+		yield return null;
+
+
+		yield return WaitForMessage ("START", "Start signal not received");
 
 
 
-		//Block until start received////////////////////////////////////////////////////////////
+
+
+	}
+
+	private IEnumerator WaitForMessage(string containingString, string errorMessage)
+	{
 		ramulatorWarning.SetActive (true);
 		ramulatorWarningText.text = "Waiting on Ramulator";
-		yield return null;
+
 		string receivedMessage = "";
-		while (!receivedMessage.Contains ("START"))
+		float startTime = Time.time;
+		while (receivedMessage == null || !receivedMessage.Contains (containingString))
 		{
-			zmqSocket.TryReceiveFrameString (new System.TimeSpan (0, 0, timeoutDelay), out receivedMessage);
-			if (receivedMessage == null)
-			{
-				Debug.Log ("Timed out waiting for Ramulator");
-				ramulatorWarningText.text = "Ramulator not connected";
-				break;
-			}
-			else
+			zmqSocket.TryReceiveFrameString (out receivedMessage);
+			if (receivedMessage != "" && receivedMessage != null)
 			{
 				Debug.Log ("received: " + receivedMessage.ToString ());
-				ramulatorWarning.SetActive (false);
 			}
+
+			//if we have exceeded the timeout time, show warning and stop trying to connect
+			if (Time.time > startTime + timeoutDelay)
+			{
+				ramulatorWarningText.text = errorMessage;
+				throw new UnityException ("Timed out waiting for ramulator");
+			}
+			yield return null;
 		}
-
-		
-
-
-
-		//Begin Heartbeats///////////////////////////////////////////////////////////////////////
-		InvokeRepeating ("SendHeartbeat", 0, 1);
-
-
-
+		ramulatorWarning.SetActive (false);
 	}
 
 	public void BeginNewTrial(int trialNumber)
