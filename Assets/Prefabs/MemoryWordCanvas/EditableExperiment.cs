@@ -231,7 +231,7 @@ public class EditableExperiment : MonoBehaviour
 
 		//path
 		int listno = (wordsSeen/12) - 1;
-		string output_directory = System.IO.Path.Combine (UnityEPL.GetDataPath(), "recordings/" + UnityEPL.GetExperimentName() + "/" + UnityEPL.GetParticipants()[0] + "/");
+		string output_directory = UnityEPL.GetDataPath ();
 		string wavFilePath = System.IO.Path.Combine (output_directory, listno.ToString());
 		string lstFilePath = System.IO.Path.Combine (output_directory, listno.ToString () + ".lst");
 		WriteLstFile (lstFilePath);
