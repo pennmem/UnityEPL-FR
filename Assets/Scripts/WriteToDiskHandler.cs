@@ -8,6 +8,8 @@ public class WriteToDiskHandler : DataHandler
 	public enum FORMAT { JSON, CSV, SQL };
 	public FORMAT outputFormat;
 
+	private static int sessionNumber = -1;
+
 	[HideInInspector]
 	[SerializeField]
 	private bool useDirectoryStructure = false;
@@ -22,6 +24,11 @@ public class WriteToDiskHandler : DataHandler
 	private int framesPerWrite = 30;
 
 	private System.Collections.Generic.List<DataPoint> waitingPoints = new System.Collections.Generic.List<DataPoint>();
+
+	public static void SetSessionNumber (int newSessionNumber)
+	{
+		sessionNumber = newSessionNumber;
+	}
 
 	public void SetUseDirectoryStructure(bool newUse)
 	{
@@ -87,6 +94,8 @@ public class WriteToDiskHandler : DataHandler
 			directory = System.IO.Path.Combine (directory, UnityEPL.GetExperimentName ());
 			directory = System.IO.Path.Combine (directory, string.Join ("", UnityEPL.GetParticipants ()));
 		}
+		if (sessionNumber != -1)
+			directory = System.IO.Path.Combine (directory, "session_" + sessionNumber.ToString());
 			
 		System.IO.Directory.CreateDirectory (directory);
 

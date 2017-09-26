@@ -42,6 +42,7 @@ public class LaunchExperiment : MonoBehaviour
 
 		UnityEPL.AddParticipant(participantNameInput.text);
 		EditableExperiment.ConfigureExperiment(wordsSeen, sessionNumber);
+		WriteToDiskHandler.SetSessionNumber (sessionNumber);
 
 		UnityEngine.SceneManagement.SceneManager.LoadScene (experimentScene);
 	}
