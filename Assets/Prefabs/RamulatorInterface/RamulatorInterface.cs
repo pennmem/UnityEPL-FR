@@ -41,7 +41,7 @@ public class RamulatorInterface : MonoBehaviour
 		//Connect to ramulator///////////////////////////////////////////////////////////////////
 		zmqSocket = new NetMQ.Sockets.PairSocket ();
 		zmqSocket.Bind (address);
-		Debug.Log ("socket bound");
+		//Debug.Log ("socket bound");
 
 
 		yield return WaitForMessage ("CONNECTED", "Ramulated not connected.");
@@ -133,6 +133,6 @@ public class RamulatorInterface : MonoBehaviour
 	private void SendMessageToRamulator(string message)
 	{
 		bool wouldNotHaveBlocked = zmqSocket.TrySendFrame(message, more: false);
-		Debug.Log ("Tried to send a message: " + message + " \nWouldNotHaveBlocked: " + wouldNotHaveBlocked.ToString());
+		//Debug.Log ("Tried to send a message: " + message + " \nWouldNotHaveBlocked: " + wouldNotHaveBlocked.ToString());
 	}
 }
