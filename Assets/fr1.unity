@@ -242,20 +242,6 @@ Light:
   m_Lightmapping: 4
   m_AreaSize: {x: 1, y: 1}
   m_BounceIntensity: 1
-  m_FalloffTable:
-    m_Table[0]: 0
-    m_Table[1]: 0
-    m_Table[2]: 0
-    m_Table[3]: 0
-    m_Table[4]: 0
-    m_Table[5]: 0
-    m_Table[6]: 0
-    m_Table[7]: 0
-    m_Table[8]: 0
-    m_Table[9]: 0
-    m_Table[10]: 0
-    m_Table[11]: 0
-    m_Table[12]: 0
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
   m_ShadowRadius: 0
@@ -273,12 +259,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
---- !u!114 &87903709 stripped
-MonoBehaviour:
-  m_PrefabParentObject: {fileID: 114924137073979980, guid: e6672ad97ff294adba0eb53a61d1502f,
-    type: 2}
-  m_PrefabInternal: {fileID: 621434364}
-  m_Script: {fileID: 11500000, guid: f180c8d2d8e804d2ca402600895da790, type: 3}
 --- !u!1 &91538649
 GameObject:
   m_ObjectHideFlags: 0
@@ -736,12 +716,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 17d89e96b72454e66ae192a0d543f267, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  reportersToHandle:
-  - {fileID: 91538650}
-  - {fileID: 87903709}
+  reportersToHandle: []
   outputFormat: 0
-  useDirectoryStructure: 1
-  participantFirst: 0
   writeAutomatically: 1
   framesPerWrite: 30
 --- !u!4 &2092815021
@@ -768,4 +744,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0bf0398ac0f42476681d03e21fa57605, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  reportersToHandle: []
+  reportersToHandle:
+  - {fileID: 91538650}
