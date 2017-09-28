@@ -8,7 +8,6 @@ public class LaunchExperiment : MonoBehaviour
 	public UnityEngine.UI.InputField participantNameInput;
 	public UnityEngine.UI.InputField wordsSeenInput;
 	public UnityEngine.UI.InputField sessionNumberInput;
-	public string experimentScene = "fr1";
 
 	public void DoLaunchExperiment()
 	{
@@ -44,6 +43,6 @@ public class LaunchExperiment : MonoBehaviour
 		UnityEPL.SetSessionNumber (sessionNumber);
 		EditableExperiment.ConfigureExperiment(wordsSeen, sessionNumber);
 
-		UnityEngine.SceneManagement.SceneManager.LoadScene (experimentScene);
+		UnityEngine.SceneManagement.SceneManager.LoadScene (FRExperimentSettings.ExperimentNameToExperimentScene(UnityEPL.GetExperimentName()));
 	}
 }

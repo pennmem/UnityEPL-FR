@@ -8,23 +8,50 @@ public static class FRExperimentSettings
 		return new string[] { GetFR1Settings ().experimentName,
 							  GetFR6Settings ().experimentName,
 							  GetTestFR1Settings().experimentName,
-							  GetTestFR6Settings().experimentName};
+							  GetTestFR6Settings().experimentName,
+							  "FR1 (scalp)",
+							  "SFR"};
 	}
 		
 	public static ExperimentSettings GetSettingsByName(string name)
 	{
-		switch (name) 
+		switch (name)
 		{
 			case "FR1":
 				return GetFR1Settings ();
 			case "FR6":
 				return GetFR6Settings ();
-			case "TestFR1":
+			case "FR1 (test)":
 				return GetTestFR1Settings ();
-			case "TestFR6":
+			case "FR6 (test)":
 				return GetTestFR6Settings ();
+			case "FR1 (scalp)":
+				return GetFR1Settings ();
+			case "SFR":
+				return GetFR1Settings ();
+
 		}
-		throw new UnityException ("No settings found with that name");
+		throw new UnityException ("No settings found with that name.");
+	}
+
+	public static string ExperimentNameToExperimentScene(string name)
+	{
+		switch (name) 
+		{
+			case "FR1":
+				return "ram_fr";
+			case "FR6":
+				return "ram_fr";
+			case "TestFR1":
+				return "ram_fr";
+			case "TestFR6":
+				return "ram_fr";
+			case "FR1 (scalp)":
+				return "scalp_fr";
+			case "SFR":
+				return "spatial_fr";
+		}
+		throw new UnityException ("That name was not recognized.");
 	}
 
 	public static ExperimentSettings GetFR1Settings()
@@ -66,7 +93,7 @@ public static class FRExperimentSettings
 	public static ExperimentSettings GetTestFR1Settings()
 	{
 		ExperimentSettings testFR1Settings = GetFR1Settings();
-		testFR1Settings.experimentName = "TestFR1";
+		testFR1Settings.experimentName = "FR1 (test)";
 		testFR1Settings.countdownTick = 0.01f;
 		testFR1Settings.wordPresentationLength = 0.01f;
 		testFR1Settings.minISI = 0.005f;
@@ -79,7 +106,7 @@ public static class FRExperimentSettings
 	public static ExperimentSettings GetTestFR6Settings()
 	{
 		ExperimentSettings testFR6Settings = GetFR6Settings();
-		testFR6Settings.experimentName = "TestFR6";
+		testFR6Settings.experimentName = "FR6 (test)";
 		testFR6Settings.countdownTick = 0.01f;
 		testFR6Settings.wordPresentationLength = 0.01f;
 		testFR6Settings.minISI = 0.005f;

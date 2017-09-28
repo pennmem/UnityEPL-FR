@@ -142,13 +142,21 @@ public class FR6ListGenerator : WordListGenerator
 			if (word["type"].Equals("NON-STIM"))
 				nonstim_listnos_set.Add((int)word["listno"]);
 		}
-		System.Collections.Generic.List<int> stim_listnos = new System.Collections.Generic.List<int> (stim_listnos_set);
+		System.Collections.Generic.List<int> abstim_listnos = new System.Collections.Generic.List<int> ();
+		foreach (int listno in stim_listnos_set)
+		{
+			int firstWordIndex = listno * lengthOfEachList;
+			IronPython.Runtime.List singleWordSlice = (IronPython.Runtime.List)words_with_stim_channels.__getslice__(firstWordIndex, firstWordIndex+1);
+			IronPython.Runtime.PythonDictionary word = (IronPython.Runtime.PythonDictionary)singleWordSlice.pop ();
+			if (((IronPython.Runtime.PythonTuple)word ["stim_channels"]).ToString ().Equals ("(0, 1)"))
+				abstim_listnos.Add (listno);
+		}
 		System.Collections.Generic.List<int> nonstim_listnos = new System.Collections.Generic.List<int> (nonstim_listnos_set);
 
 		System.Random rng = new System.Random();
-		int first_random_stim_listno = stim_listnos[rng.Next(stim_listnos.Count)];
-		stim_listnos.Remove(first_random_stim_listno);
-		int second_random_stim_listno = stim_listnos[rng.Next(stim_listnos.Count)];
+		int first_random_stim_listno = abstim_listnos[rng.Next(abstim_listnos.Count)];
+		abstim_listnos.Remove(first_random_stim_listno);
+		int second_random_stim_listno = abstim_listnos[rng.Next(abstim_listnos.Count)];
 
 		int first_random_nonstim_listno = nonstim_listnos[rng.Next(nonstim_listnos.Count)];
 		nonstim_listnos.Remove(first_random_nonstim_listno);

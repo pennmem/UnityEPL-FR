@@ -96,7 +96,7 @@ public class RamulatorInterface : MonoBehaviour
 			{
 				ramulatorWarningText.text = errorMessage;
 				Debug.LogWarning ("Timed out waiting for ramulator");
-				break;
+				yield break;
 			}
 			yield return null;
 		}
