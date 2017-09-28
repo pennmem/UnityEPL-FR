@@ -42,9 +42,9 @@ public static class FRExperimentSettings
 				return "ram_fr";
 			case "FR6":
 				return "ram_fr";
-			case "TestFR1":
+			case "FR1 (test)":
 				return "ram_fr";
-			case "TestFR6":
+			case "FR6 (test)":
 				return "ram_fr";
 			case "FR1 (scalp)":
 				return "scalp_fr";
