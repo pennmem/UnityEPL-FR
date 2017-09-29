@@ -9,7 +9,7 @@ public static class FRExperimentSettings
 							  GetFR6Settings ().experimentName,
 							  GetTestFR1Settings().experimentName,
 							  GetTestFR6Settings().experimentName,
-							  "FR1 (scalp)",
+							  "FR1_scalp",
 							  "SFR"};
 	}
 		
@@ -21,11 +21,11 @@ public static class FRExperimentSettings
 				return GetFR1Settings ();
 			case "FR6":
 				return GetFR6Settings ();
-			case "FR1 (test)":
+			case "FR1_test":
 				return GetTestFR1Settings ();
-			case "FR6 (test)":
+			case "FR6_test":
 				return GetTestFR6Settings ();
-			case "FR1 (scalp)":
+			case "FR1_scalp":
 				return GetFR1Settings ();
 			case "SFR":
 				return GetFR1Settings ();
@@ -36,17 +36,17 @@ public static class FRExperimentSettings
 
 	public static string ExperimentNameToExperimentScene(string name)
 	{
-		switch (name) 
+		switch (name)
 		{
 			case "FR1":
 				return "ram_fr";
 			case "FR6":
 				return "ram_fr";
-			case "FR1 (test)":
+			case "FR1_test":
 				return "ram_fr";
-			case "FR6 (test)":
+			case "FR6_test":
 				return "ram_fr";
-			case "FR1 (scalp)":
+			case "FR1_scalp":
 				return "scalp_fr";
 			case "SFR":
 				return "spatial_fr";
@@ -93,7 +93,7 @@ public static class FRExperimentSettings
 	public static ExperimentSettings GetTestFR1Settings()
 	{
 		ExperimentSettings testFR1Settings = GetFR1Settings();
-		testFR1Settings.experimentName = "FR1 (test)";
+		testFR1Settings.experimentName = "FR1_test";
 		testFR1Settings.countdownTick = 0.01f;
 		testFR1Settings.wordPresentationLength = 0.01f;
 		testFR1Settings.minISI = 0.005f;
@@ -106,7 +106,7 @@ public static class FRExperimentSettings
 	public static ExperimentSettings GetTestFR6Settings()
 	{
 		ExperimentSettings testFR6Settings = GetFR6Settings();
-		testFR6Settings.experimentName = "FR6 (test)";
+		testFR6Settings.experimentName = "FR6_test";
 		testFR6Settings.countdownTick = 0.01f;
 		testFR6Settings.wordPresentationLength = 0.01f;
 		testFR6Settings.minISI = 0.005f;
