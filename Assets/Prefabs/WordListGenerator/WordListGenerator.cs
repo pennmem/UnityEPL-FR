@@ -9,7 +9,8 @@ public abstract class WordListGenerator
 
 	protected IronPython.Runtime.List ReadWordsFromPoolTxt(string path)
 	{
-		string[] lines = System.IO.File.ReadAllLines (path);
+		string text = Resources.Load<TextAsset> (path).text;
+		string[] lines = text.Split(new [] { '\r', '\n' });
 		IronPython.Runtime.List words = new IronPython.Runtime.List();
 
 		for (int i = 1; i < lines.Length; i++)
@@ -18,12 +19,12 @@ public abstract class WordListGenerator
 			word["word"] = lines [i];
 			words.Add (word);
 		}
-
+			
 		return words;
 	}
 
-	protected IronPython.Runtime.List Shuffled(System.Random rng, IronPython.Runtime.List list)  
-	{  
+	protected IronPython.Runtime.List Shuffled(System.Random rng, IronPython.Runtime.List list)
+	{
 		IronPython.Runtime.List list_copy = new IronPython.Runtime.List ();
 		foreach (var item in list)
 			list_copy.Add (item);
@@ -43,8 +44,8 @@ public abstract class WordListGenerator
 		var engine = IronPython.Hosting.Python.CreateEngine ();
 		Microsoft.Scripting.Hosting.ScriptScope scope = engine.CreateScope ();
 
-		string wordpool_path = System.IO.Path.Combine (Application.dataPath, "Prefabs/WordListGenerator/wordpool/nopandas.py");
-		var source = engine.CreateScriptSourceFromFile (wordpool_path);
+		string wordpool_text = Resources.Load<TextAsset>("nopandas").text;
+		var source = engine.CreateScriptSourceFromString (wordpool_text);
 
 		source.Execute (scope);
 
@@ -70,11 +71,11 @@ public class FR1ListGenerator : WordListGenerator
 
 
 		//////////////////////Load the word pools
-		string practice_pool_path = System.IO.Path.Combine (Application.dataPath, "Prefabs/WordListGenerator/wordpool/data/practice_en.txt");
-		string main_pool_path = System.IO.Path.Combine (Application.dataPath, "Prefabs/WordListGenerator/wordpool/data/ram_wordpool_en.txt");
-
+		string practice_pool_path = "practice_en";
+		string main_pool_path = "ram_wordpool_en";
 		IronPython.Runtime.List practice_words = ReadWordsFromPoolTxt (practice_pool_path);
 		IronPython.Runtime.List main_words = ReadWordsFromPoolTxt (main_pool_path);
+
 		System.Random rng = new System.Random ();
 		practice_words = Shuffled (rng, practice_words);
 		main_words = Shuffled (rng, main_words);

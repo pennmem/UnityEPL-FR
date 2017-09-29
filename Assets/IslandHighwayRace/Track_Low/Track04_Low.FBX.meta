@@ -1,0 +1,289 @@
+fileFormatVersion: 2
+guid: 83ba86e67733b394f93198fc8de88cf3
+timeCreated: 18446744011573954816
+ModelImporter:
+  serializedVersion: 21
+  fileIDToRecycleName:
+    100000: Bush
+    100002: Bush 1
+    100004: Bush 2
+    100006: LightHouse
+    100008: Pillar
+    100010: Pillar 1
+    100012: Pillar 2
+    100014: Pillar 3
+    100016: Road
+    100018: Road 1
+    100020: Rock
+    100022: Rock 1
+    100024: Rock 10
+    100026: Rock 11
+    100028: Rock 12
+    100030: Rock 13
+    100032: Rock 14
+    100034: Rock 15
+    100036: Rock 16
+    100038: Rock 17
+    100040: Rock 18
+    100042: Rock 19
+    100044: Rock 2
+    100046: Rock 20
+    100048: Rock 21
+    100050: Rock 22
+    100052: Rock 23
+    100054: Rock 3
+    100056: Rock 4
+    100058: Rock 5
+    100060: Rock 6
+    100062: Rock 7
+    100064: Rock 8
+    100066: Rock 9
+    100068: //RootNode
+    100070: Tree
+    100072: Tree 1
+    100074: Tree 2
+    100076: Tree 3
+    100078: Tree 4
+    100080: Tree 5
+    100082: Wave
+    400000: Bush
+    400002: Bush 1
+    400004: Bush 2
+    400006: LightHouse
+    400008: Pillar
+    400010: Pillar 1
+    400012: Pillar 2
+    400014: Pillar 3
+    400016: Road
+    400018: Road 1
+    400020: Rock
+    400022: Rock 1
+    400024: Rock 10
+    400026: Rock 11
+    400028: Rock 12
+    400030: Rock 13
+    400032: Rock 14
+    400034: Rock 15
+    400036: Rock 16
+    400038: Rock 17
+    400040: Rock 18
+    400042: Rock 19
+    400044: Rock 2
+    400046: Rock 20
+    400048: Rock 21
+    400050: Rock 22
+    400052: Rock 23
+    400054: Rock 3
+    400056: Rock 4
+    400058: Rock 5
+    400060: Rock 6
+    400062: Rock 7
+    400064: Rock 8
+    400066: Rock 9
+    400068: //RootNode
+    400070: Tree
+    400072: Tree 1
+    400074: Tree 2
+    400076: Tree 3
+    400078: Tree 4
+    400080: Tree 5
+    400082: Wave
+    2300000: Bush
+    2300002: Bush 1
+    2300004: Bush 2
+    2300006: LightHouse
+    2300008: Pillar
+    2300010: Pillar 1
+    2300012: Pillar 2
+    2300014: Pillar 3
+    2300016: Road
+    2300018: Road 1
+    2300020: Rock
+    2300022: Rock 1
+    2300024: Rock 10
+    2300026: Rock 11
+    2300028: Rock 12
+    2300030: Rock 13
+    2300032: Rock 14
+    2300034: Rock 15
+    2300036: Rock 16
+    2300038: Rock 17
+    2300040: Rock 18
+    2300042: Rock 19
+    2300044: Rock 2
+    2300046: Rock 20
+    2300048: Rock 21
+    2300050: Rock 22
+    2300052: Rock 23
+    2300054: Rock 3
+    2300056: Rock 4
+    2300058: Rock 5
+    2300060: Rock 6
+    2300062: Rock 7
+    2300064: Rock 8
+    2300066: Rock 9
+    2300068: Tree
+    2300070: Tree 1
+    2300072: Tree 2
+    2300074: Tree 3
+    2300076: Tree 4
+    2300078: Tree 5
+    2300080: Wave
+    3300000: Bush
+    3300002: Bush 1
+    3300004: Bush 2
+    3300006: LightHouse
+    3300008: Pillar
+    3300010: Pillar 1
+    3300012: Pillar 2
+    3300014: Pillar 3
+    3300016: Road
+    3300018: Road 1
+    3300020: Rock
+    3300022: Rock 1
+    3300024: Rock 10
+    3300026: Rock 11
+    3300028: Rock 12
+    3300030: Rock 13
+    3300032: Rock 14
+    3300034: Rock 15
+    3300036: Rock 16
+    3300038: Rock 17
+    3300040: Rock 18
+    3300042: Rock 19
+    3300044: Rock 2
+    3300046: Rock 20
+    3300048: Rock 21
+    3300050: Rock 22
+    3300052: Rock 23
+    3300054: Rock 3
+    3300056: Rock 4
+    3300058: Rock 5
+    3300060: Rock 6
+    3300062: Rock 7
+    3300064: Rock 8
+    3300066: Rock 9
+    3300068: Tree
+    3300070: Tree 1
+    3300072: Tree 2
+    3300074: Tree 3
+    3300076: Tree 4
+    3300078: Tree 5
+    3300080: Wave
+    4300000: LightHouse
+    4300002: Tree
+    4300004: Rock
+    4300006: Bush
+    4300008: Bush
+    4300010: Bush
+    4300012: Tree
+    4300014: Tree
+    4300016: Tree
+    4300018: Tree
+    4300020: Tree
+    4300022: Rock
+    4300024: Rock
+    4300026: Rock
+    4300028: Rock
+    4300030: Rock
+    4300032: Rock
+    4300034: Rock
+    4300036: Rock
+    4300038: Rock
+    4300040: Rock
+    4300042: Rock
+    4300044: Rock
+    4300046: Rock
+    4300048: Rock
+    4300050: Rock
+    4300052: Rock
+    4300054: Rock
+    4300056: Rock
+    4300058: Rock
+    4300060: Rock
+    4300062: Rock
+    4300064: Rock
+    4300066: Rock
+    4300068: Pillar
+    4300070: Road
+    4300072: Wave
+    4300074: Road
+    4300076: Pillar
+    4300078: Pillar
+    4300080: Pillar
+    9500000: //RootNode
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    rigImportErrors: 
+    rigImportWarnings: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    extraUserProperties: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 0.01
+    meshCompression: 0
+    addColliders: 0
+    importVisibility: 0
+    importBlendShapes: 1
+    importCameras: 0
+    importLights: 0
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 0
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 4
+    normalCalculationMode: 0
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    serializedVersion: 2
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    rootMotionBoneRotation: {x: 0, y: 0, z: 0, w: 1}
+    hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 0
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 0
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

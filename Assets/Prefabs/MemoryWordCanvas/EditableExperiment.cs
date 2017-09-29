@@ -31,6 +31,7 @@ public class EditableExperiment : MonoBehaviour
 	public VideoControl videoPlayer;
 	public KeyCode pauseKey = KeyCode.P;
 	public GameObject pauseIndicator;
+	public ScriptedEventReporter scriptedEventReporter;
 
 	private bool paused = false;
 
@@ -187,7 +188,7 @@ public class EditableExperiment : MonoBehaviour
 			}
 			if (Time.time - answerTime > currentSettings.answerConfirmationTime && answered)
 			{
-				textDisplayer.textElement.color = Color.white;
+				textDisplayer.ChangeColor(Color.white);
 				answered = false;
 				distractorProblem = DistractorProblem ();
 				distractor = distractorProblem [0].ToString () + " + " + distractorProblem [1].ToString () + " + " + distractorProblem [2].ToString () + " = ";
@@ -211,16 +212,31 @@ public class EditableExperiment : MonoBehaviour
 				{
 					answered = true;
 					if (int.Parse (answer) == distractorProblem [0] + distractorProblem [1] + distractorProblem [2])
-						textDisplayer.textElement.color = Color.green;
+					{
+						textDisplayer.ChangeColor (Color.green);
+						ReportDistractorAnswered (true, distractor, answer);
+					}
 					else
-						textDisplayer.textElement.color = Color.red;
+					{
+						textDisplayer.ChangeColor (Color.red);
+						ReportDistractorAnswered (false, distractor, answer);
+					}
 					answerTime = Time.time;
 				}
 			}
 			yield return null;
 		}
-		textDisplayer.textElement.color = Color.white;
+		textDisplayer.ChangeColor(Color.white);
 		textDisplayer.ClearText ();
+	}
+
+	private void ReportDistractorAnswered(bool correct, string problem, string answer)
+	{
+		Dictionary<string, string> dataDict = new Dictionary<string, string> ();
+		dataDict.Add ("correctness", correct.ToString());
+		dataDict.Add ("problem", problem);
+		dataDict.Add ("answer", answer);
+		scriptedEventReporter.ReportScriptedEvent ("distractor answered", dataDict);
 	}
 
 	private IEnumerator DoRecall()
