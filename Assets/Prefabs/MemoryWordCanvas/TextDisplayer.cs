@@ -4,11 +4,16 @@ using UnityEngine;
 
 public class TextDisplayer : MonoBehaviour 
 {
+	public delegate void TextDisplayed(string text);
+	public static TextDisplayed OnText;
+
 	public ScriptedEventReporter wordEventReporter;
 	public UnityEngine.UI.Text[] textElements;
 
 	public void DisplayText(string description, string text)
 	{
+		if (OnText != null)
+			OnText (text);
 		foreach (UnityEngine.UI.Text textElement in textElements)
 		{
 			textElement.text = text;

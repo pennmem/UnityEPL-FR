@@ -49,7 +49,7 @@ public static class FRExperimentSettings
 			case "FR1_scalp":
 				return "scalp_fr";
 			case "SFR":
-				return "spatial_fr";
+				return "spatial_fr_superman";
 		}
 		throw new UnityException ("That name was not recognized.");
 	}

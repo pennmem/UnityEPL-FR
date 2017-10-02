@@ -91,7 +91,7 @@ public class EditableExperiment : MonoBehaviour
 					"Please explain the task to the \n" +
 					"experimenter in your own words.\n\n" +
 					"Press any key to continue \n" +
-					"to the first list");
+					"to the first list.");
 
 		}
 
@@ -100,7 +100,7 @@ public class EditableExperiment : MonoBehaviour
 
 	private IEnumerator DoIntroductionVideo()
 	{
-		yield return PressAnyKey ("Press any key to play movie");
+		yield return PressAnyKey ("Press any key to play movie.");
 
 		bool replay = false;
 		do 
@@ -110,7 +110,7 @@ public class EditableExperiment : MonoBehaviour
 			while (videoPlayer.IsPlaying ())
 				yield return null;
 
-			textDisplayer.DisplayText("repeat video prompt", "Press Y to continue to practice list, \n Press N to replay instructional video");
+			textDisplayer.DisplayText("repeat video prompt", "Press Y to continue to practice list, \n Press N to replay instructional video.");
 			while (!Input.GetKeyDown(KeyCode.Y) && !Input.GetKeyDown(KeyCode.N))
 			{
 				yield return null;
@@ -241,7 +241,7 @@ public class EditableExperiment : MonoBehaviour
 
 	private IEnumerator DoRecall()
 	{
-		textDisplayer.DisplayText ("display recall text", "* * *");
+		textDisplayer.DisplayText ("display recall text", "* * * * * *");
 		soundRecorder.StartRecording (Mathf.CeilToInt(currentSettings.recallLength));
 		yield return PausableWait(currentSettings.recallLength);
 
