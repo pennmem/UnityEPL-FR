@@ -7,10 +7,8 @@ public class FlyText : MonoBehaviour
 	public UnityEngine.UI.Text textElement;
 
 	public float startZ = 3;
-	public float endZ = -12;
-	public float fadeInTime = 0.3f;
-	public float fadeOutTime = 0.3f;
-	public float flyTime = 1.6f;
+	public float staticZ = -4.5f;
+	public float hoverTime = 1.6f;
 
 	private bool startCaring = false;
 
@@ -28,7 +26,7 @@ public class FlyText : MonoBehaviour
 	{
 		Debug.Log ("ConstantState");
 		textElement.color = new Color (0, 0, 0, 255);
-		gameObject.transform.localPosition = new Vector3 (gameObject.transform.localPosition.x, gameObject.transform.localPosition.y, (startZ + endZ) / 2);
+		gameObject.transform.localPosition = new Vector3 (gameObject.transform.localPosition.x, gameObject.transform.localPosition.y, staticZ);
 		gameObject.SetActive(active);
 	}
 
@@ -54,7 +52,7 @@ public class FlyText : MonoBehaviour
 		float startTime = Time.time;
 		gameObject.transform.localPosition = new Vector3 (gameObject.transform.localPosition.x, gameObject.transform.localPosition.y, startZ);
 		Vector3 hoverPosition = gameObject.transform.position;
-		while (Time.time < startTime + flyTime)
+		while (Time.time < startTime + hoverTime)
 		{
 			gameObject.transform.position = hoverPosition;
 			yield return null;

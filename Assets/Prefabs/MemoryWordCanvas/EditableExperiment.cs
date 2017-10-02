@@ -87,9 +87,9 @@ public class EditableExperiment : MonoBehaviour
 				yield return PressAnyKey ("Please let the experimenter know \n" +
 					"if you have any questions about \n" +
 					"what you just did.\n\n" +
-					"If you think you understand, \n" +
-					"Please explain the task to the \n" +
-					"experimenter in your own words.\n\n" +
+					//"If you think you understand, \n" +
+					//"Please explain the task to the \n" +
+					//"experimenter in your own words.\n\n" +
 					"Press any key to continue \n" +
 					"to the first list.");
 
@@ -208,7 +208,7 @@ public class EditableExperiment : MonoBehaviour
 					answer = answer.Substring (0, answer.Length - 1);
 					textDisplayer.DisplayText ("modify distractor answer", distractor + answer);
 				}
-				if (Input.GetKeyDown (KeyCode.Return) && !answer.Equals(""))
+				if ((Input.GetKeyDown (KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)) && !answer.Equals(""))
 				{
 					answered = true;
 					if (int.Parse (answer) == distractorProblem [0] + distractorProblem [1] + distractorProblem [2])
