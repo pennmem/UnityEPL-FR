@@ -24,7 +24,7 @@ public class FlyText : MonoBehaviour
 		
 	private void ConstantState(bool active)
 	{
-		Debug.Log ("ConstantState");
+		//Debug.Log ("ConstantState");
 		textElement.color = new Color (0, 0, 0, 255);
 		gameObject.transform.localPosition = new Vector3 (gameObject.transform.localPosition.x, gameObject.transform.localPosition.y, staticZ);
 		gameObject.SetActive(active);
@@ -32,7 +32,7 @@ public class FlyText : MonoBehaviour
 
 	public void OnText(string text)
 	{
-		Debug.Log ("OnText:" + text);
+		//Debug.Log ("OnText:" + text);
 		for (int i = 0; i < text.Length; i++)
 		{
 			if (char.IsDigit (text, i))
@@ -48,7 +48,7 @@ public class FlyText : MonoBehaviour
 
 	private IEnumerator DoFly()
 	{
-		Debug.Log ("DoFly");
+		//Debug.Log ("DoFly");
 		float startTime = Time.time;
 		gameObject.transform.localPosition = new Vector3 (gameObject.transform.localPosition.x, gameObject.transform.localPosition.y, startZ);
 		Vector3 hoverPosition = gameObject.transform.position;

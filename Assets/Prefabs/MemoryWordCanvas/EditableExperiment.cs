@@ -32,6 +32,8 @@ public class EditableExperiment : MonoBehaviour
 	public KeyCode pauseKey = KeyCode.P;
 	public GameObject pauseIndicator;
 	public ScriptedEventReporter scriptedEventReporter;
+	public AudioSource recallGoSound;
+	public AudioSource recallStopSound;
 
 	private bool paused = false;
 
@@ -241,6 +243,8 @@ public class EditableExperiment : MonoBehaviour
 
 	private IEnumerator DoRecall()
 	{
+		recallGoSound.Play ();
+		scriptedEventReporter.ReportScriptedEvent("Sound played", new Dictionary<string, string>(){{"sound name", "high beep"}, {"sound duration", recallGoSound.clip.length.ToString()}});
 		textDisplayer.DisplayText ("display recall text", "* * * * * *");
 		soundRecorder.StartRecording (Mathf.CeilToInt(currentSettings.recallLength));
 		yield return PausableWait(currentSettings.recallLength);
@@ -254,6 +258,8 @@ public class EditableExperiment : MonoBehaviour
 
 		soundRecorder.StopRecording(wavFilePath);
 		textDisplayer.ClearText ();
+		recallStopSound.Play ();
+		scriptedEventReporter.ReportScriptedEvent("Sound played", new Dictionary<string, string>(){{"sound name", "low beep"}, {"sound duration", recallStopSound.clip.length.ToString()}});
 	}
 
 	private void WriteLstFile(string lstFilePath)
