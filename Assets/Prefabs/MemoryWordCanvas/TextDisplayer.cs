@@ -10,6 +10,21 @@ public class TextDisplayer : MonoBehaviour
 	public ScriptedEventReporter wordEventReporter;
 	public UnityEngine.UI.Text[] textElements;
 
+	private Color[] originalColors;
+
+	void Start()
+	{
+		originalColors = new Color[textElements.Length];
+		for (int i = 0; i < textElements.Length; i++)
+			originalColors [i] = textElements[i].color;
+	}
+
+	public void OriginalColor()
+	{
+		for (int i = 0; i < textElements.Length; i++)
+			textElements[i].color = originalColors [i];
+	}
+
 	public void DisplayText(string description, string text)
 	{
 		if (OnText != null)

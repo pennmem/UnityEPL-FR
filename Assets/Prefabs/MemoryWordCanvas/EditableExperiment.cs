@@ -229,7 +229,7 @@ public class EditableExperiment : MonoBehaviour
 			}
 			yield return null;
 		}
-		textDisplayer.ChangeColor(Color.white);
+		textDisplayer.OriginalColor();
 		textDisplayer.ClearText ();
 	}
 
