@@ -213,7 +213,8 @@ public class EditableExperiment : MonoBehaviour
 				if ((Input.GetKeyDown (KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)) && !answer.Equals(""))
 				{
 					answered = true;
-					if (int.Parse (answer) == distractorProblem [0] + distractorProblem [1] + distractorProblem [2])
+					int result;
+					if (int.TryParse(answer, out result) && result == distractorProblem [0] + distractorProblem [1] + distractorProblem [2])
 					{
 						textDisplayer.ChangeColor (Color.green);
 						ReportDistractorAnswered (true, distractor, answer);
