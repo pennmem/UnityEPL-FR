@@ -8,26 +8,16 @@ using NetMQ;
 
 public class RamulatorInterface : MonoBehaviour
 {
+	//This will be updated with warnings about the status of ramulator connectivity
 	public UnityEngine.UI.Text ramulatorWarningText;
+	//This will be activated when a warning needs to be displayed
 	public GameObject ramulatorWarning;
 
-	const int timeoutDelay = 20;
+	//how long to wait for ramulator to connect
+	const int timeoutDelay = 30;
 
 	private NetMQ.Sockets.PairSocket zmqSocket;
-
 	private const string address = "tcp://*:8889";
-
-	// Use this for initialization
-	void Start ()
-	{
-		
-	}
-	
-	// Update is called once per frame
-	void Update ()
-	{
-		
-	}
 
 	void OnApplicationQuit()
 	{
@@ -36,6 +26,9 @@ public class RamulatorInterface : MonoBehaviour
 		NetMQConfig.Cleanup();
 	}
 
+	//this coroutine connects to ramulator and communicates how ramulator expects it to
+	//in order to start the experiment session.  follow it up with BeginNewTrial and
+	//SetState calls
 	public IEnumerator BeginNewSession(int sessionNumber)
 	{
 		//Connect to ramulator///////////////////////////////////////////////////////////////////
@@ -103,6 +96,7 @@ public class RamulatorInterface : MonoBehaviour
 		ramulatorWarning.SetActive (false);
 	}
 
+	//ramulator expects this before the beginning of a new list
 	public void BeginNewTrial(int trialNumber)
 	{
 		if (zmqSocket == null)
@@ -113,6 +107,8 @@ public class RamulatorInterface : MonoBehaviour
 		SendMessageToRamulator (sessionDataPoint.ToJSON ());
 	}
 
+	//ramulator expects this when you display words to the subject.
+	//for words, stateName is "WORD"
 	public void SetState(string stateName, bool stateToggle, IronPython.Runtime.PythonDictionary extraData)
 	{
 		System.Collections.Generic.Dictionary<string, string> sessionData = new Dictionary<string, string>();
