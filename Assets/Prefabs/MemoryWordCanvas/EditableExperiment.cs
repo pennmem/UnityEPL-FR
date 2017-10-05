@@ -155,15 +155,23 @@ public class EditableExperiment : MonoBehaviour
 		{
 			string word = (string)dotNetWords[wordsSeen]["word"];
 			textDisplayer.DisplayText ("word stimulus", word);
-			if (ramulatorInterface != null)
-				ramulatorInterface.SetState ("WORD", true, dotNetWords[wordsSeen]);
+			SetRamulatorWordState (true, dotNetWords [wordsSeen]);
 			yield return PausableWait (currentSettings.wordPresentationLength);
 			textDisplayer.ClearText ();
-			if (ramulatorInterface != null)
-				ramulatorInterface.SetState ("WORD", false, dotNetWords[wordsSeen]);
+			SetRamulatorWordState(false, dotNetWords[wordsSeen]);
 			IncrementWordsSeen();
 			yield return PausableWait (Random.Range (currentSettings.minISI, currentSettings.maxISI));
 		}
+	}
+
+	private void SetRamulatorWordState(bool state, IronPython.Runtime.PythonDictionary wordData)
+	{
+		Dictionary<string, string> dotNetWordData = new Dictionary<string, string> ();
+		foreach (string key in wordData.Keys)
+			dotNetWordData.Add (key, wordData [key] == null ? "" : wordData [key].ToString());
+
+		if (ramulatorInterface != null)
+			ramulatorInterface.SetState ("WORD", state, dotNetWordData);
 	}
 
 	private IEnumerator DoDistractor()

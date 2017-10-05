@@ -109,16 +109,14 @@ public class RamulatorInterface : MonoBehaviour
 
 	//ramulator expects this when you display words to the subject.
 	//for words, stateName is "WORD"
-	public void SetState(string stateName, bool stateToggle, IronPython.Runtime.PythonDictionary extraData)
+	public void SetState(string stateName, bool stateToggle, System.Collections.Generic.Dictionary<string, string> sessionData)
 	{
-		System.Collections.Generic.Dictionary<string, string> sessionData = new Dictionary<string, string>();
 		sessionData.Add ("name", stateName);
 		sessionData.Add ("value",  stateToggle.ToString());
-		foreach (string key in extraData.Keys)
-			sessionData.Add (key, extraData [key] == null ? "" : extraData [key].ToString());
 		DataPoint sessionDataPoint = new DataPoint ("STATE", DataReporter.RealWorldTime (), sessionData);
 		SendMessageToRamulator (sessionDataPoint.ToJSON ());
 	}
+
 		
 	private void SendHeartbeat()
 	{
