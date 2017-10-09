@@ -22,7 +22,7 @@ public class EditableExperiment : MonoBehaviour
 {
 	private static ushort wordsSeen;
 	private static ushort session;
-	private static IronPython.Runtime.List words;
+	private static List<IronPython.Runtime.PythonDictionary> words;
 	private static ExperimentSettings currentSettings;
 
 	public RamulatorInterface ramulatorInterface;
@@ -36,6 +36,7 @@ public class EditableExperiment : MonoBehaviour
 	public AudioSource recallStopSound;
 
 	private bool paused = false;
+	private string current_phase_type;
 
 	//use update to collect user input every frame
 	void Update()
@@ -79,7 +80,11 @@ public class EditableExperiment : MonoBehaviour
 				yield return PressAnyKey ("Once you're ready, press any key to begin.");
 
 			if (ramulatorInterface != null)
+			{
 				ramulatorInterface.BeginNewTrial (i);
+				current_phase_type = (string)words[wordsSeen] ["type"];
+			}
+
 			yield return DoCountdown ();
 			yield return DoEncoding ();
 			yield return DoDistractor ();
@@ -108,29 +113,34 @@ public class EditableExperiment : MonoBehaviour
 		do 
 		{
 			//start video player and wait for it to stop playing
+			SetRamulatorState ("INSTRUCT", true, new Dictionary<string, string> ());
 			videoPlayer.StartVideo ();
 			while (videoPlayer.IsPlaying ())
 				yield return null;
+			SetRamulatorState ("INSTRUCT", false, new Dictionary<string, string> ());
 
+			SetRamulatorState ("WAITING", true, new Dictionary<string, string> ());
 			textDisplayer.DisplayText("repeat video prompt", "Press Y to continue to practice list, \n Press N to replay instructional video.");
 			while (!Input.GetKeyDown(KeyCode.Y) && !Input.GetKeyDown(KeyCode.N))
 			{
 				yield return null;
 			}
+			SetRamulatorState ("WAITING", false, new Dictionary<string, string> ());
 			replay = Input.GetKey(KeyCode.N);
 
 		}
 		while (replay);
-
 	}
 
 	private IEnumerator PressAnyKey(string displayText)
 	{
+		SetRamulatorState ("WAITING", true, new Dictionary<string, string> ());
 		yield return null;
 		textDisplayer.DisplayText ("press any key prompt", displayText);
 		while (!Input.anyKeyDown)
 			yield return null;
 		textDisplayer.ClearText ();
+		SetRamulatorState ("WAITING", false, new Dictionary<string, string> ());
 	}
 
 	private IEnumerator DoCountdown()
@@ -144,24 +154,23 @@ public class EditableExperiment : MonoBehaviour
 
 	private IEnumerator DoEncoding()
 	{
-		List<IronPython.Runtime.PythonDictionary> dotNetWords = new List<IronPython.Runtime.PythonDictionary> ();
-		foreach (IronPython.Runtime.PythonDictionary word in words)
-			dotNetWords.Add (word);
+		SetRamulatorState ("ENCODING", true, new Dictionary<string, string> ());
 
 		int currentList = wordsSeen / currentSettings.wordsPerList;
 		wordsSeen = (ushort)(currentList * currentSettings.wordsPerList);
 		Debug.Log ("Beginning list index " + currentList.ToString());
 		for (int i = 0; i < currentSettings.wordsPerList; i++)
 		{
-			string word = (string)dotNetWords[wordsSeen]["word"];
+			string word = (string)words[wordsSeen]["word"];
 			textDisplayer.DisplayText ("word stimulus", word);
-			SetRamulatorWordState (true, dotNetWords [wordsSeen]);
+			SetRamulatorWordState (true, words [wordsSeen]);
 			yield return PausableWait (currentSettings.wordPresentationLength);
 			textDisplayer.ClearText ();
-			SetRamulatorWordState(false, dotNetWords[wordsSeen]);
+			SetRamulatorWordState(false, words [wordsSeen]);
 			IncrementWordsSeen();
 			yield return PausableWait (Random.Range (currentSettings.minISI, currentSettings.maxISI));
 		}
+		SetRamulatorState ("ENCODING", false, new Dictionary<string, string> ());
 	}
 
 	private void SetRamulatorWordState(bool state, IronPython.Runtime.PythonDictionary wordData)
@@ -169,13 +178,19 @@ public class EditableExperiment : MonoBehaviour
 		Dictionary<string, string> dotNetWordData = new Dictionary<string, string> ();
 		foreach (string key in wordData.Keys)
 			dotNetWordData.Add (key, wordData [key] == null ? "" : wordData [key].ToString());
+		SetRamulatorState ("WORD", state, dotNetWordData);
+	}
 
+	private void SetRamulatorState(string stateName, bool state, Dictionary<string, string> extraData)
+	{
+		extraData.Add ("phase_type", current_phase_type);
 		if (ramulatorInterface != null)
-			ramulatorInterface.SetState ("WORD", state, dotNetWordData);
+			ramulatorInterface.SetState (stateName, state, extraData);
 	}
 
 	private IEnumerator DoDistractor()
 	{
+		SetRamulatorState ("DISTRACT", true, new Dictionary<string, string> ());
 		float endTime = Time.time + currentSettings.distractionLength;
 		float answerTime = 0;
 
@@ -239,6 +254,7 @@ public class EditableExperiment : MonoBehaviour
 		}
 		textDisplayer.OriginalColor();
 		textDisplayer.ClearText ();
+		SetRamulatorState ("DISTRACT", false, new Dictionary<string, string> ());
 	}
 
 	private void ReportDistractorAnswered(bool correct, string problem, string answer)
@@ -252,6 +268,7 @@ public class EditableExperiment : MonoBehaviour
 
 	private IEnumerator DoRecall()
 	{
+		SetRamulatorState ("RETRIEVAL", true, new Dictionary<string, string> ());
 		recallGoSound.Play ();
 		scriptedEventReporter.ReportScriptedEvent("Sound played", new Dictionary<string, string>(){{"sound name", "high beep"}, {"sound duration", recallGoSound.clip.length.ToString()}});
 		textDisplayer.DisplayText ("display recall text", "* * * * * *");
@@ -269,17 +286,17 @@ public class EditableExperiment : MonoBehaviour
 		textDisplayer.ClearText ();
 		recallStopSound.Play ();
 		scriptedEventReporter.ReportScriptedEvent("Sound played", new Dictionary<string, string>(){{"sound name", "low beep"}, {"sound duration", recallStopSound.clip.length.ToString()}});
+		SetRamulatorState ("RETRIEVAL", false, new Dictionary<string, string> ());
 	}
 
 	private void WriteLstFile(string lstFilePath)
 	{
 		string[] lines = new string[currentSettings.wordsPerList];
-		IronPython.Runtime.List lastTwelveWords = (IronPython.Runtime.List)words.__getslice__ (wordsSeen - currentSettings.wordsPerList, wordsSeen);
-		int i = 0;
-		foreach (IronPython.Runtime.PythonDictionary word in lastTwelveWords)
+		int startIndex = wordsSeen - currentSettings.wordsPerList;
+		for (int i = startIndex; i < wordsSeen; i++)
 		{
-			lines [i] = (string)word["word"];
-			i++;
+			IronPython.Runtime.PythonDictionary word = words [i];
+			lines [i - (startIndex)] = (string)word["word"];
 		}
 		System.IO.FileInfo lstFile = new System.IO.FileInfo(lstFilePath);
 		lstFile.Directory.Create();
@@ -386,6 +403,14 @@ public class EditableExperiment : MonoBehaviour
 
 	public static void SetWords(IronPython.Runtime.List newWords)
 	{
+		List<IronPython.Runtime.PythonDictionary> dotNetWords = new List<IronPython.Runtime.PythonDictionary> ();
+		foreach (IronPython.Runtime.PythonDictionary word in newWords)
+			dotNetWords.Add (word);
+		SetWords (dotNetWords);
+	}
+
+	public static void SetWords(List<IronPython.Runtime.PythonDictionary> newWords)
+	{
 		words = newWords;
 	}
 
@@ -406,7 +431,7 @@ public class EditableExperiment : MonoBehaviour
 		session = newSessionNumber;
 		currentSettings = FRExperimentSettings.GetSettingsByName (UnityEPL.GetExperimentName ());
 		if (words == null)
-			words = currentSettings.wordListGenerator.GenerateLists (currentSettings.numberOfLists, currentSettings.wordsPerList);
+			SetWords(currentSettings.wordListGenerator.GenerateLists (currentSettings.numberOfLists, currentSettings.wordsPerList));
 		SaveState ();
 	}
 }
