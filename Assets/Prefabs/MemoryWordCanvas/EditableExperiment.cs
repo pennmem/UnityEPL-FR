@@ -145,11 +145,13 @@ public class EditableExperiment : MonoBehaviour
 
 	private IEnumerator DoCountdown()
 	{
+		SetRamulatorState ("COUNTDOWN", true, new Dictionary<string, string> ());
 		for (int i = 0; i < currentSettings.countdownLength; i++)
 		{
 			textDisplayer.DisplayText ("countdown display", (currentSettings.countdownLength - i).ToString ());
 			yield return PausableWait (currentSettings.countdownTick);
 		}
+		SetRamulatorState ("COUNTDOWN", true, new Dictionary<string, string> ());
 	}
 
 	private IEnumerator DoEncoding()
