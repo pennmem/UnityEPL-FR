@@ -16,6 +16,7 @@ public struct ExperimentSettings
 	public float distractionLength;
 	public float answerConfirmationTime;
 	public float recallLength;
+	public int displayLearningMessageIndex;
 }
 
 public class EditableExperiment : MonoBehaviour
@@ -76,8 +77,27 @@ public class EditableExperiment : MonoBehaviour
 
 		for (int i = startList; i < currentSettings.numberOfLists; i++)
 		{
-			if (i == startList && i != 0)
-				yield return PressAnyKey ("Once you're ready, press any key to begin.");
+			if (i == 1 && i != startList)
+				yield return PressAnyKey ("Please let the experimenter know \n" +
+					"if you have any questions about \n" +
+					"what you just did.\n\n" +
+					"If you think you understand, \n" +
+					"Please explain the task to the \n" +
+					"experimenter in your own words.\n\n" +
+					"Press any key to continue \n" +
+					"to the first list.");
+			else if (i == currentSettings.displayLearningMessageIndex)
+				yield return PressAnyKey ("Great work!  You have successfully completed XXX " +
+					"trials of the experiment. In the last phase of the experiment, we will " +
+					"have you study four more lists of words, but each of these lists will " +
+					"include the identical set of 12 words presented in a random order.  As " +
+					"before, you will study the words one at a time, then you will solve some " +
+					"math problems, and then you will try to recall as many words as you can " +
+					"remember in any order.  \n\n" +
+					"Please explain these instructions back to the tester in your own words.\n\n" +
+					"Press any key to continue to the next list.");
+			else if (i != 0)
+				yield return PressAnyKey ("Press any key to continue to trial " + i.ToString ());
 
 			if (ramulatorInterface != null)
 			{
@@ -89,17 +109,6 @@ public class EditableExperiment : MonoBehaviour
 			yield return DoEncoding ();
 			yield return DoDistractor ();
 			yield return DoRecall ();
-
-			if (i == 0)
-				yield return PressAnyKey ("Please let the experimenter know \n" +
-					"if you have any questions about \n" +
-					"what you just did.\n\n" +
-					//"If you think you understand, \n" +
-					//"Please explain the task to the \n" +
-					//"experimenter in your own words.\n\n" +
-					"Press any key to continue \n" +
-					"to the first list.");
-
 		}
 
 		textDisplayer.DisplayText ("display end message", "Woo!  The experiment is over.");
