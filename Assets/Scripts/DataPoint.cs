@@ -49,6 +49,8 @@ public class DataPoint
 				;
 			else if (bool.TryParse (valueString, out valueBool))
 				valueString = valueString.ToLower ();
+			else if (valueString.Length > 1 && valueString [0].Equals ('(') && valueString [valueString.Length-1].Equals (')'))
+				;
 			else
 				valueString = "\"" + valueString + "\"";
 			JSONString = JSONString + "\""+key+"\":" + valueString + ",";
