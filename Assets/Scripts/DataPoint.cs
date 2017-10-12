@@ -45,14 +45,31 @@ public class DataPoint
 			string valueString = dataDict [key];
 			double valueNumber;
 			bool valueBool;
-			if (valueString.Length > 1 && valueString [0].Equals ('(') && valueString [valueString.Length-1].Equals (')'))
-				;
+
+			//stim channels
+			if (valueString.Length > 2 && valueString [0].Equals ('(') && valueString [valueString.Length - 1].Equals (')'))
+			{
+				char[] charArray = valueString.ToCharArray ();
+				charArray [0] = '[';
+				charArray [charArray.Length - 1] = ']';
+				if (charArray [charArray.Length - 2].Equals(','))
+					charArray [charArray.Length - 2] = ' ';
+				valueString = new string (charArray);
+			}
+
+			//embedded json
 			else if (valueString.Length > 1 && valueString [0].Equals ('{') && valueString [valueString.Length-1].Equals ('}'))
 				;
+
+			//bools
 			else if (bool.TryParse (valueString, out valueBool))
 				valueString = valueString.ToLower ();
+
+			//numbers
 			else if (double.TryParse (valueString, out valueNumber))
 				;
+
+			//everything else is a string
 			else
 				valueString = "\"" + valueString + "\"";
 			JSONString = JSONString + "\""+key+"\":" + valueString + ",";
