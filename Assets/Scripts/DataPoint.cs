@@ -17,18 +17,17 @@ public class DataPoint
 		if (newDataDict == null)
 			newDataDict = new System.Collections.Generic.Dictionary<string, string> ();
 		string[] participants = UnityEPL.GetParticipants ();
-		if (participants != null) 
+		if (participants != null)
 		{
 			for (int i = 0; i < participants.Length; i++)
 			{
 				newDataDict.Add ("participant " + (i + 1).ToString (), participants [i]);
 			}
 		}
-		if (UnityEPL.GetExperimentName () != null) 
+		if (UnityEPL.GetExperimentName () != null)
 		{
 			newDataDict.Add ("experiment", UnityEPL.GetExperimentName ());
 		}
-		newDataDict.Add ("version", Application.version);
 
 		type = newType;
 		dataDict = newDataDict;

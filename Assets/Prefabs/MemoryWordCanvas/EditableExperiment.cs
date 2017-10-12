@@ -6,6 +6,7 @@ public struct ExperimentSettings
 {
 	public WordListGenerator wordListGenerator;
 	public string experimentName;
+	public string version;
 	public int numberOfLists;
 	public int wordsPerList;
 	public int countdownLength;
@@ -65,6 +66,13 @@ public class EditableExperiment : MonoBehaviour
 	{
 		if (currentSettings.Equals(default(ExperimentSettings)))
 			throw new UnityException ("Please call ConfigureExperiment before loading the experiment scene.");
+
+		//write versions to logfile
+		Dictionary<string, string> versionsData = new Dictionary<string, string>();
+		versionsData.Add ("UnityEPL version", Application.version);
+		versionsData.Add ("Experiment version", currentSettings.version);
+		versionsData.Add ("Logfile version", "1");
+		scriptedEventReporter.ReportScriptedEvent("versions", versionsData, 0);
 
 		if (ramulatorInterface != null)
 			yield return ramulatorInterface.BeginNewSession (session);

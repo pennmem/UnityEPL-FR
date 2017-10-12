@@ -58,6 +58,7 @@ public static class FRExperimentSettings
 	{
 		ExperimentSettings FR1Settings = new ExperimentSettings();
 		FR1Settings.experimentName = "FR1";
+		FR1Settings.version = "1.0";
 		FR1Settings.wordListGenerator = new FR1ListGenerator();
 		FR1Settings.numberOfLists = 26;
 		FR1Settings.wordsPerList = 12;
@@ -77,6 +78,7 @@ public static class FRExperimentSettings
 	{
 		ExperimentSettings FR6Settings = new ExperimentSettings();
 		FR6Settings.experimentName = "FR6";
+		FR6Settings.version = "6.0";
 		FR6Settings.wordListGenerator = new FR6ListGenerator();
 		FR6Settings.numberOfLists = 42;
 		FR6Settings.wordsPerList = 12;
