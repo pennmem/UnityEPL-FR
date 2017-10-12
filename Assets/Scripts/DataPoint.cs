@@ -43,13 +43,14 @@ public class DataPoint
 		foreach (string key in dataDict.Keys)
 		{
 			string valueString = dataDict [key];
+			Debug.Log (key);
 			double valueNumber;
 			bool valueBool;
-			if (double.TryParse (valueString, out valueNumber))
+			if (valueString.Length > 1 && valueString [0].Equals ('(') && valueString [valueString.Length-1].Equals (')'))
 				;
 			else if (bool.TryParse (valueString, out valueBool))
 				valueString = valueString.ToLower ();
-			else if (valueString.Length > 1 && valueString [0].Equals ('(') && valueString [valueString.Length-1].Equals (')'))
+			else if (double.TryParse (valueString, out valueNumber))
 				;
 			else
 				valueString = "\"" + valueString + "\"";

@@ -72,11 +72,17 @@ public class EditableExperiment : MonoBehaviour
 		//starting from the beginning of the latest uncompleted list, do lists until the experiment is finished or stopped
 		int startList = wordsSeen / currentSettings.wordsPerList;
 
-		if (startList == 0)
-			yield return DoIntroductionVideo ();
-
 		for (int i = startList; i < currentSettings.numberOfLists; i++)
 		{
+			if (ramulatorInterface != null)
+			{
+				ramulatorInterface.BeginNewTrial (i);
+				current_phase_type = (string)words[wordsSeen] ["type"];
+			}
+
+			if (startList == 0 && i == 0)
+				yield return DoIntroductionVideo ();
+
 			if (i == 1 && i != startList)
 				yield return PressAnyKey ("Please let the experimenter know \n" +
 					"if you have any questions about \n" +
@@ -98,12 +104,6 @@ public class EditableExperiment : MonoBehaviour
 					"Press any key to continue to the next list.");
 			else if (i != 0)
 				yield return PressAnyKey ("Press any key to continue to trial " + i.ToString ());
-
-			if (ramulatorInterface != null)
-			{
-				ramulatorInterface.BeginNewTrial (i);
-				current_phase_type = (string)words[wordsSeen] ["type"];
-			}
 
 			yield return DoCountdown ();
 			yield return DoEncoding ();
