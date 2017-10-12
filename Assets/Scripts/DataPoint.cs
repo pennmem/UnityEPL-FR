@@ -28,6 +28,7 @@ public class DataPoint
 		{
 			newDataDict.Add ("experiment", UnityEPL.GetExperimentName ());
 		}
+		newDataDict.Add ("version", Application.version);
 
 		type = newType;
 		dataDict = newDataDict;
@@ -46,6 +47,8 @@ public class DataPoint
 			double valueNumber;
 			bool valueBool;
 			if (valueString.Length > 1 && valueString [0].Equals ('(') && valueString [valueString.Length-1].Equals (')'))
+				;
+			else if (valueString.Length > 1 && valueString [0].Equals ('{') && valueString [valueString.Length-1].Equals ('}'))
 				;
 			else if (bool.TryParse (valueString, out valueBool))
 				valueString = valueString.ToLower ();
