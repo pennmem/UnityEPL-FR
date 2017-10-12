@@ -160,7 +160,7 @@ public class EditableExperiment : MonoBehaviour
 			textDisplayer.DisplayText ("countdown display", (currentSettings.countdownLength - i).ToString ());
 			yield return PausableWait (currentSettings.countdownTick);
 		}
-		SetRamulatorState ("COUNTDOWN", true, new Dictionary<string, string> ());
+		SetRamulatorState ("COUNTDOWN", false, new Dictionary<string, string> ());
 	}
 
 	private IEnumerator DoEncoding()

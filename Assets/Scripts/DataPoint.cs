@@ -43,7 +43,6 @@ public class DataPoint
 		foreach (string key in dataDict.Keys)
 		{
 			string valueString = dataDict [key];
-			Debug.Log (key);
 			double valueNumber;
 			bool valueBool;
 			if (valueString.Length > 1 && valueString [0].Equals ('(') && valueString [valueString.Length-1].Equals (')'))

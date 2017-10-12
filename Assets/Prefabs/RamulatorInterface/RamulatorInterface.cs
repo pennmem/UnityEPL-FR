@@ -140,6 +140,6 @@ public class RamulatorInterface : MonoBehaviour
 		Dictionary<string, string> messageDataDict = new Dictionary<string, string> ();
 		messageDataDict.Add ("message", message);
 		messageDataDict.Add ("sent", sent.ToString());
-		DataPoint messageDataPoint = new DataPoint ("network", DataReporter.RealWorldTime (), messageDataDict);
+		scriptedEventReporter.ReportScriptedEvent("network", messageDataDict);
 	}
 }
