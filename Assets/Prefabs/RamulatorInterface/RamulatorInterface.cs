@@ -121,7 +121,18 @@ public class RamulatorInterface : MonoBehaviour
 		SendMessageToRamulator (sessionDataPoint.ToJSON ());
 	}
 
-		
+	public void SendMathMessage(string problem, string response, int responseTimeMs, bool correct)
+	{
+		Dictionary<string, string> mathData = new Dictionary<string, string> ();
+		mathData.Add ("problem", problem);
+		mathData.Add ("response", response);
+		mathData.Add ("response_time_ms", responseTimeMs.ToString());
+		mathData.Add ("correct", correct.ToString());
+		DataPoint mathDataPoint = new DataPoint ("MATH", DataReporter.RealWorldTime (), mathData);
+		SendMessageToRamulator (mathDataPoint.ToJSON ());
+	}
+
+
 	private void SendHeartbeat()
 	{
 		DataPoint sessionDataPoint = new DataPoint ("HEARTBEAT", DataReporter.RealWorldTime (), null);

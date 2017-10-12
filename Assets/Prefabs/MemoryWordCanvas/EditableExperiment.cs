@@ -203,10 +203,12 @@ public class EditableExperiment : MonoBehaviour
 	{
 		SetRamulatorState ("DISTRACT", true, new Dictionary<string, string> ());
 		float endTime = Time.time + currentSettings.distractionLength;
-		float answerTime = 0;
 
 		string distractor = "";
 		string answer = "";
+
+		float displayTime = 0;
+		float answerTime = 0;
 
 		bool answered = true;
 
@@ -230,6 +232,7 @@ public class EditableExperiment : MonoBehaviour
 				distractor = distractorProblem [0].ToString () + " + " + distractorProblem [1].ToString () + " + " + distractorProblem [2].ToString () + " = ";
 				answer = "";
 				textDisplayer.DisplayText ("display distractor problem", distractor);
+				displayTime = Time.time;
 			}
 			else
 			{
@@ -248,17 +251,21 @@ public class EditableExperiment : MonoBehaviour
 				{
 					answered = true;
 					int result;
+					bool correct;
 					if (int.TryParse(answer, out result) && result == distractorProblem [0] + distractorProblem [1] + distractorProblem [2])
 					{
 						textDisplayer.ChangeColor (Color.green);
-						ReportDistractorAnswered (true, distractor, answer);
+						correct = true;
 					}
 					else
 					{
 						textDisplayer.ChangeColor (Color.red);
-						ReportDistractorAnswered (false, distractor, answer);
+						correct = false;
 					}
+					ReportDistractorAnswered (correct, distractor, answer);
 					answerTime = Time.time;
+					if (ramulatorInterface != null)
+						ramulatorInterface.SendMathMessage (distractor, answer, (int)((answerTime - displayTime) * 1000), correct);
 				}
 			}
 			yield return null;
