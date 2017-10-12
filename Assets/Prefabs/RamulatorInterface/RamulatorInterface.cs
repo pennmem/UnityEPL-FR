@@ -12,6 +12,8 @@ public class RamulatorInterface : MonoBehaviour
 	public UnityEngine.UI.Text ramulatorWarningText;
 	//This will be activated when a warning needs to be displayed
 	public GameObject ramulatorWarning;
+	//This will be used to log messages
+	public ScriptedEventReporter scriptedEventReporter;
 
 	//how long to wait for ramulator to connect
 	const int timeoutDelay = 30;
@@ -81,7 +83,9 @@ public class RamulatorInterface : MonoBehaviour
 			zmqSocket.TryReceiveFrameString (out receivedMessage);
 			if (receivedMessage != "" && receivedMessage != null)
 			{
-				Debug.Log ("received: " + receivedMessage.ToString ());
+				string messageString = receivedMessage.ToString ();
+				Debug.Log ("received: " + messageString);
+				ReportMessage (messageString, false);
 			}
 
 			//if we have exceeded the timeout time, show warning and stop trying to connect
@@ -128,5 +132,14 @@ public class RamulatorInterface : MonoBehaviour
 	{
 		bool wouldNotHaveBlocked = zmqSocket.TrySendFrame(message, more: false);
 		Debug.Log ("Tried to send a message: " + message + " \nWouldNotHaveBlocked: " + wouldNotHaveBlocked.ToString());
+		ReportMessage (message, true);
+	}
+
+	private void ReportMessage(string message, bool sent)
+	{
+		Dictionary<string, string> messageDataDict = new Dictionary<string, string> ();
+		messageDataDict.Add ("message", message);
+		messageDataDict.Add ("sent", sent.ToString());
+		DataPoint messageDataPoint = new DataPoint ("network", DataReporter.RealWorldTime (), messageDataDict);
 	}
 }

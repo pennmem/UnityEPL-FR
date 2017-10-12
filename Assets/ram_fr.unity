@@ -524,6 +524,12 @@ MonoBehaviour:
     type: 2}
   m_PrefabInternal: {fileID: 1222569297}
   m_Script: {fileID: 11500000, guid: 486e54f8403ba471383efdf3a6ef7c92, type: 3}
+--- !u!114 &1222569300 stripped
+MonoBehaviour:
+  m_PrefabParentObject: {fileID: 114855649418581950, guid: b593be3339cd548a6bd6fc689cb80b2b,
+    type: 2}
+  m_PrefabInternal: {fileID: 1222569297}
+  m_Script: {fileID: 11500000, guid: f180c8d2d8e804d2ca402600895da790, type: 3}
 --- !u!1 &1442891087
 GameObject:
   m_ObjectHideFlags: 0
@@ -706,6 +712,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   reportersToHandle:
+  - {fileID: 1222569300}
   - {fileID: 91538650}
   - {fileID: 621434365}
   outputFormat: 0
