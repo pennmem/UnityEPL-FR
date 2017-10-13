@@ -5,7 +5,7 @@ using UnityEngine;
 public class ParticipantSelection : MonoBehaviour
 {
 	public UnityEngine.UI.InputField participantNameInput;
-	public UnityEngine.UI.InputField wordsSeenInput;
+	public UnityEngine.UI.InputField listNumberInupt;
 	public UnityEngine.UI.InputField currentSessionInput;
 
 	void Start ()
@@ -36,7 +36,7 @@ public class ParticipantSelection : MonoBehaviour
 		UnityEngine.UI.Dropdown dropdown = GetComponent<UnityEngine.UI.Dropdown> ();
 		if (dropdown.value <= 1)
 		{
-			wordsSeenInput.text = "0";
+			listNumberInupt.text = "0";
 			currentSessionInput.text = "0";
 			participantNameInput.text = "New participant";
 		}
@@ -74,7 +74,7 @@ public class ParticipantSelection : MonoBehaviour
 		{
 			string[] loadedState = System.IO.File.ReadAllLines(sessionFilePath);
 			currentSessionInput.text = loadedState [0];
-			wordsSeenInput.text = loadedState [1];
+			listNumberInupt.text = (int.Parse(loadedState [1])/12).ToString();
 			//load words
 			ExperimentSettings currentSettings = FRExperimentSettings.GetSettingsByName(UnityEPL.GetExperimentName());
 			int wordCount = int.Parse(loadedState [2]);
@@ -103,7 +103,7 @@ public class ParticipantSelection : MonoBehaviour
 		else //start from the beginning if it doesn't exist yet
 		{
 			currentSessionInput.text = sessionNumber.ToString();
-			wordsSeenInput.text = "0";
+			listNumberInupt.text = "0";
 		}
 	}
 }
