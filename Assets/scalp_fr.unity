@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.4465934, g: 0.49642956, b: 0.57482487, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657844, g: 0.49641222, b: 0.57481694, a: 1}
 --- !u!157 &3
 LightmapSettings:
   m_ObjectHideFlags: 0
@@ -351,6 +351,16 @@ Prefab:
       propertyPath: m_Name
       value: CountdownVideoPlayer
       objectReference: {fileID: 0}
+    - target: {fileID: 328937643129792720, guid: 941b5dccbc0da4585a324a844ffff8a8,
+        type: 2}
+      propertyPath: m_VideoClip
+      value: 
+      objectReference: {fileID: 32900000, guid: a477a45a7258b4c118f52f1ffac60345,
+        type: 3}
+    - target: {fileID: 1026652532645128, guid: 941b5dccbc0da4585a324a844ffff8a8, type: 2}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 941b5dccbc0da4585a324a844ffff8a8, type: 2}
   m_IsPrefabParent: 0
@@ -618,6 +628,11 @@ Prefab:
       propertyPath: lowerBeep
       value: 
       objectReference: {fileID: 615300705}
+    - target: {fileID: 114864122344205036, guid: e6672ad97ff294adba0eb53a61d1502f,
+        type: 2}
+      propertyPath: countdownVideoPlayer
+      value: 
+      objectReference: {fileID: 1967783654}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: e6672ad97ff294adba0eb53a61d1502f, type: 2}
   m_IsPrefabParent: 0
@@ -809,6 +824,12 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1967783654 stripped
+MonoBehaviour:
+  m_PrefabParentObject: {fileID: 114009831355908404, guid: 941b5dccbc0da4585a324a844ffff8a8,
+    type: 2}
+  m_PrefabInternal: {fileID: 612985885}
+  m_Script: {fileID: 11500000, guid: 0f2e2e18bd2f640ea9df7204bbfd0ee2, type: 3}
 --- !u!114 &2025745181
 MonoBehaviour:
   m_ObjectHideFlags: 0
