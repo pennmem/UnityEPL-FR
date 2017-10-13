@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657844, g: 0.49641222, b: 0.57481694, a: 1}
+  m_IndirectSpecularColor: {r: 0.4465934, g: 0.49642956, b: 0.57482487, a: 1}
 --- !u!157 &3
 LightmapSettings:
   m_ObjectHideFlags: 0
@@ -227,6 +227,108 @@ MonoBehaviour:
     type: 2}
   m_PrefabInternal: {fileID: 874305714}
   m_Script: {fileID: 11500000, guid: 0f2e2e18bd2f640ea9df7204bbfd0ee2, type: 3}
+--- !u!1001 &462807602
+Prefab:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 4193480935844490, guid: 941b5dccbc0da4585a324a844ffff8a8, type: 2}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4193480935844490, guid: 941b5dccbc0da4585a324a844ffff8a8, type: 2}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4193480935844490, guid: 941b5dccbc0da4585a324a844ffff8a8, type: 2}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4193480935844490, guid: 941b5dccbc0da4585a324a844ffff8a8, type: 2}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4193480935844490, guid: 941b5dccbc0da4585a324a844ffff8a8, type: 2}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4193480935844490, guid: 941b5dccbc0da4585a324a844ffff8a8, type: 2}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4193480935844490, guid: 941b5dccbc0da4585a324a844ffff8a8, type: 2}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4193480935844490, guid: 941b5dccbc0da4585a324a844ffff8a8, type: 2}
+      propertyPath: m_RootOrder
+      value: 8
+      objectReference: {fileID: 0}
+    - target: {fileID: 1026652532645128, guid: 941b5dccbc0da4585a324a844ffff8a8, type: 2}
+      propertyPath: m_Name
+      value: CountdownVideoPlayer
+      objectReference: {fileID: 0}
+    - target: {fileID: 328937643129792720, guid: 941b5dccbc0da4585a324a844ffff8a8,
+        type: 2}
+      propertyPath: m_VideoClip
+      value: 
+      objectReference: {fileID: 32900000, guid: a477a45a7258b4c118f52f1ffac60345,
+        type: 3}
+    - target: {fileID: 1026652532645128, guid: 941b5dccbc0da4585a324a844ffff8a8, type: 2}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 224126303121770298, guid: 941b5dccbc0da4585a324a844ffff8a8,
+        type: 2}
+      propertyPath: m_AnchorMax.y
+      value: 0.646
+      objectReference: {fileID: 0}
+    - target: {fileID: 224126303121770298, guid: 941b5dccbc0da4585a324a844ffff8a8,
+        type: 2}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 224126303121770298, guid: 941b5dccbc0da4585a324a844ffff8a8,
+        type: 2}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 224126303121770298, guid: 941b5dccbc0da4585a324a844ffff8a8,
+        type: 2}
+      propertyPath: m_AnchorMin.x
+      value: 0.328
+      objectReference: {fileID: 0}
+    - target: {fileID: 224126303121770298, guid: 941b5dccbc0da4585a324a844ffff8a8,
+        type: 2}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 224126303121770298, guid: 941b5dccbc0da4585a324a844ffff8a8,
+        type: 2}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 224126303121770298, guid: 941b5dccbc0da4585a324a844ffff8a8,
+        type: 2}
+      propertyPath: m_AnchorMax.x
+      value: 0.6721905
+      objectReference: {fileID: 0}
+    - target: {fileID: 224126303121770298, guid: 941b5dccbc0da4585a324a844ffff8a8,
+        type: 2}
+      propertyPath: m_AnchorMin.y
+      value: 0.34976193
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_ParentPrefab: {fileID: 100100000, guid: 941b5dccbc0da4585a324a844ffff8a8, type: 2}
+  m_IsPrefabParent: 0
+--- !u!114 &462807603 stripped
+MonoBehaviour:
+  m_PrefabParentObject: {fileID: 114009831355908404, guid: 941b5dccbc0da4585a324a844ffff8a8,
+    type: 2}
+  m_PrefabInternal: {fileID: 462807602}
+  m_Script: {fileID: 11500000, guid: 0f2e2e18bd2f640ea9df7204bbfd0ee2, type: 3}
 --- !u!1 &616190102
 GameObject:
   m_ObjectHideFlags: 0
@@ -389,7 +491,7 @@ Prefab:
         type: 2}
       propertyPath: countdownVideoPlayer
       value: 
-      objectReference: {fileID: 1905253274}
+      objectReference: {fileID: 462807603}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: e6672ad97ff294adba0eb53a61d1502f, type: 2}
   m_IsPrefabParent: 0
@@ -635,68 +737,6 @@ AudioSource:
   m_PrefabParentObject: {fileID: 82107155673024968, guid: b9673464465674909afa67c3b460385b,
     type: 2}
   m_PrefabInternal: {fileID: 1977761841}
---- !u!1001 &1905253273
-Prefab:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 4193480935844490, guid: 941b5dccbc0da4585a324a844ffff8a8, type: 2}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4193480935844490, guid: 941b5dccbc0da4585a324a844ffff8a8, type: 2}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4193480935844490, guid: 941b5dccbc0da4585a324a844ffff8a8, type: 2}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4193480935844490, guid: 941b5dccbc0da4585a324a844ffff8a8, type: 2}
-      propertyPath: m_LocalRotation.x
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4193480935844490, guid: 941b5dccbc0da4585a324a844ffff8a8, type: 2}
-      propertyPath: m_LocalRotation.y
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4193480935844490, guid: 941b5dccbc0da4585a324a844ffff8a8, type: 2}
-      propertyPath: m_LocalRotation.z
-      value: -0
-      objectReference: {fileID: 0}
-    - target: {fileID: 4193480935844490, guid: 941b5dccbc0da4585a324a844ffff8a8, type: 2}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 4193480935844490, guid: 941b5dccbc0da4585a324a844ffff8a8, type: 2}
-      propertyPath: m_RootOrder
-      value: 8
-      objectReference: {fileID: 0}
-    - target: {fileID: 1026652532645128, guid: 941b5dccbc0da4585a324a844ffff8a8, type: 2}
-      propertyPath: m_Name
-      value: CountdownVideoPlayer
-      objectReference: {fileID: 0}
-    - target: {fileID: 328937643129792720, guid: 941b5dccbc0da4585a324a844ffff8a8,
-        type: 2}
-      propertyPath: m_VideoClip
-      value: 
-      objectReference: {fileID: 32900000, guid: a477a45a7258b4c118f52f1ffac60345,
-        type: 3}
-    - target: {fileID: 1026652532645128, guid: 941b5dccbc0da4585a324a844ffff8a8, type: 2}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-  m_ParentPrefab: {fileID: 100100000, guid: 941b5dccbc0da4585a324a844ffff8a8, type: 2}
-  m_IsPrefabParent: 0
---- !u!114 &1905253274 stripped
-MonoBehaviour:
-  m_PrefabParentObject: {fileID: 114009831355908404, guid: 941b5dccbc0da4585a324a844ffff8a8,
-    type: 2}
-  m_PrefabInternal: {fileID: 1905253273}
-  m_Script: {fileID: 11500000, guid: 0f2e2e18bd2f640ea9df7204bbfd0ee2, type: 3}
 --- !u!1001 &1977761841
 Prefab:
   m_ObjectHideFlags: 0
