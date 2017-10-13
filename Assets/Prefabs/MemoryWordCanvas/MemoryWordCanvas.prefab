@@ -257,6 +257,9 @@ MonoBehaviour:
   pauseKey: 112
   pauseIndicator: {fileID: 1491053812943976}
   scriptedEventReporter: {fileID: 114924137073979980}
+  highBeep: {fileID: 0}
+  lowBeep: {fileID: 0}
+  lowerBeep: {fileID: 0}
 --- !u!114 &114924137073979980
 MonoBehaviour:
   m_ObjectHideFlags: 1

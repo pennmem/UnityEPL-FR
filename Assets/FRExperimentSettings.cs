@@ -68,7 +68,7 @@ public static class FRExperimentSettings
 		FR1Settings.minISI = 0.75f;
 		FR1Settings.maxISI = 1f;
 		FR1Settings.distractionLength = 20f;
-		FR1Settings.answerConfirmationTime = 1f;
+		FR1Settings.answerConfirmationTime = 0f;
 		FR1Settings.recallLength = 30f;
 		FR1Settings.displayLearningMessageIndex = -1;
 		return FR1Settings;
@@ -88,7 +88,7 @@ public static class FRExperimentSettings
 		FR6Settings.minISI = 0.75f;
 		FR6Settings.maxISI = 1f;
 		FR6Settings.distractionLength = 20f;
-		FR6Settings.answerConfirmationTime = 1f;
+		FR6Settings.answerConfirmationTime = 0f;
 		FR6Settings.recallLength = 30f;
 		FR6Settings.displayLearningMessageIndex = 26;
 		return FR6Settings;

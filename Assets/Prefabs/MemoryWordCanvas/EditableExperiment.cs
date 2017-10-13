@@ -31,11 +31,13 @@ public class EditableExperiment : MonoBehaviour
 	public TextDisplayer textDisplayer;
 	public SoundRecorder soundRecorder;
 	public VideoControl videoPlayer;
+	public VideoControl countdownVideoPlayer;
 	public KeyCode pauseKey = KeyCode.P;
 	public GameObject pauseIndicator;
 	public ScriptedEventReporter scriptedEventReporter;
-	public AudioSource recallGoSound;
-	public AudioSource recallStopSound;
+	public AudioSource highBeep;
+	public AudioSource lowBeep;
+	public AudioSource lowerBeep;
 
 	private bool paused = false;
 	private string current_phase_type;
@@ -163,11 +165,14 @@ public class EditableExperiment : MonoBehaviour
 	private IEnumerator DoCountdown()
 	{
 		SetRamulatorState ("COUNTDOWN", true, new Dictionary<string, string> ());
-		for (int i = 0; i < currentSettings.countdownLength; i++)
-		{
-			textDisplayer.DisplayText ("countdown display", (currentSettings.countdownLength - i).ToString ());
-			yield return PausableWait (currentSettings.countdownTick);
-		}
+		countdownVideoPlayer.StartVideo ();
+		while (countdownVideoPlayer.IsPlaying ())
+			yield return null;
+//		for (int i = 0; i < currentSettings.countdownLength; i++)
+//		{
+//			textDisplayer.DisplayText ("countdown display", (currentSettings.countdownLength - i).ToString ());
+//			yield return PausableWait (currentSettings.countdownTick);
+//		}
 		SetRamulatorState ("COUNTDOWN", false, new Dictionary<string, string> ());
 	}
 
@@ -264,11 +269,13 @@ public class EditableExperiment : MonoBehaviour
 					{
 						textDisplayer.ChangeColor (Color.green);
 						correct = true;
+						lowBeep.Play ();
 					}
 					else
 					{
 						textDisplayer.ChangeColor (Color.red);
 						correct = false;
+						lowerBeep.Play ();
 					}
 					ReportDistractorAnswered (correct, distractor, answer);
 					answerTime = Time.time;
@@ -295,8 +302,8 @@ public class EditableExperiment : MonoBehaviour
 	private IEnumerator DoRecall()
 	{
 		SetRamulatorState ("RETRIEVAL", true, new Dictionary<string, string> ());
-		recallGoSound.Play ();
-		scriptedEventReporter.ReportScriptedEvent("Sound played", new Dictionary<string, string>(){{"sound name", "high beep"}, {"sound duration", recallGoSound.clip.length.ToString()}});
+		highBeep.Play ();
+		scriptedEventReporter.ReportScriptedEvent("Sound played", new Dictionary<string, string>(){{"sound name", "high beep"}, {"sound duration", highBeep.clip.length.ToString()}});
 		textDisplayer.DisplayText ("display recall text", "* * * * * *");
 		soundRecorder.StartRecording (Mathf.CeilToInt(currentSettings.recallLength));
 		yield return PausableWait(currentSettings.recallLength);
@@ -310,8 +317,8 @@ public class EditableExperiment : MonoBehaviour
 
 		soundRecorder.StopRecording(wavFilePath);
 		textDisplayer.ClearText ();
-		recallStopSound.Play ();
-		scriptedEventReporter.ReportScriptedEvent("Sound played", new Dictionary<string, string>(){{"sound name", "low beep"}, {"sound duration", recallStopSound.clip.length.ToString()}});
+		lowBeep.Play ();
+		scriptedEventReporter.ReportScriptedEvent("Sound played", new Dictionary<string, string>(){{"sound name", "low beep"}, {"sound duration", lowBeep.clip.length.ToString()}});
 		SetRamulatorState ("RETRIEVAL", false, new Dictionary<string, string> ());
 	}
 

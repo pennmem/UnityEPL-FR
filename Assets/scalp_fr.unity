@@ -365,6 +365,11 @@ AudioSource:
   m_PrefabParentObject: {fileID: 82109773432400324, guid: b9673464465674909afa67c3b460385b,
     type: 2}
   m_PrefabInternal: {fileID: 615300704}
+--- !u!82 &615300708 stripped
+AudioSource:
+  m_PrefabParentObject: {fileID: 82107155673024968, guid: b9673464465674909afa67c3b460385b,
+    type: 2}
+  m_PrefabInternal: {fileID: 615300704}
 --- !u!1 &616190102
 GameObject:
   m_ObjectHideFlags: 0
@@ -550,6 +555,21 @@ Prefab:
     - target: {fileID: 114864122344205036, guid: e6672ad97ff294adba0eb53a61d1502f,
         type: 2}
       propertyPath: recallStopSound
+      value: 
+      objectReference: {fileID: 615300705}
+    - target: {fileID: 114864122344205036, guid: e6672ad97ff294adba0eb53a61d1502f,
+        type: 2}
+      propertyPath: highBeep
+      value: 
+      objectReference: {fileID: 615300707}
+    - target: {fileID: 114864122344205036, guid: e6672ad97ff294adba0eb53a61d1502f,
+        type: 2}
+      propertyPath: lowBeep
+      value: 
+      objectReference: {fileID: 615300708}
+    - target: {fileID: 114864122344205036, guid: e6672ad97ff294adba0eb53a61d1502f,
+        type: 2}
+      propertyPath: lowerBeep
       value: 
       objectReference: {fileID: 615300705}
     m_RemovedComponents: []
