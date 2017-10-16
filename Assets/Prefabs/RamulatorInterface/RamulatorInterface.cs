@@ -143,20 +143,15 @@ public class RamulatorInterface : MonoBehaviour
 
 	private void ReceiveHeartbeat()
 	{
-		StartCoroutine ("WaitForHeartbeat");
-	}
-
-	private void WaitForHeartbeat()
-	{
 		unreceivedHeartbeats = unreceivedHeartbeats + 1;
 		Debug.Log ("Unreceived heartbeats: " + unreceivedHeartbeats.ToString ());
 		if (unreceivedHeartbeats > unreceivedHeartbeatsToQuit)
 		{
-#if UNITY_EDITOR
+			#if UNITY_EDITOR
 			UnityEditor.EditorApplication.isPlaying = false;
-#else
+			#else
 			Application.Quit();
-#endif
+			#endif
 		}
 
 		string receivedMessage = "";
@@ -170,7 +165,7 @@ public class RamulatorInterface : MonoBehaviour
 			unreceivedHeartbeats = 0;
 		}
 	}
-		
+
 	private void SendMessageToRamulator(string message)
 	{
 		bool wouldNotHaveBlocked = zmqSocket.TrySendFrame(message, more: false);
