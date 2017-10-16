@@ -8091,7 +8091,7 @@ MonoBehaviour:
   soundRecorder: {fileID: 337377664}
   videoPlayer: {fileID: 495936282}
   countdownVideoPlayer: {fileID: 470498413}
-  pauseKey: 112
+  pauseKey: 0
   pauseIndicator: {fileID: 1405101467}
   scriptedEventReporter: {fileID: 917004235}
   highBeep: {fileID: 1020397752}

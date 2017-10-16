@@ -66,6 +66,8 @@ public class EditableExperiment : MonoBehaviour
 
 	IEnumerator Start()
 	{
+		Cursor.visible = false;
+
 		if (currentSettings.Equals(default(ExperimentSettings)))
 			throw new UnityException ("Please call ConfigureExperiment before loading the experiment scene.");
 
