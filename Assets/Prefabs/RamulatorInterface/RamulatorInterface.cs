@@ -47,7 +47,6 @@ public class RamulatorInterface : MonoBehaviour
 
 		//Begin Heartbeats///////////////////////////////////////////////////////////////////////
 		InvokeRepeating ("SendHeartbeat", 0, 1);
-		InvokeRepeating ("ReceiveHeartbeat", 0, 1);
 
 
 		//SendConnectedEvent////////////////////////////////////////////////////////////////////
@@ -70,12 +69,11 @@ public class RamulatorInterface : MonoBehaviour
 		yield return WaitForMessage ("START", "Start signal not received");
 
 
-
-
+		InvokeRepeating ("ReceiveHeartbeat", 0, 1);
 
 	}
 
-	private IEnumerator WaitForMessage(string containingString, string errorMessage)
+	private IEnumerator WaitForMessage(string containingString, string errorMessage)	
 	{
 		ramulatorWarning.SetActive (true);
 		ramulatorWarningText.text = "Waiting on Ramulator";
@@ -148,7 +146,7 @@ public class RamulatorInterface : MonoBehaviour
 		StartCoroutine ("WaitForHeartbeat");
 	}
 
-	private IEnumerator WaitForHeartbeat()
+	private void WaitForHeartbeat()
 	{
 		unreceivedHeartbeats = unreceivedHeartbeats + 1;
 		Debug.Log ("Unreceived heartbeats: " + unreceivedHeartbeats.ToString ());
@@ -160,8 +158,17 @@ public class RamulatorInterface : MonoBehaviour
 			Application.Quit();
 #endif
 		}
-		yield return WaitForMessage ("HEARTEBAT", "Heartbeat missed.");
-		unreceivedHeartbeats = unreceivedHeartbeats - 1;
+
+		string receivedMessage = "";
+		float startTime = Time.time;
+		zmqSocket.TryReceiveFrameString (out receivedMessage);
+		if (receivedMessage != "" && receivedMessage != null)
+		{
+			string messageString = receivedMessage.ToString ();
+			Debug.Log ("heartbeat received: " + messageString);
+			ReportMessage (messageString, false);
+			unreceivedHeartbeats = 0;
+		}
 	}
 		
 	private void SendMessageToRamulator(string message)
