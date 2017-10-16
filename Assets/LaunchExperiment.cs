@@ -56,7 +56,7 @@ public class LaunchExperiment : MonoBehaviour
 	{
 		if (name.Length != 6 && name.Length != 4)
 			return false;
-		bool isValidRAMName = name [0].Equals ("R") && name [1].Equals ("1") && char.IsDigit (name [2]) && char.IsDigit (name [3]) && char.IsDigit (name [4]) && char.IsUpper (name [5]);
+		bool isValidRAMName = name [0].Equals ('R') && name [1].Equals ('1') && char.IsDigit (name [2]) && char.IsDigit (name [3]) && char.IsDigit (name [4]) && char.IsUpper (name [5]);
 		bool isValidSCALPName = char.IsUpper (name [0]) && char.IsUpper (name [1]) && char.IsUpper (name [2]) && char.IsDigit (name [3]) && char.IsDigit (name [4]) && char.IsDigit (name [5]);
 		bool isTest = name.Equals ("TEST");
 		return isValidRAMName || isValidSCALPName || isTest;
