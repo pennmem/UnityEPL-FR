@@ -216,7 +216,8 @@ public class EditableExperiment : MonoBehaviour
 
 	private void SetRamulatorState(string stateName, bool state, Dictionary<string, string> extraData)
 	{
-		extraData.Add ("phase_type", current_phase_type);
+		if (!stateName.Equals("WORD"))
+			extraData.Add ("phase_type", current_phase_type);
 		if (ramulatorInterface != null)
 			ramulatorInterface.SetState (stateName, state, extraData);
 	}

@@ -147,11 +147,11 @@ public class RamulatorInterface : MonoBehaviour
 		Debug.Log ("Unreceived heartbeats: " + unreceivedHeartbeats.ToString ());
 		if (unreceivedHeartbeats > unreceivedHeartbeatsToQuit)
 		{
-			#if UNITY_EDITOR
+#if UNITY_EDITOR
 			UnityEditor.EditorApplication.isPlaying = false;
-			#else
+#else
 			Application.Quit();
-			#endif
+#endif
 		}
 
 		string receivedMessage = "";
