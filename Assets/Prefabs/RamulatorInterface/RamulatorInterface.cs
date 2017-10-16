@@ -17,6 +17,9 @@ public class RamulatorInterface : MonoBehaviour
 
 	//how long to wait for ramulator to connect
 	const int timeoutDelay = 30;
+	const int unreceivedHeartbeatsToQuit = 8;
+
+	private int unreceivedHeartbeats = 0;
 
 	private NetMQ.Sockets.PairSocket zmqSocket;
 	private const string address = "tcp://*:8889";
@@ -44,6 +47,7 @@ public class RamulatorInterface : MonoBehaviour
 
 		//Begin Heartbeats///////////////////////////////////////////////////////////////////////
 		InvokeRepeating ("SendHeartbeat", 0, 1);
+		InvokeRepeating ("ReceiveHeartbeat", 0, 1);
 
 
 		//SendConnectedEvent////////////////////////////////////////////////////////////////////
@@ -137,6 +141,27 @@ public class RamulatorInterface : MonoBehaviour
 	{
 		DataPoint sessionDataPoint = new DataPoint ("HEARTBEAT", DataReporter.RealWorldTime (), null);
 		SendMessageToRamulator (sessionDataPoint.ToJSON ());
+	}
+
+	private void ReceiveHeartbeat()
+	{
+		StartCoroutine ("WaitForHeartbeat");
+	}
+
+	private IEnumerator WaitForHeartbeat()
+	{
+		unreceivedHeartbeats = unreceivedHeartbeats + 1;
+		Debug.Log ("Unreceived heartbeats: " + unreceivedHeartbeats.ToString ());
+		if (unreceivedHeartbeats > unreceivedHeartbeatsToQuit)
+		{
+#if UNITY_EDITOR
+			UnityEditor.EditorApplication.isPlaying = false;
+#else
+			Application.Quit();
+#endif
+		}
+		yield return WaitForMessage ("HEARTEBAT", "Heartbeat missed.");
+		unreceivedHeartbeats = unreceivedHeartbeats - 1;
 	}
 		
 	private void SendMessageToRamulator(string message)
