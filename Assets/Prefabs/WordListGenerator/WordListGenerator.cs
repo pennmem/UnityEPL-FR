@@ -4,16 +4,43 @@ using UnityEngine;
 
 public abstract class WordListGenerator
 {
-	
+	public virtual IronPython.Runtime.List GenerateListsAndWriteWordpool (int numberOfLists, int lengthOfEachList)
+	{
+		WriteRAMWordpool ();
+		return GenerateLists (numberOfLists, lengthOfEachList);
+	}
+
 	public abstract IronPython.Runtime.List GenerateLists (int numberOfLists, int lengthOfEachList);
 
-	protected IronPython.Runtime.List ReadWordsFromPoolTxt(string path)
+	private void WriteRAMWordpool()
+	{
+		string directory = UnityEPL.GetParticipantFolder ();
+		string filePath = System.IO.Path.Combine (directory, "RAM_wordpool.txt");
+		string[] ram_wordpool_lines = GetWordpoolLines ("ram_wordpool_en");
+		System.IO.Directory.CreateDirectory (directory);
+		System.IO.File.WriteAllLines (filePath, ram_wordpool_lines);
+	}
+
+	private string[] GetWordpoolLines(string path)
 	{
 		string text = Resources.Load<TextAsset> (path).text;
 		string[] lines = text.Split(new [] { '\r', '\n' });
+
+		string[] lines_without_label = new string[lines.Length - 1];
+		for (int i = 1; i < lines.Length; i++)
+		{
+			lines_without_label [i - 1] = lines [i];
+		}
+
+		return lines_without_label;
+	}
+
+	protected IronPython.Runtime.List ReadWordsFromPoolTxt(string path)
+	{
+		string[] lines = GetWordpoolLines(path);
 		IronPython.Runtime.List words = new IronPython.Runtime.List();
 
-		for (int i = 1; i < lines.Length; i++)
+		for (int i = 0; i < lines.Length; i++)
 		{
 			IronPython.Runtime.PythonDictionary word = new IronPython.Runtime.PythonDictionary();
 			word["word"] = lines [i];
@@ -71,10 +98,8 @@ public class FR1ListGenerator : WordListGenerator
 
 
 		//////////////////////Load the word pools
-		string practice_pool_path = "practice_en";
-		string main_pool_path = "ram_wordpool_en";
-		IronPython.Runtime.List practice_words = ReadWordsFromPoolTxt (practice_pool_path);
-		IronPython.Runtime.List main_words = ReadWordsFromPoolTxt (main_pool_path);
+		IronPython.Runtime.List practice_words = ReadWordsFromPoolTxt ("practice_en");
+		IronPython.Runtime.List main_words = ReadWordsFromPoolTxt ("ram_wordpool_en");
 
 		System.Random rng = new System.Random ();
 		practice_words = Shuffled (rng, practice_words);

@@ -507,7 +507,7 @@ public class EditableExperiment : MonoBehaviour
 		session = newSessionNumber;
 		currentSettings = FRExperimentSettings.GetSettingsByName (UnityEPL.GetExperimentName ());
 		if (words == null)
-			SetWords(currentSettings.wordListGenerator.GenerateLists (currentSettings.numberOfLists, currentSettings.wordsPerList));
+			SetWords(currentSettings.wordListGenerator.GenerateListsAndWriteWordpool (currentSettings.numberOfLists, currentSettings.wordsPerList));
 		SaveState ();
 	}
 
