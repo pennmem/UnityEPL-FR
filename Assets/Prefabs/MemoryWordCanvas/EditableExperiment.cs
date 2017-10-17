@@ -259,7 +259,7 @@ public class EditableExperiment : MonoBehaviour
 
 		int[] distractorProblem = DistractorProblem ();
 
-		while (Time.time < endTime)
+		while (Time.time < endTime || answered == false)
 		{
 			if (paused)
 			{
