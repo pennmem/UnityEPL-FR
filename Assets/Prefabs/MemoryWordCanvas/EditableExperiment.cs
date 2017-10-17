@@ -38,6 +38,7 @@ public class EditableExperiment : MonoBehaviour
 	public AudioSource highBeep;
 	public AudioSource lowBeep;
 	public AudioSource lowerBeep;
+	public GameObject VideoBackground;
 
 	private bool paused = false;
 	private string current_phase_type;
@@ -93,7 +94,11 @@ public class EditableExperiment : MonoBehaviour
 			}
 
 			if (startList == 0 && i == 0)
+			{
 				yield return DoIntroductionVideo ();
+				yield return DoSubjectSessionQuitPrompt ();
+//				yield return DoMicrophoneTest ();
+			}
 
 			if (i == 1 && i != startList)
 				yield return PressAnyKey ("Please let the experimenter know \n" +
@@ -115,7 +120,7 @@ public class EditableExperiment : MonoBehaviour
 					"Please explain these instructions back to the tester in your own words.\n\n" +
 					"Press any key to continue to the next list.");
 			else if (i != 0)
-				yield return PressAnyKey ("Press any key to continue to trial " + i.ToString ());
+				yield return PressAnyKey ("Press any key to continue to trial " + i.ToString () + ".");
 
 			yield return DoCountdown ();
 			yield return DoEncoding ();
@@ -124,6 +129,21 @@ public class EditableExperiment : MonoBehaviour
 		}
 
 		textDisplayer.DisplayText ("display end message", "Woo!  The experiment is over.");
+	}
+
+	private IEnumerator DoSubjectSessionQuitPrompt ()
+	{
+		yield return null;
+		SetRamulatorState ("WAITING", true, new Dictionary<string, string> ());
+		textDisplayer.DisplayText("subject/session confirmation", "Running " + UnityEPL.GetParticipants()[0] + " in session " + session.ToString() + " of " + UnityEPL.GetExperimentName() + ".\n Press Y to continue, N to quit.");
+		while (!Input.GetKeyDown(KeyCode.Y) && !Input.GetKeyDown(KeyCode.N))
+		{
+			yield return null;
+		}
+		textDisplayer.ClearText();
+		SetRamulatorState ("WAITING", false, new Dictionary<string, string> ());
+		if (Input.GetKey (KeyCode.N))
+			Quit();
 	}
 
 	private IEnumerator DoIntroductionVideo()
@@ -188,10 +208,10 @@ public class EditableExperiment : MonoBehaviour
 		Debug.Log ("Beginning list index " + currentList.ToString());
 
 		textDisplayer.DisplayText ("orientation stimulus", "+");
-		SetRamulatorState ("ORIENT", true, new Dictionary<string, string> ());
+		//SetRamulatorState ("ORIENT", true, new Dictionary<string, string> ());
 		yield return PausableWait (currentSettings.wordPresentationLength);
 		textDisplayer.ClearText ();
-		SetRamulatorState ("ORIENT", false, new Dictionary<string, string> ());
+		//SetRamulatorState ("ORIENT", false, new Dictionary<string, string> ());
 		yield return PausableWait (Random.Range (currentSettings.minISI, currentSettings.maxISI));
 
 		for (int i = 0; i < currentSettings.wordsPerList; i++)
@@ -279,13 +299,13 @@ public class EditableExperiment : MonoBehaviour
 					bool correct;
 					if (int.TryParse(answer, out result) && result == distractorProblem [0] + distractorProblem [1] + distractorProblem [2])
 					{
-						textDisplayer.ChangeColor (Color.green);
+						//textDisplayer.ChangeColor (Color.green);
 						correct = true;
 						lowBeep.Play ();
 					}
 					else
 					{
-						textDisplayer.ChangeColor (Color.red);
+						//textDisplayer.ChangeColor (Color.red);
 						correct = false;
 						lowerBeep.Play ();
 					}
@@ -316,9 +336,20 @@ public class EditableExperiment : MonoBehaviour
 		SetRamulatorState ("RETRIEVAL", true, new Dictionary<string, string> ());
 		highBeep.Play ();
 		scriptedEventReporter.ReportScriptedEvent("Sound played", new Dictionary<string, string>(){{"sound name", "high beep"}, {"sound duration", highBeep.clip.length.ToString()}});
-		textDisplayer.DisplayText ("display recall text", "* * * * * *");
+		textDisplayer.DisplayText ("display recall text", "* * * * * * *");
 		soundRecorder.StartRecording (Mathf.CeilToInt(currentSettings.recallLength));
-		yield return PausableWait(currentSettings.recallLength);
+
+		float starDisplayTime = currentSettings.wordPresentationLength;
+		float firstPauseTime = currentSettings.recallLength;
+		float secondPauseTime = 0f;
+		if (currentSettings.recallLength > currentSettings.wordPresentationLength)
+		{
+			firstPauseTime = currentSettings.wordPresentationLength;
+			secondPauseTime = currentSettings.recallLength - currentSettings.wordPresentationLength;
+		}
+		yield return PausableWait(firstPauseTime);
+		textDisplayer.ClearText ();
+		yield return PausableWait(secondPauseTime);
 
 		//path
 		int listno = (wordsSeen/12) - 1;
@@ -478,5 +509,14 @@ public class EditableExperiment : MonoBehaviour
 		if (words == null)
 			SetWords(currentSettings.wordListGenerator.GenerateLists (currentSettings.numberOfLists, currentSettings.wordsPerList));
 		SaveState ();
+	}
+
+	private void Quit()
+	{
+#if UNITY_EDITOR
+		UnityEditor.EditorApplication.isPlaying = false;
+#else
+		Application.Quit();
+#endif
 	}
 }
