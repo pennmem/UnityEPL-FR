@@ -130,8 +130,16 @@ public class FR1ListGenerator : FRListGenerator
 
 
 		//////////////////////Load the word pools
-		IronPython.Runtime.List practice_words = ReadWordsFromPoolTxt ("practice_en", isCategoryPool);
-		IronPython.Runtime.List main_words = ReadWordsFromPoolTxt ("ram_wordpool_en", isCategoryPool);
+		if (isCategoryPool)
+		{
+			IronPython.Runtime.List practice_words = ReadWordsFromPoolTxt ("practice_cat_en", isCategoryPool);
+			IronPython.Runtime.List main_words = ReadWordsFromPoolTxt ("ram_categorized_en", isCategoryPool);
+		}
+		else 
+		{
+			IronPython.Runtime.List practice_words = ReadWordsFromPoolTxt ("practice_en", isCategoryPool);
+			IronPython.Runtime.List main_words = ReadWordsFromPoolTxt ("ram_wordpool_en", isCategoryPool);
+		}
 
 		System.Random rng = new System.Random ();
 
