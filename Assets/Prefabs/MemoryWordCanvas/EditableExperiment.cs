@@ -128,6 +128,7 @@ public class EditableExperiment : MonoBehaviour
 			yield return DoCountdown ();
 			yield return DoEncoding ();
 			yield return DoDistractor ();
+			yield return PausableWait (currentSettings.wordPresentationLength);
 			yield return DoRecall ();
 		}
 
