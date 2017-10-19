@@ -45,16 +45,6 @@ public class RamulatorInterface : MonoBehaviour
 		yield return WaitForMessage ("CONNECTED", "Ramulated not connected.");
 
 
-		//Begin Heartbeats///////////////////////////////////////////////////////////////////////
-		InvokeRepeating ("SendHeartbeat", 0, 1);
-
-
-		//SendConnectedEvent////////////////////////////////////////////////////////////////////
-		DataPoint connected = new DataPoint ("CONNECTED", DataReporter.RealWorldTime (), new Dictionary<string, string> ());
-		SendMessageToRamulator (connected.ToJSON ());
-		yield return null;
-
-
 		//SendSessionEvent//////////////////////////////////////////////////////////////////////
 		System.Collections.Generic.Dictionary<string, string> sessionData = new Dictionary<string, string>();
 		sessionData.Add ("name", UnityEPL.GetExperimentName ());
@@ -63,6 +53,16 @@ public class RamulatorInterface : MonoBehaviour
 		sessionData.Add ("session_number", sessionNumber.ToString());
 		DataPoint sessionDataPoint = new DataPoint ("SESSION", DataReporter.RealWorldTime (), sessionData);
 		SendMessageToRamulator (sessionDataPoint.ToJSON ());
+		yield return null;
+
+
+		//Begin Heartbeats///////////////////////////////////////////////////////////////////////
+		InvokeRepeating ("SendHeartbeat", 0, 1);
+
+
+		//SendReadyEvent////////////////////////////////////////////////////////////////////
+		DataPoint ready = new DataPoint ("READY", DataReporter.RealWorldTime (), new Dictionary<string, string> ());
+		SendMessageToRamulator (ready.ToJSON ());
 		yield return null;
 
 
