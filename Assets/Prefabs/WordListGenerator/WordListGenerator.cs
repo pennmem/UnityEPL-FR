@@ -35,7 +35,7 @@ public abstract class WordListGenerator
 		return lines_without_label;
 	}
 
-	protected IronPython.Runtime.List ReadWordsFromPoolTxt(string path)
+	protected IronPython.Runtime.List ReadWordsFromPoolTxt(string path, bool isCategoryPool)
 	{
 		string[] lines = GetWordpoolLines(path);
 		IronPython.Runtime.List words = new IronPython.Runtime.List();
@@ -43,7 +43,17 @@ public abstract class WordListGenerator
 		for (int i = 0; i < lines.Length; i++)
 		{
 			IronPython.Runtime.PythonDictionary word = new IronPython.Runtime.PythonDictionary();
-			word["word"] = lines [i];
+			if (isCategoryPool)
+			{
+				string line = lines [i];
+				string[] category_and_word = line.Split ('\t');
+				word ["category"] = category_and_word [0];
+				word ["word"] = category_and_word [1];
+			}
+			else
+			{
+				word["word"] = lines [i];
+			}
 			words.Add (word);
 		}
 			
@@ -80,9 +90,31 @@ public abstract class WordListGenerator
 	}
 }
 
-public class FR1ListGenerator : WordListGenerator
+public abstract class FRListGenerator : WordListGenerator
 {
+	private bool isCategory;
+
+	public FRListGenerator(bool catifyMe = false)
+	{
+		isCategory = catifyMe;
+	}
+
 	public override IronPython.Runtime.List GenerateLists (int numberOfLists, int lengthOfEachList)
+	{
+		return GenerateListsOptionalCategory (numberOfLists, lengthOfEachList, isCategory);
+	}
+
+	public abstract IronPython.Runtime.List GenerateListsOptionalCategory (int numberOfLists, int lengthOfEachList, bool isCategoryPool);
+}
+
+public class FR1ListGenerator : FRListGenerator
+{
+	public FR1ListGenerator(bool catifyMe = false) : base(catifyMe: catifyMe)
+	{
+
+	}
+
+	public override IronPython.Runtime.List GenerateListsOptionalCategory (int numberOfLists, int lengthOfEachList, bool isCategoryPool)
 	{
 		const int STIM_LIST_COUNT = 16;
 		const int NONSTIM_LIST_COUNT = 6;
@@ -98,12 +130,21 @@ public class FR1ListGenerator : WordListGenerator
 
 
 		//////////////////////Load the word pools
-		IronPython.Runtime.List practice_words = ReadWordsFromPoolTxt ("practice_en");
-		IronPython.Runtime.List main_words = ReadWordsFromPoolTxt ("ram_wordpool_en");
+		IronPython.Runtime.List practice_words = ReadWordsFromPoolTxt ("practice_en", isCategoryPool);
+		IronPython.Runtime.List main_words = ReadWordsFromPoolTxt ("ram_wordpool_en", isCategoryPool);
 
 		System.Random rng = new System.Random ();
-		practice_words = Shuffled (rng, practice_words);
-		main_words = Shuffled (rng, main_words);
+
+		if (isCategoryPool)
+		{
+			practice_words = CategoryShuffle (rng, practice_words, lengthOfEachList);
+			main_words = CateogryShuffle (rng, main_words, lengthOfEachList);
+		}
+		else
+		{
+			practice_words = Shuffled (rng, practice_words);
+			main_words = Shuffled (rng, main_words);
+		}
 
 
 		////////////////////////////////////////////Call list creation functions from python
@@ -142,10 +183,14 @@ public class FR1ListGenerator : WordListGenerator
 }
 
 
-public class FR6ListGenerator : WordListGenerator
+public class FR6ListGenerator : FRListGenerator
 {
+	public FR6ListGenerator(bool catifyMe = false) : base(catifyMe: catifyMe)
+	{
+		
+	}
 
-	public override IronPython.Runtime.List GenerateLists (int numberOfLists, int lengthOfEachList)
+	public override IronPython.Runtime.List GenerateListsOptionalCategory (int numberOfLists, int lengthOfEachList, bool isCategoryPool)
 	{
 		const int LEARNING_BLOCKS_COUNT = 4;
 
@@ -195,8 +240,22 @@ public class FR6ListGenerator : WordListGenerator
 			learning_listnos_sequence.extend (Shuffled (rng, learning_listnos));
 
 		var extract_blocks = scope.GetVariable("extract_blocks");
-		var learning_blocks = extract_blocks (words_with_stim_channels, learning_listnos_sequence, LEARNING_BLOCKS_COUNT);
+		IronPython.Runtime.List learning_blocks = extract_blocks (words_with_stim_channels, learning_listnos_sequence, LEARNING_BLOCKS_COUNT);
 
+		//////////////////////shuffle each list within the learning blocks
+		for (int i = 0; i < learning_blocks.__len__() / lengthOfEachList; i++)
+		{
+			IronPython.Runtime.List single_list = (IronPython.Runtime.List)learning_blocks.__getslice__ (i * lengthOfEachList, (i + 1) * lengthOfEachList);
+			if (isCategoryPool)
+			{
+				single_list = CategoryShuffle (rng, single_list, lengthOfEachList);
+			}
+			else
+			{
+				single_list = Shuffled (rng, single_list);
+			}
+			learning_blocks.__setslice__ (i * lengthOfEachList, (i + 1) * lengthOfEachList, single_list);
+		}
 
 		//////////////////////combine learning blocks with regular lists and return
 		words_with_stim_channels.extend(learning_blocks);
@@ -207,5 +266,4 @@ public class FR6ListGenerator : WordListGenerator
 
 		return words_with_stim_channels;
 	}
-
 }

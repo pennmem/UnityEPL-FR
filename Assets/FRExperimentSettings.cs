@@ -19,8 +19,12 @@ public static class FRExperimentSettings
 		{
 			case "FR1":
 				return GetFR1Settings ();
+			case "CatFR1":
+				return GetCatFR1Settings ();
 			case "FR6":
 				return GetFR6Settings ();
+			case "CatFR6":
+				return GetCatFR6Settings ();
 			case "FR1_test":
 				return GetTestFR1Settings ();
 			case "FR6_test":
@@ -40,7 +44,11 @@ public static class FRExperimentSettings
 		{
 			case "FR1":
 				return "ram_fr";
+			case "CatFR1":
+				return "ram_fr";
 			case "FR6":
+				return "ram_fr";
+			case "CatFR6":
 				return "ram_fr";
 			case "FR1_test":
 				return "ram_fr";
@@ -75,6 +83,13 @@ public static class FRExperimentSettings
 		return FR1Settings;
 	}
 
+	public static ExperimentSettings GetCatFR1Settings()
+	{
+		ExperimentSettings CatFR1Settings = GetFR1Settings ();
+		CatFR1Settings.wordListGenerator = new FR1ListGenerator (catifyMe: true);
+		return CatFR1Settings;
+	}
+
 	public static ExperimentSettings GetFR6Settings()
 	{
 		ExperimentSettings FR6Settings = new ExperimentSettings();
@@ -94,6 +109,13 @@ public static class FRExperimentSettings
 		FR6Settings.displayLearningMessageIndex = 26;
 		FR6Settings.microphoneTestLength = 5;
 		return FR6Settings;
+	}
+
+	public static ExperimentSettings GetCatFR6Settings()
+	{
+		ExperimentSettings CatFR6Settings = GetFR6Settings ();
+		CatFR6Settings.wordListGenerator = new FR6ListGenerator (catifyMe: true);
+		return CatFR6Settings;
 	}
 
 	public static ExperimentSettings GetTestFR1Settings()

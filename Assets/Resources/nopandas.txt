@@ -112,7 +112,7 @@ def extract_blocks(pool, listnos, num_blocks):
         :param list pool: Input word pool.
         :param list listnos: The order of lists to separate into blocks
         :param int num_blocks: The number of blocks to organize the listnos into
-        :returns: blocks of words as a list of tuples
+        :returns: blocks of words as a list of dictionaries
         
         """
     assert len(listnos)%num_blocks == 0, "The number of lists to append must be divisable by the number of blocks"
