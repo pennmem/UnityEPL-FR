@@ -10,6 +10,7 @@ public struct ExperimentSettings
 	public int numberOfLists;
 	public int wordsPerList;
 	public int countdownLength;
+	public int microphoneTestLength;
 	public float countdownTick;
 	public float wordPresentationLength;
 	public float minISI;
@@ -38,7 +39,9 @@ public class EditableExperiment : MonoBehaviour
 	public AudioSource highBeep;
 	public AudioSource lowBeep;
 	public AudioSource lowerBeep;
-	public GameObject VideoBackground;
+	public GameObject videoBackground;
+	public GameObject microphoneTestMessage;
+	public AudioSource microphoneTestPlayback;
 
 	private bool paused = false;
 	private string current_phase_type;
@@ -97,7 +100,7 @@ public class EditableExperiment : MonoBehaviour
 			{
 				yield return DoIntroductionVideo ();
 				yield return DoSubjectSessionQuitPrompt ();
-//				yield return DoMicrophoneTest ();
+				yield return DoMicrophoneTest ();
 			}
 
 			if (i == 1 && i != startList)
@@ -129,6 +132,53 @@ public class EditableExperiment : MonoBehaviour
 		}
 
 		textDisplayer.DisplayText ("display end message", "Woo!  The experiment is over.");
+	}
+
+	private IEnumerator DoMicrophoneTest()
+	{
+		microphoneTestMessage.SetActive (true);
+		bool repeat = false;
+		string wavFilePath;
+
+		do
+		{
+			yield return PressAnyKey ("Press any key to record a sound after the beep.");
+			highBeep.Play ();
+			textDisplayer.DisplayText ("microphone test recording", "Recording...");
+			textDisplayer.ChangeColor (Color.red);
+			soundRecorder.StartRecording (currentSettings.microphoneTestLength);
+			yield return PausableWait (currentSettings.microphoneTestLength);
+			wavFilePath = System.IO.Path.Combine (UnityEPL.GetDataPath (), "microphone_test_"+DataReporter.RealWorldTime().ToString("yyyy-MM-dd_HH_mm_ss"));
+			soundRecorder.StopRecording (wavFilePath);
+			lowBeep.Play();
+
+			textDisplayer.DisplayText ("microphone test playing", "Playing...");
+			textDisplayer.ChangeColor (Color.green);
+
+			microphoneTestPlayback.clip = soundRecorder.GetLastClip();
+			microphoneTestPlayback.Play ();
+			yield return PausableWait (currentSettings.microphoneTestLength);
+			textDisplayer.ClearText ();
+			textDisplayer.OriginalColor ();
+
+			SetRamulatorState ("WAITING", true, new Dictionary<string, string> ());
+			textDisplayer.DisplayText("microphone test confirmation", "Did you hear the recording? \n(Y=Continue / N=Try Again / C=Cancel).");
+			while (!Input.GetKeyDown(KeyCode.Y) && !Input.GetKeyDown(KeyCode.N) && !Input.GetKeyDown(KeyCode.C))
+			{
+				yield return null;
+			}
+			textDisplayer.ClearText();
+			SetRamulatorState ("WAITING", false, new Dictionary<string, string> ());
+			if (Input.GetKey (KeyCode.C))
+				Quit();
+			repeat = Input.GetKey (KeyCode.N);
+		}
+		while (repeat);
+
+		if (!System.IO.File.Exists (wavFilePath + ".wav"))
+			yield return PressAnyKey ("WARNING: Wav output file not detected.  Sounds may not be successfully recorded to disk.");
+		
+		microphoneTestMessage.SetActive (false);
 	}
 
 	private IEnumerator DoSubjectSessionQuitPrompt ()
