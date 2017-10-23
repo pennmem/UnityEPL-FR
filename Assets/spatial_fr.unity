@@ -4041,7 +4041,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 1026652532645128, guid: 941b5dccbc0da4585a324a844ffff8a8, type: 2}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 328937643129792720, guid: 941b5dccbc0da4585a324a844ffff8a8,
         type: 2}
@@ -4074,6 +4074,12 @@ Prefab:
       propertyPath: m_RootOrder
       value: 2
       objectReference: {fileID: 0}
+    - target: {fileID: 114561442436465200, guid: 941b5dccbc0da4585a324a844ffff8a8,
+        type: 2}
+      propertyPath: m_FontData.m_Font
+      value: 
+      objectReference: {fileID: 12800000, guid: f9d24a80c2dab437f93edb350ffb9f7c,
+        type: 3}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 941b5dccbc0da4585a324a844ffff8a8, type: 2}
   m_IsPrefabParent: 0
@@ -8197,7 +8203,8 @@ MonoBehaviour:
   highBeep: {fileID: 1020397752}
   lowBeep: {fileID: 1020397753}
   lowerBeep: {fileID: 1020397750}
-  VideoBackground: {fileID: 0}
+  microphoneTestMessage: {fileID: 1107729379}
+  microphoneTestPlayback: {fileID: 1020397754}
 --- !u!114 &917004235
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9123,6 +9130,11 @@ AudioSource:
   m_PrefabParentObject: {fileID: 82107155673024968, guid: b9673464465674909afa67c3b460385b,
     type: 2}
   m_PrefabInternal: {fileID: 1020397749}
+--- !u!82 &1020397754 stripped
+AudioSource:
+  m_PrefabParentObject: {fileID: 82391309545276906, guid: b9673464465674909afa67c3b460385b,
+    type: 2}
+  m_PrefabInternal: {fileID: 1020397749}
 --- !u!1001 &1020450009
 Prefab:
   m_ObjectHideFlags: 0
@@ -9680,6 +9692,24 @@ Prefab:
       propertyPath: m_Text
       value: '- - -'
       objectReference: {fileID: 0}
+    - target: {fileID: 114611085595257780, guid: e6672ad97ff294adba0eb53a61d1502f,
+        type: 2}
+      propertyPath: m_FontData.m_Font
+      value: 
+      objectReference: {fileID: 12800000, guid: f9d24a80c2dab437f93edb350ffb9f7c,
+        type: 3}
+    - target: {fileID: 114266094678627528, guid: e6672ad97ff294adba0eb53a61d1502f,
+        type: 2}
+      propertyPath: m_FontData.m_Font
+      value: 
+      objectReference: {fileID: 12800000, guid: f9d24a80c2dab437f93edb350ffb9f7c,
+        type: 3}
+    - target: {fileID: 114683826083339600, guid: e6672ad97ff294adba0eb53a61d1502f,
+        type: 2}
+      propertyPath: m_FontData.m_Font
+      value: 
+      objectReference: {fileID: 12800000, guid: f9d24a80c2dab437f93edb350ffb9f7c,
+        type: 3}
     m_RemovedComponents:
     - {fileID: 114864122344205036, guid: e6672ad97ff294adba0eb53a61d1502f, type: 2}
     - {fileID: 114487739435193272, guid: e6672ad97ff294adba0eb53a61d1502f, type: 2}
@@ -9697,6 +9727,11 @@ MonoBehaviour:
     type: 2}
   m_PrefabInternal: {fileID: 1107729376}
   m_Script: {fileID: 708705254, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+--- !u!1 &1107729379 stripped
+GameObject:
+  m_PrefabParentObject: {fileID: 1885532220077830, guid: e6672ad97ff294adba0eb53a61d1502f,
+    type: 2}
+  m_PrefabInternal: {fileID: 1107729376}
 --- !u!1 &1118827055 stripped
 GameObject:
   m_PrefabParentObject: {fileID: 144132, guid: 7acdc295732123e4bb8c21be436da56c, type: 2}
@@ -10730,7 +10765,7 @@ MonoBehaviour:
     m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
       Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_FontData:
-    m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
+    m_Font: {fileID: 12800000, guid: f9d24a80c2dab437f93edb350ffb9f7c, type: 3}
     m_FontSize: 50
     m_FontStyle: 0
     m_BestFit: 1
@@ -10997,7 +11032,7 @@ MonoBehaviour:
     m_TypeName: UnityEngine.UI.MaskableGraphic+CullStateChangedEvent, UnityEngine.UI,
       Version=1.0.0.0, Culture=neutral, PublicKeyToken=null
   m_FontData:
-    m_Font: {fileID: 12800000, guid: 39794870176a1451584d8819006a6cfd, type: 3}
+    m_Font: {fileID: 12800000, guid: f9d24a80c2dab437f93edb350ffb9f7c, type: 3}
     m_FontSize: 50
     m_FontStyle: 0
     m_BestFit: 1

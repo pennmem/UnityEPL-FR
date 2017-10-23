@@ -1,6 +1,6 @@
 fileFormatVersion: 2
-guid: 39794870176a1451584d8819006a6cfd
-timeCreated: 1507141480
+guid: f9d24a80c2dab437f93edb350ffb9f7c
+timeCreated: 1508769523
 licenseType: Free
 TrueTypeFontImporter:
   serializedVersion: 4
@@ -9,9 +9,9 @@ TrueTypeFontImporter:
   characterSpacing: 0
   characterPadding: 1
   includeFontData: 1
-  fontName: Arialic Hollow
+  fontName: Verdana
   fontNames:
-  - Arialic Hollow
+  - Verdana
   fallbackFontReferences: []
   customCharacters: 
   fontRenderingMode: 0

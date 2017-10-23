@@ -76,6 +76,22 @@ public abstract class WordListGenerator
 		return returnList;
 	}
 
+	protected IronPython.Runtime.List CategoryShuffle(System.Random rng, IronPython.Runtime.List list, int lengthOfEachList)
+	{
+		IronPython.Runtime.List list_copy = new IronPython.Runtime.List ();
+		foreach (var item in list)
+			list_copy.Add (item);
+
+		IronPython.Runtime.List returnList = new IronPython.Runtime.List();
+
+		while(list_copy.Count > 0)
+		{
+			returnList.Add(list_copy.pop(rng.Next(list_copy.Count)));
+		}
+
+		return returnList;
+	}
+
 	protected Microsoft.Scripting.Hosting.ScriptScope BuildPythonScope()
 	{
 		var engine = IronPython.Hosting.Python.CreateEngine ();
@@ -130,15 +146,18 @@ public class FR1ListGenerator : FRListGenerator
 
 
 		//////////////////////Load the word pools
+
+		IronPython.Runtime.List practice_words;
+		IronPython.Runtime.List main_words;
 		if (isCategoryPool)
 		{
-			IronPython.Runtime.List practice_words = ReadWordsFromPoolTxt ("practice_cat_en", isCategoryPool);
-			IronPython.Runtime.List main_words = ReadWordsFromPoolTxt ("ram_categorized_en", isCategoryPool);
+			practice_words = ReadWordsFromPoolTxt ("practice_cat_en", isCategoryPool);
+			main_words = ReadWordsFromPoolTxt ("ram_categorized_en", isCategoryPool);
 		}
 		else 
 		{
-			IronPython.Runtime.List practice_words = ReadWordsFromPoolTxt ("practice_en", isCategoryPool);
-			IronPython.Runtime.List main_words = ReadWordsFromPoolTxt ("ram_wordpool_en", isCategoryPool);
+			practice_words = ReadWordsFromPoolTxt ("practice_en", isCategoryPool);
+			main_words = ReadWordsFromPoolTxt ("ram_wordpool_en", isCategoryPool);
 		}
 
 		System.Random rng = new System.Random ();
@@ -146,7 +165,7 @@ public class FR1ListGenerator : FRListGenerator
 		if (isCategoryPool)
 		{
 			practice_words = CategoryShuffle (rng, practice_words, lengthOfEachList);
-			main_words = CateogryShuffle (rng, main_words, lengthOfEachList);
+			main_words = CategoryShuffle (rng, main_words, lengthOfEachList);
 		}
 		else
 		{

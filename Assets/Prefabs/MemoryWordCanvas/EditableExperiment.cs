@@ -39,7 +39,6 @@ public class EditableExperiment : MonoBehaviour
 	public AudioSource highBeep;
 	public AudioSource lowBeep;
 	public AudioSource lowerBeep;
-	public GameObject videoBackground;
 	public GameObject microphoneTestMessage;
 	public AudioSource microphoneTestPlayback;
 
