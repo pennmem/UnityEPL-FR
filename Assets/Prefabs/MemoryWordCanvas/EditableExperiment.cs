@@ -18,6 +18,10 @@ public struct ExperimentSettings
 	public float distractionLength;
 	public float answerConfirmationTime;
 	public float recallLength;
+	public float minPauseBeforeWords;
+	public float maxPauseBeforeWords;
+	public float minPauseBeforeRecall;
+	public float maxPauseBeforeRecall;
 	public int displayLearningMessageIndex;
 }
 
@@ -127,7 +131,7 @@ public class EditableExperiment : MonoBehaviour
 			yield return DoCountdown ();
 			yield return DoEncoding ();
 			yield return DoDistractor ();
-			yield return PausableWait (currentSettings.wordPresentationLength);
+			yield return PausableWait (Random.Range (currentSettings.minPauseBeforeRecall, currentSettings.maxPauseBeforeRecall));
 			yield return DoRecall ();
 		}
 
@@ -259,7 +263,7 @@ public class EditableExperiment : MonoBehaviour
 
 		textDisplayer.DisplayText ("orientation stimulus", "+");
 		//SetRamulatorState ("ORIENT", true, new Dictionary<string, string> ());
-		yield return PausableWait (currentSettings.wordPresentationLength);
+		yield return PausableWait (Random.Range (currentSettings.minPauseBeforeWords, currentSettings.maxPauseBeforeWords));
 		textDisplayer.ClearText ();
 		//SetRamulatorState ("ORIENT", false, new Dictionary<string, string> ());
 		yield return PausableWait (Random.Range (currentSettings.minISI, currentSettings.maxISI));
