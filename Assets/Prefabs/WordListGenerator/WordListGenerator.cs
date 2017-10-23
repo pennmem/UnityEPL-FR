@@ -40,7 +40,7 @@ public abstract class WordListGenerator
 		string[] lines = GetWordpoolLines(path);
 		IronPython.Runtime.List words = new IronPython.Runtime.List();
 
-		for (int i = 0; i < lines.Length-1; i++)
+		for (int i = 0; i < lines.Length; i++)
 		{
 			IronPython.Runtime.PythonDictionary word = new IronPython.Runtime.PythonDictionary();
 			if (isCategoryPool)
