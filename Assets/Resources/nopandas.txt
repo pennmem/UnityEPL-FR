@@ -83,7 +83,6 @@ def assign_multistim_from_stim_channels_list(pool, stimspec_list):
         
         """
     assert len(pool) > 0, "Empty pool"
-    assert len(pool[0]) == 4, "Pool should be a list of four-tuples"
     
     stim_words = [word for word in pool if word['type'] == "STIM"]
     unique_listnos = set()

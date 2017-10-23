@@ -1,13 +1,13 @@
-word
-DENIM
-LEATHER
-SILK
-WOOL
-FARMER
-FIREMAN
-PLUMBER
-TEACHER
-DAY
-HOUR
-SECOND
-MINUTE
+word	category
+DENIM	Materials
+LEATHER	Materials
+SILK	Materials
+WOOL	Materials
+FARMER	Professions
+FIREMAN	Professions
+PLUMBER	Professions
+TEACHER	Professions
+DAY	Times
+HOUR	Times
+SECOND	Times
+MINUTE	Times

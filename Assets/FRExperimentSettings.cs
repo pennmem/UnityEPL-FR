@@ -6,7 +6,9 @@ public static class FRExperimentSettings
 	public static string[] GetExperimentNames()
 	{
 		return new string[] { GetFR1Settings ().experimentName,
+							  GetCatFR1Settings ().experimentName,
 							  GetFR6Settings ().experimentName,
+							  GetCatFR6Settings ().experimentName,
 							  GetTestFR1Settings().experimentName,
 							  GetTestFR6Settings().experimentName,
 							  "FR1_scalp",
@@ -90,6 +92,7 @@ public static class FRExperimentSettings
 	public static ExperimentSettings GetCatFR1Settings()
 	{
 		ExperimentSettings CatFR1Settings = GetFR1Settings ();
+		CatFR1Settings.experimentName = "CatFR1";
 		CatFR1Settings.wordListGenerator = new FR1ListGenerator (catifyMe: true);
 		return CatFR1Settings;
 	}
@@ -112,12 +115,17 @@ public static class FRExperimentSettings
 		FR6Settings.recallLength = 30f;
 		FR6Settings.displayLearningMessageIndex = 26;
 		FR6Settings.microphoneTestLength = 5;
+		FR6Settings.minPauseBeforeWords = 1f;
+		FR6Settings.maxPauseBeforeWords = 1.4f;
+		FR6Settings.minPauseBeforeRecall = 0.5f;
+		FR6Settings.maxPauseBeforeRecall = 0.7f;
 		return FR6Settings;
 	}
 
 	public static ExperimentSettings GetCatFR6Settings()
 	{
 		ExperimentSettings CatFR6Settings = GetFR6Settings ();
+		CatFR6Settings.experimentName = "CatFR6";
 		CatFR6Settings.wordListGenerator = new FR6ListGenerator (catifyMe: true);
 		return CatFR6Settings;
 	}
