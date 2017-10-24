@@ -78,19 +78,117 @@ public abstract class WordListGenerator
 
 	protected IronPython.Runtime.List CategoryShuffle(System.Random rng, IronPython.Runtime.List list, int lengthOfEachList)
 	{
-		IronPython.Runtime.List list_copy = new IronPython.Runtime.List ();
-		foreach (var item in list)
-			list_copy.Add (item);
+		Dictionary <string, IronPython.Runtime.List> categoriesToWords = new Dictionary<string, IronPython.Runtime.List> ();
 
-		IronPython.Runtime.List returnList = new IronPython.Runtime.List();
-
-		while(list_copy.Count > 0)
+		int totalWordCount = list.Count;
+		foreach (IronPython.Runtime.PythonDictionary item in list)
 		{
-			returnList.Add(list_copy.pop(rng.Next(list_copy.Count)));
+			string category = (string)item["category"];
+			if (!categoriesToWords.ContainsKey (category))
+			{
+				categoriesToWords [category] = new IronPython.Runtime.List ();
+			}
+			categoriesToWords[category].Add (item);
+			categoriesToWords [category] = Shuffled (rng, categoriesToWords [category]);
 		}
+
+		List<string> keyList = new List<string>(categoriesToWords.Keys);
+		IronPython.Runtime.List returnList = new IronPython.Runtime.List();
+		IronPython.Runtime.List singleList = new IronPython.Runtime.List();
+
+		bool startOver = false;
+
+		do 
+		{
+			if (categoriesToWords.Count < 3)
+			{
+				startOver = true;
+				continue;
+			}
+
+			string randomCategoryA = keyList [rng.Next (keyList.Count)];
+			string randomCategoryB;
+			do
+			{
+				randomCategoryB = keyList [rng.Next (keyList.Count)];
+			}
+			while (!randomCategoryB.Equals(randomCategoryA));
+			string randomCategoryC;
+			do
+			{
+				randomCategoryC = keyList [rng.Next (keyList.Count)];
+			}
+			while (!randomCategoryC.Equals(randomCategoryA) && !randomCategoryC.Equals(randomCategoryB));
+
+			IronPython.Runtime.List groupA = new IronPython.Runtime.List ();
+			IronPython.Runtime.List groupB = new IronPython.Runtime.List ();
+			IronPython.Runtime.List groupC = new IronPython.Runtime.List ();
+
+			for (int i = 0; i < 4; i++)
+			{
+				groupA.Add(categoriesToWords[randomCategoryA].pop());
+			}
+			for (int i = 0; i < 4; i++)
+			{
+				groupB.Add(categoriesToWords[randomCategoryB].pop());
+			}
+			for (int i = 0; i < 4; i++)
+			{
+				groupC.Add(categoriesToWords[randomCategoryC].pop());
+			}
+
+			if (categoriesToWords[randomCategoryA].Count == 0)
+				categoriesToWords.Remove(randomCategoryA);
+			if (categoriesToWords[randomCategoryB].Count == 0)
+				categoriesToWords.Remove(randomCategoryB);
+			if (categoriesToWords[randomCategoryC].Count == 0)
+				categoriesToWords.Remove(randomCategoryC);
+
+			IronPython.Runtime.List groups = new IronPython.Runtime.List();
+			for (int i = 0; i < 3; i++)
+			{
+				groups.Add(i);
+			}
+			groups = Shuffled(groups);
+			IronPython.Runtime.List secondHalf = new IronPython.Runtime.List();
+			for (int i = 0; i < 3; i++)
+			{
+				secondHalf.Add(i);
+			}
+			secondHalf.RemoveAt(groups[2]);
+			secondHalf = Shuffled(secondHalf);
+			bool insertAtEnd = rng.Next(2) == 0;
+			if (insertAtEnd)
+				secondHalf.Insert(secondHalf.Count, groups[2]);
+			else
+				secondHalf.Insert(secondHalf.Count-1, groups[2]);
+			groups.append(secondHalf);
+
+			foreach(int groupNo in groups)
+			{
+				if (groupNo == 0)
+				{
+					returnList.append(groupA.pop());
+					returnList.append(groupA.pop());
+				}
+				if (groupNo == 1)
+				{
+					returnList.append(groupB.pop());
+					returnList.append(groupB.pop());
+				}
+				if (groupNo == 2)
+				{
+					returnList.append(groupC.pop());
+					returnList.append(groupC.pop());
+				}
+			}
+		}
+		while (startOver);
 
 		return returnList;
 	}
+
+
 
 	protected Microsoft.Scripting.Hosting.ScriptScope BuildPythonScope()
 	{
