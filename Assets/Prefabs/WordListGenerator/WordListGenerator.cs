@@ -93,8 +93,20 @@ public abstract class WordListGenerator
 		return categoriesToWords;
 	}
 
+	/// <summary>
+	/// Requires that the words in the list have a category entry and that categories have some multiple of four words in each of them.
+	/// 
+	/// Shuffles into lists of 12 words appended without delineation to the return list.
+	/// </summary>
+	/// <returns>The shuffled list of words.</returns>
+	/// <param name="rng">Rng.</param>
+	/// <param name="list">List.</param>
+	/// <param name="lengthOfEachList">Length of each list.</param>
 	protected IronPython.Runtime.List CategoryShuffle(System.Random rng, IronPython.Runtime.List list, int lengthOfEachList)
 	{
+		if (lengthOfEachList != 12)
+			throw new UnityException("Currently only lists of 12 words are supported by CatFR.");
+
 		/////////////in order to select words from appropriate categories, build a dict with categories as keys and a list of words as values
 		Dictionary <string, IronPython.Runtime.List> categoriesToWords = BuildCategoryToWordDict (rng, list);
 

@@ -89,7 +89,7 @@ public static class FRExperimentSettings
 		return FR1Settings;
 	}
 
-	public static ExperimentSettings GetCatFR1Settings()
+	public static ExperimentSettings GetCatFR1Settings() ///note that currently only 12 wordsPerList is supported by CatFR
 	{
 		ExperimentSettings CatFR1Settings = GetFR1Settings ();
 		CatFR1Settings.experimentName = "CatFR1";
