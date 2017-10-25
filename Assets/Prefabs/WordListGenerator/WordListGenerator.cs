@@ -7,10 +7,10 @@ public abstract class WordListGenerator
 	public virtual IronPython.Runtime.List GenerateListsAndWriteWordpool (int numberOfLists, int lengthOfEachList)
 	{
 		WriteRAMWordpool ();
-		return GenerateLists (numberOfLists, lengthOfEachList);
+		return GenerateLists (numberOfLists, lengthOfEachList, new System.Random ());
 	}
 
-	public abstract IronPython.Runtime.List GenerateLists (int numberOfLists, int lengthOfEachList);
+	public abstract IronPython.Runtime.List GenerateLists (int numberOfLists, int lengthOfEachList, System.Random rng);
 
 	private void WriteRAMWordpool()
 	{
@@ -265,12 +265,12 @@ public abstract class FRListGenerator : WordListGenerator
 		isCategory = catifyMe;
 	}
 
-	public override IronPython.Runtime.List GenerateLists (int numberOfLists, int lengthOfEachList)
+	public override IronPython.Runtime.List GenerateLists (int numberOfLists, int lengthOfEachList, System.Random rng)
 	{
-		return GenerateListsOptionalCategory (numberOfLists, lengthOfEachList, isCategory);
+		return GenerateListsOptionalCategory (numberOfLists, lengthOfEachList, isCategory, rng: rng);
 	}
 
-	public abstract IronPython.Runtime.List GenerateListsOptionalCategory (int numberOfLists, int lengthOfEachList, bool isCategoryPool);
+	public abstract IronPython.Runtime.List GenerateListsOptionalCategory (int numberOfLists, int lengthOfEachList, bool isCategoryPool, System.Random rng);
 }
 
 public class FR1ListGenerator : FRListGenerator
@@ -280,17 +280,8 @@ public class FR1ListGenerator : FRListGenerator
 
 	}
 
-	public override IronPython.Runtime.List GenerateListsOptionalCategory (int numberOfLists, int lengthOfEachList, bool isCategoryPool)
+	public override IronPython.Runtime.List GenerateListsOptionalCategory (int numberOfLists, int lengthOfEachList, bool isCategoryPool, System.Random rng)
 	{
-		const int STIM_LIST_COUNT = 16;
-		const int NONSTIM_LIST_COUNT = 6;
-		const int BASELINE_LIST_COUNT = 3;
-
-		const int A_STIM_COUNT = 5;
-		const int B_STIM_COUNT = 5;
-		const int AB_STIM_COUNT = 6;
-
-
 		//////////////////////Load the python wordpool code
 		Microsoft.Scripting.Hosting.ScriptScope scope = BuildPythonScope();
 
@@ -310,8 +301,6 @@ public class FR1ListGenerator : FRListGenerator
 			main_words = ReadWordsFromPoolTxt ("ram_wordpool_en", isCategoryPool);
 		}
 
-		System.Random rng = new System.Random ();
-
 		if (isCategoryPool)
 		{
 			practice_words = CategoryShuffle (rng, practice_words, lengthOfEachList);
@@ -328,6 +317,36 @@ public class FR1ListGenerator : FRListGenerator
 		//////////////////////Concatenate into lists with numbers
 		var concatenate_session_lists = scope.GetVariable("concatenate_session_lists");
 		var words_with_listnos = concatenate_session_lists (practice_words, main_words, lengthOfEachList, numberOfLists-1); // -1 because the practice list doesn't count
+
+
+		return words_with_listnos;
+	}
+}
+
+
+public class FR6ListGenerator : FRListGenerator
+{
+	public FR6ListGenerator(bool catifyMe = false) : base(catifyMe: catifyMe)
+	{
+		
+	}
+
+	public override IronPython.Runtime.List GenerateListsOptionalCategory (int numberOfLists, int lengthOfEachList, bool isCategoryPool, System.Random rng)
+	{
+		const int STIM_LIST_COUNT = 16;
+		const int NONSTIM_LIST_COUNT = 6;
+		const int BASELINE_LIST_COUNT = 3;
+
+		const int A_STIM_COUNT = 5;
+		const int B_STIM_COUNT = 5;
+		const int AB_STIM_COUNT = 6;
+
+		//////////////////////Load the python wordpool code
+		Microsoft.Scripting.Hosting.ScriptScope scope = BuildPythonScope();
+
+
+		//////////////////////Start with FR1 lists
+		IronPython.Runtime.List words_with_listnos = new FR1ListGenerator ().GenerateLists (numberOfLists, lengthOfEachList, rng: rng);
 
 
 		//////////////////////Build type lists and assign tpyes
@@ -354,92 +373,6 @@ public class FR1ListGenerator : FRListGenerator
 
 		var assign_multistim_from_stim_channels_list = scope.GetVariable("assign_multistim_from_stim_channels_list");
 		var words_with_stim_channels = assign_multistim_from_stim_channels_list (words_with_types, stim_channels_list);
-
-		return words_with_stim_channels;
-	}
-}
-
-
-public class FR6ListGenerator : FRListGenerator
-{
-	public FR6ListGenerator(bool catifyMe = false) : base(catifyMe: catifyMe)
-	{
-		
-	}
-
-	public override IronPython.Runtime.List GenerateListsOptionalCategory (int numberOfLists, int lengthOfEachList, bool isCategoryPool)
-	{
-		const int LEARNING_BLOCKS_COUNT = 4;
-
-
-		//////////////////////Load the python wordpool code
-		Microsoft.Scripting.Hosting.ScriptScope scope = BuildPythonScope();
-
-
-		//////////////////////Start with FR1 lists
-		IronPython.Runtime.List words_with_stim_channels = new FR1ListGenerator ().GenerateLists (numberOfLists-(LEARNING_BLOCKS_COUNT*4), lengthOfEachList);
-
-
-		//////////////////////Get four listnos, shuffle into learning blocks, assign blocknos
-		HashSet<int> stim_listnos_set = new HashSet<int> ();
-		HashSet<int> nonstim_listnos_set = new HashSet<int> ();
-		foreach (IronPython.Runtime.PythonDictionary word in words_with_stim_channels)
-		{
-			if (word["type"].Equals("STIM"))
-				stim_listnos_set.Add((int)word["listno"]);
-			if (word["type"].Equals("NON-STIM"))
-				nonstim_listnos_set.Add((int)word["listno"]);
-		}
-		System.Collections.Generic.List<int> abstim_listnos = new System.Collections.Generic.List<int> ();
-		foreach (int listno in stim_listnos_set)
-		{
-			int firstWordIndex = listno * lengthOfEachList;
-			IronPython.Runtime.List singleWordSlice = (IronPython.Runtime.List)words_with_stim_channels.__getslice__(firstWordIndex, firstWordIndex+1);
-			IronPython.Runtime.PythonDictionary word = (IronPython.Runtime.PythonDictionary)singleWordSlice.pop ();
-			if (((IronPython.Runtime.PythonTuple)word ["stim_channels"]).ToString ().Equals ("(0, 1)"))
-				abstim_listnos.Add (listno);
-		}
-		System.Collections.Generic.List<int> nonstim_listnos = new System.Collections.Generic.List<int> (nonstim_listnos_set);
-
-		System.Random rng = new System.Random();
-		int first_random_stim_listno = abstim_listnos[rng.Next(abstim_listnos.Count)];
-		abstim_listnos.Remove(first_random_stim_listno);
-		int second_random_stim_listno = abstim_listnos[rng.Next(abstim_listnos.Count)];
-
-		int first_random_nonstim_listno = nonstim_listnos[rng.Next(nonstim_listnos.Count)];
-		nonstim_listnos.Remove(first_random_nonstim_listno);
-		int second_random_nonstim_listno = nonstim_listnos[rng.Next(nonstim_listnos.Count)];
-
-		IronPython.Runtime.List learning_listnos = new IronPython.Runtime.List(){first_random_stim_listno, second_random_stim_listno, first_random_nonstim_listno, second_random_nonstim_listno};
-		IronPython.Runtime.List learning_listnos_sequence = new IronPython.Runtime.List();
-
-		for (int i = 0; i < LEARNING_BLOCKS_COUNT; i++)
-			learning_listnos_sequence.extend (Shuffled (rng, learning_listnos));
-
-		var extract_blocks = scope.GetVariable("extract_blocks");
-		IronPython.Runtime.List learning_blocks = extract_blocks (words_with_stim_channels, learning_listnos_sequence, LEARNING_BLOCKS_COUNT);
-
-		//////////////////////shuffle each list within the learning blocks
-		for (int i = 0; i < learning_blocks.__len__() / lengthOfEachList; i++)
-		{
-			IronPython.Runtime.List single_list = (IronPython.Runtime.List)learning_blocks.__getslice__ (i * lengthOfEachList, (i + 1) * lengthOfEachList);
-			if (isCategoryPool)
-			{
-				single_list = CategoryShuffle (rng, single_list, lengthOfEachList);
-			}
-			else
-			{
-				single_list = Shuffled (rng, single_list);
-			}
-			learning_blocks.__setslice__ (i * lengthOfEachList, (i + 1) * lengthOfEachList, single_list);
-		}
-
-		//////////////////////combine learning blocks with regular lists and return
-		words_with_stim_channels.extend(learning_blocks);
-
-//		foreach (IronPython.Runtime.PythonDictionary word in words_with_stim_channels)
-//			foreach (var entry in word.Values)
-//				Debug.Log(entry);
 
 		return words_with_stim_channels;
 	}

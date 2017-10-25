@@ -80,7 +80,6 @@ public static class FRExperimentSettings
 		FR1Settings.distractionLength = 20f;
 		FR1Settings.answerConfirmationTime = 0f;
 		FR1Settings.recallLength = 30f;
-		FR1Settings.displayLearningMessageIndex = -1;
 		FR1Settings.microphoneTestLength = 5;
 		FR1Settings.minPauseBeforeWords = 1f;
 		FR1Settings.maxPauseBeforeWords = 1.4f;
@@ -99,26 +98,10 @@ public static class FRExperimentSettings
 
 	public static ExperimentSettings GetFR6Settings()
 	{
-		ExperimentSettings FR6Settings = new ExperimentSettings();
+		ExperimentSettings FR6Settings = GetFR1Settings();
 		FR6Settings.experimentName = "FR6";
 		FR6Settings.version = "6.0";
 		FR6Settings.wordListGenerator = new FR6ListGenerator();
-		FR6Settings.numberOfLists = 42;
-		FR6Settings.wordsPerList = 12;
-		FR6Settings.countdownLength = 10;
-		FR6Settings.countdownTick = 1f;
-		FR6Settings.wordPresentationLength = 1.6f;
-		FR6Settings.minISI = 0.75f;
-		FR6Settings.maxISI = 1f;
-		FR6Settings.distractionLength = 20f;
-		FR6Settings.answerConfirmationTime = 0f;
-		FR6Settings.recallLength = 30f;
-		FR6Settings.displayLearningMessageIndex = 26;
-		FR6Settings.microphoneTestLength = 5;
-		FR6Settings.minPauseBeforeWords = 1f;
-		FR6Settings.maxPauseBeforeWords = 1.4f;
-		FR6Settings.minPauseBeforeRecall = 0.5f;
-		FR6Settings.maxPauseBeforeRecall = 0.7f;
 		return FR6Settings;
 	}
 
