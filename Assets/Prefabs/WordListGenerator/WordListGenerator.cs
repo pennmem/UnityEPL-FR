@@ -76,10 +76,9 @@ public abstract class WordListGenerator
 		return returnList;
 	}
 
-	protected IronPython.Runtime.List CategoryShuffle(System.Random rng, IronPython.Runtime.List list, int lengthOfEachList)
+	protected Dictionary <string, IronPython.Runtime.List> BuildCategoryToWordDict (System.Random rng, IronPython.Runtime.List list)
 	{
 		Dictionary <string, IronPython.Runtime.List> categoriesToWords = new Dictionary<string, IronPython.Runtime.List> ();
-
 		int totalWordCount = list.Count;
 		foreach (IronPython.Runtime.PythonDictionary item in list)
 		{
@@ -91,20 +90,38 @@ public abstract class WordListGenerator
 			categoriesToWords[category].Add (item);
 			categoriesToWords [category] = Shuffled (rng, categoriesToWords [category]);
 		}
+		return categoriesToWords;
+	}
 
-		List<string> keyList = new List<string>(categoriesToWords.Keys);
+	protected IronPython.Runtime.List CategoryShuffle(System.Random rng, IronPython.Runtime.List list, int lengthOfEachList)
+	{
+		Dictionary <string, IronPython.Runtime.List> categoriesToWords = BuildCategoryToWordDict (rng, list);
+
 		IronPython.Runtime.List returnList = new IronPython.Runtime.List();
-		IronPython.Runtime.List singleList = new IronPython.Runtime.List();
 
-		bool startOver = false;
+		bool finished = false;
+		int iterations = 0;
 
 		do 
 		{
+			iterations++;
+			if (iterations > 1000)
+			{
+				finished = true;
+				throw new UnityException("Error while shuffle catFR list");
+			}
+
 			if (categoriesToWords.Count < 3)
 			{
-				startOver = true;
+				//start over
+				categoriesToWords = BuildCategoryToWordDict (rng, list);
+				returnList = new IronPython.Runtime.List();
 				continue;
 			}
+
+			List<string> keyList = new List<string>(categoriesToWords.Keys);
+
+			IronPython.Runtime.List singleList = new IronPython.Runtime.List();
 
 			string randomCategoryA = keyList [rng.Next (keyList.Count)];
 			string randomCategoryB;
@@ -112,13 +129,13 @@ public abstract class WordListGenerator
 			{
 				randomCategoryB = keyList [rng.Next (keyList.Count)];
 			}
-			while (!randomCategoryB.Equals(randomCategoryA));
+			while (randomCategoryB.Equals(randomCategoryA));
 			string randomCategoryC;
 			do
 			{
 				randomCategoryC = keyList [rng.Next (keyList.Count)];
 			}
-			while (!randomCategoryC.Equals(randomCategoryA) && !randomCategoryC.Equals(randomCategoryB));
+			while (randomCategoryC.Equals(randomCategoryA) | randomCategoryC.Equals(randomCategoryB));
 
 			IronPython.Runtime.List groupA = new IronPython.Runtime.List ();
 			IronPython.Runtime.List groupB = new IronPython.Runtime.List ();
@@ -149,20 +166,31 @@ public abstract class WordListGenerator
 			{
 				groups.Add(i);
 			}
-			groups = Shuffled(groups);
+			groups = Shuffled(rng, groups);
+			int index = 0;
+			int first_half_last_item = 0;
+			foreach (int item in groups)
+			{
+				if (index == 2)
+					first_half_last_item = item;
+				index++;
+			}
+
+
 			IronPython.Runtime.List secondHalf = new IronPython.Runtime.List();
 			for (int i = 0; i < 3; i++)
 			{
 				secondHalf.Add(i);
 			}
-			secondHalf.RemoveAt(groups[2]);
-			secondHalf = Shuffled(secondHalf);
+			secondHalf.Remove(first_half_last_item);
+			secondHalf = Shuffled(rng, secondHalf);
 			bool insertAtEnd = rng.Next(2) == 0;
 			if (insertAtEnd)
-				secondHalf.Insert(secondHalf.Count, groups[2]);
+				secondHalf.Insert(secondHalf.Count, first_half_last_item);
 			else
-				secondHalf.Insert(secondHalf.Count-1, groups[2]);
-			groups.append(secondHalf);
+				secondHalf.Insert(secondHalf.Count-1, first_half_last_item);
+			foreach (int item in secondHalf)
+				groups.append(item);
 
 			foreach(int groupNo in groups)
 			{
@@ -182,8 +210,11 @@ public abstract class WordListGenerator
 					returnList.append(groupC.pop());
 				}
 			}
+
+			if (categoriesToWords.Count == 0)
+				finished = true;
 		}
-		while (startOver);
+		while (!finished);
 
 		return returnList;
 	}
