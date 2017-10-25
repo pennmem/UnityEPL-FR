@@ -379,7 +379,7 @@ public class EditableExperiment : MonoBehaviour
 		SetRamulatorState ("RETRIEVAL", true, new Dictionary<string, string> ());
 		highBeep.Play ();
 		scriptedEventReporter.ReportScriptedEvent("Sound played", new Dictionary<string, string>(){{"sound name", "high beep"}, {"sound duration", highBeep.clip.length.ToString()}});
-		textDisplayer.DisplayText ("display recall text", "* * * * * * *");
+		textDisplayer.DisplayText ("display recall text", "*******");
 		soundRecorder.StartRecording (Mathf.CeilToInt(currentSettings.recallLength));
 
 		float starDisplayTime = currentSettings.wordPresentationLength;
