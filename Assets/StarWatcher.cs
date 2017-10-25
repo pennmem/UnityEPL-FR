@@ -13,21 +13,18 @@ public class StarWatcher : MonoBehaviour
 
 	void Update ()
 	{
-		bool iSeeStars = (!starMaker.text.Equals("")) && (starMaker.text [0].Equals ('*'));
-
 		if (!rest && (!starMaker.text.Equals("")))
 		{
 			bool iSeeDots = starMaker.text [starMaker.text.Length - 1].Equals ('.');
 			enableMe.SetActive (iSeeDots);
 		}
 
+		bool iSeeStars = (!starMaker.text.Equals("")) && (starMaker.text [0].Equals ('*'));
 		if (!rest && iSeeStars)
 		{
 			rest = true;
 			enableMe.SetActive (iSeeStars);
 			Invoke ("StopResting", enableTime);
-			foreach (ReturnHome sendMeHome in sendUsHome)
-				sendMeHome.MayReturnHome ();
 		}
 	}
 
@@ -35,5 +32,22 @@ public class StarWatcher : MonoBehaviour
 	{
 		enableMe.SetActive (false);
 		rest = false;
+	}
+
+	void OnEnable()
+	{
+		TextDisplayer.OnText += OnText;
+	}
+
+	void OnDisable()
+	{
+		TextDisplayer.OnText -= OnText;
+	}
+
+	void OnText(string text)
+	{
+		if ((!starMaker.text.Equals("")) && (starMaker.text [0].Equals ('+')))
+			foreach (ReturnHome sendMeHome in sendUsHome)
+				sendMeHome.MayReturnHome ();
 	}
 }
