@@ -1,0 +1,572 @@
+fileFormatVersion: 2
+guid: 6d53d496f8a37cc4580f41ec7dabb23c
+timeCreated: 18446744011573954816
+ModelImporter:
+  serializedVersion: 22
+  fileIDToRecycleName:
+    100000: Bush
+    100002: Bush 1
+    100004: Bush 10
+    100006: Bush 11
+    100008: Bush 12
+    100010: Bush 13
+    100012: Bush 14
+    100014: Bush 15
+    100016: Bush 16
+    100018: Bush 17
+    100020: Bush 18
+    100022: Bush 19
+    100024: Bush 2
+    100026: Bush 20
+    100028: Bush 21
+    100030: Bush 22
+    100032: Bush 23
+    100034: Bush 24
+    100036: Bush 25
+    100038: Bush 26
+    100040: Bush 27
+    100042: Bush 28
+    100044: Bush 29
+    100046: Bush 3
+    100048: Bush 30
+    100050: Bush 31
+    100052: Bush 32
+    100054: Bush 33
+    100056: Bush 34
+    100058: Bush 35
+    100060: Bush 36
+    100062: Bush 4
+    100064: Bush 5
+    100066: Bush 6
+    100068: Bush 7
+    100070: Bush 8
+    100072: Bush 9
+    100074: Fence
+    100076: Fence 1
+    100078: Fence 10
+    100080: Fence 11
+    100082: Fence 12
+    100084: Fence 13
+    100086: Fence 14
+    100088: Fence 15
+    100090: Fence 2
+    100092: Fence 3
+    100094: Fence 4
+    100096: Fence 5
+    100098: Fence 6
+    100100: Fence 7
+    100102: Fence 8
+    100104: Fence 9
+    100106: Road
+    100108: Stone
+    100110: Stone 1
+    100112: Stone 10
+    100114: Stone 11
+    100116: Stone 12
+    100118: Stone 13
+    100120: Stone 14
+    100122: Stone 15
+    100124: Stone 16
+    100126: Stone 17
+    100128: Stone 18
+    100130: Stone 2
+    100132: Stone 3
+    100134: Stone 4
+    100136: Stone 5
+    100138: Stone 6
+    100140: Stone 7
+    100142: Stone 8
+    100144: Stone 9
+    100146: Tree
+    100148: Tree 1
+    100150: Tree 10
+    100152: Tree 11
+    100154: Tree 12
+    100156: Tree 13
+    100158: Tree 14
+    100160: Tree 15
+    100162: Tree 16
+    100164: Tree 17
+    100166: Tree 18
+    100168: Tree 19
+    100170: Tree 2
+    100172: Tree 20
+    100174: Tree 21
+    100176: Tree 22
+    100178: Tree 23
+    100180: Tree 3
+    100182: Tree 4
+    100184: Tree 5
+    100186: Tree 6
+    100188: Tree 7
+    100190: Tree 8
+    100192: Tree 9
+    100194: //RootNode
+    400000: Bush
+    400002: Bush 1
+    400004: Bush 10
+    400006: Bush 11
+    400008: Bush 12
+    400010: Bush 13
+    400012: Bush 14
+    400014: Bush 15
+    400016: Bush 16
+    400018: Bush 17
+    400020: Bush 18
+    400022: Bush 19
+    400024: Bush 2
+    400026: Bush 20
+    400028: Bush 21
+    400030: Bush 22
+    400032: Bush 23
+    400034: Bush 24
+    400036: Bush 25
+    400038: Bush 26
+    400040: Bush 27
+    400042: Bush 28
+    400044: Bush 29
+    400046: Bush 3
+    400048: Bush 30
+    400050: Bush 31
+    400052: Bush 32
+    400054: Bush 33
+    400056: Bush 34
+    400058: Bush 35
+    400060: Bush 36
+    400062: Bush 4
+    400064: Bush 5
+    400066: Bush 6
+    400068: Bush 7
+    400070: Bush 8
+    400072: Bush 9
+    400074: Fence
+    400076: Fence 1
+    400078: Fence 10
+    400080: Fence 11
+    400082: Fence 12
+    400084: Fence 13
+    400086: Fence 14
+    400088: Fence 15
+    400090: Fence 2
+    400092: Fence 3
+    400094: Fence 4
+    400096: Fence 5
+    400098: Fence 6
+    400100: Fence 7
+    400102: Fence 8
+    400104: Fence 9
+    400106: Road
+    400108: Stone
+    400110: Stone 1
+    400112: Stone 10
+    400114: Stone 11
+    400116: Stone 12
+    400118: Stone 13
+    400120: Stone 14
+    400122: Stone 15
+    400124: Stone 16
+    400126: Stone 17
+    400128: Stone 18
+    400130: Stone 2
+    400132: Stone 3
+    400134: Stone 4
+    400136: Stone 5
+    400138: Stone 6
+    400140: Stone 7
+    400142: Stone 8
+    400144: Stone 9
+    400146: Tree
+    400148: Tree 1
+    400150: Tree 10
+    400152: Tree 11
+    400154: Tree 12
+    400156: Tree 13
+    400158: Tree 14
+    400160: Tree 15
+    400162: Tree 16
+    400164: Tree 17
+    400166: Tree 18
+    400168: Tree 19
+    400170: Tree 2
+    400172: Tree 20
+    400174: Tree 21
+    400176: Tree 22
+    400178: Tree 23
+    400180: Tree 3
+    400182: Tree 4
+    400184: Tree 5
+    400186: Tree 6
+    400188: Tree 7
+    400190: Tree 8
+    400192: Tree 9
+    400194: //RootNode
+    2300000: Bush
+    2300002: Bush 1
+    2300004: Bush 10
+    2300006: Bush 11
+    2300008: Bush 12
+    2300010: Bush 13
+    2300012: Bush 14
+    2300014: Bush 15
+    2300016: Bush 16
+    2300018: Bush 17
+    2300020: Bush 18
+    2300022: Bush 19
+    2300024: Bush 2
+    2300026: Bush 20
+    2300028: Bush 21
+    2300030: Bush 22
+    2300032: Bush 23
+    2300034: Bush 24
+    2300036: Bush 25
+    2300038: Bush 26
+    2300040: Bush 27
+    2300042: Bush 28
+    2300044: Bush 29
+    2300046: Bush 3
+    2300048: Bush 30
+    2300050: Bush 31
+    2300052: Bush 32
+    2300054: Bush 33
+    2300056: Bush 34
+    2300058: Bush 35
+    2300060: Bush 36
+    2300062: Bush 4
+    2300064: Bush 5
+    2300066: Bush 6
+    2300068: Bush 7
+    2300070: Bush 8
+    2300072: Bush 9
+    2300074: Fence
+    2300076: Fence 1
+    2300078: Fence 10
+    2300080: Fence 11
+    2300082: Fence 12
+    2300084: Fence 13
+    2300086: Fence 14
+    2300088: Fence 15
+    2300090: Fence 2
+    2300092: Fence 3
+    2300094: Fence 4
+    2300096: Fence 5
+    2300098: Fence 6
+    2300100: Fence 7
+    2300102: Fence 8
+    2300104: Fence 9
+    2300106: Road
+    2300108: Stone
+    2300110: Stone 1
+    2300112: Stone 10
+    2300114: Stone 11
+    2300116: Stone 12
+    2300118: Stone 13
+    2300120: Stone 14
+    2300122: Stone 15
+    2300124: Stone 16
+    2300126: Stone 17
+    2300128: Stone 18
+    2300130: Stone 2
+    2300132: Stone 3
+    2300134: Stone 4
+    2300136: Stone 5
+    2300138: Stone 6
+    2300140: Stone 7
+    2300142: Stone 8
+    2300144: Stone 9
+    2300146: Tree
+    2300148: Tree 1
+    2300150: Tree 10
+    2300152: Tree 11
+    2300154: Tree 12
+    2300156: Tree 13
+    2300158: Tree 14
+    2300160: Tree 15
+    2300162: Tree 16
+    2300164: Tree 17
+    2300166: Tree 18
+    2300168: Tree 19
+    2300170: Tree 2
+    2300172: Tree 20
+    2300174: Tree 21
+    2300176: Tree 22
+    2300178: Tree 23
+    2300180: Tree 3
+    2300182: Tree 4
+    2300184: Tree 5
+    2300186: Tree 6
+    2300188: Tree 7
+    2300190: Tree 8
+    2300192: Tree 9
+    3300000: Bush
+    3300002: Bush 1
+    3300004: Bush 10
+    3300006: Bush 11
+    3300008: Bush 12
+    3300010: Bush 13
+    3300012: Bush 14
+    3300014: Bush 15
+    3300016: Bush 16
+    3300018: Bush 17
+    3300020: Bush 18
+    3300022: Bush 19
+    3300024: Bush 2
+    3300026: Bush 20
+    3300028: Bush 21
+    3300030: Bush 22
+    3300032: Bush 23
+    3300034: Bush 24
+    3300036: Bush 25
+    3300038: Bush 26
+    3300040: Bush 27
+    3300042: Bush 28
+    3300044: Bush 29
+    3300046: Bush 3
+    3300048: Bush 30
+    3300050: Bush 31
+    3300052: Bush 32
+    3300054: Bush 33
+    3300056: Bush 34
+    3300058: Bush 35
+    3300060: Bush 36
+    3300062: Bush 4
+    3300064: Bush 5
+    3300066: Bush 6
+    3300068: Bush 7
+    3300070: Bush 8
+    3300072: Bush 9
+    3300074: Fence
+    3300076: Fence 1
+    3300078: Fence 10
+    3300080: Fence 11
+    3300082: Fence 12
+    3300084: Fence 13
+    3300086: Fence 14
+    3300088: Fence 15
+    3300090: Fence 2
+    3300092: Fence 3
+    3300094: Fence 4
+    3300096: Fence 5
+    3300098: Fence 6
+    3300100: Fence 7
+    3300102: Fence 8
+    3300104: Fence 9
+    3300106: Road
+    3300108: Stone
+    3300110: Stone 1
+    3300112: Stone 10
+    3300114: Stone 11
+    3300116: Stone 12
+    3300118: Stone 13
+    3300120: Stone 14
+    3300122: Stone 15
+    3300124: Stone 16
+    3300126: Stone 17
+    3300128: Stone 18
+    3300130: Stone 2
+    3300132: Stone 3
+    3300134: Stone 4
+    3300136: Stone 5
+    3300138: Stone 6
+    3300140: Stone 7
+    3300142: Stone 8
+    3300144: Stone 9
+    3300146: Tree
+    3300148: Tree 1
+    3300150: Tree 10
+    3300152: Tree 11
+    3300154: Tree 12
+    3300156: Tree 13
+    3300158: Tree 14
+    3300160: Tree 15
+    3300162: Tree 16
+    3300164: Tree 17
+    3300166: Tree 18
+    3300168: Tree 19
+    3300170: Tree 2
+    3300172: Tree 20
+    3300174: Tree 21
+    3300176: Tree 22
+    3300178: Tree 23
+    3300180: Tree 3
+    3300182: Tree 4
+    3300184: Tree 5
+    3300186: Tree 6
+    3300188: Tree 7
+    3300190: Tree 8
+    3300192: Tree 9
+    4300000: Road
+    4300002: Bush
+    4300004: Bush
+    4300006: Bush
+    4300008: Bush
+    4300010: Bush
+    4300012: Bush
+    4300014: Bush
+    4300016: Bush
+    4300018: Bush
+    4300020: Bush
+    4300022: Bush
+    4300024: Bush
+    4300026: Bush
+    4300028: Bush
+    4300030: Bush
+    4300032: Bush
+    4300034: Bush
+    4300036: Bush
+    4300038: Bush
+    4300040: Tree
+    4300042: Tree
+    4300044: Tree
+    4300046: Tree
+    4300048: Tree
+    4300050: Tree
+    4300052: Tree
+    4300054: Tree
+    4300056: Tree
+    4300058: Tree
+    4300060: Tree
+    4300062: Tree
+    4300064: Stone
+    4300066: Stone
+    4300068: Stone
+    4300070: Stone
+    4300072: Stone
+    4300074: Stone
+    4300076: Stone
+    4300078: Stone
+    4300080: Stone
+    4300082: Stone
+    4300084: Fence
+    4300086: Fence
+    4300088: Fence
+    4300090: Fence
+    4300092: Fence
+    4300094: Fence
+    4300096: Fence
+    4300098: Fence
+    4300100: Tree
+    4300102: Fence
+    4300104: Bush
+    4300106: Bush
+    4300108: Bush
+    4300110: Bush
+    4300112: Bush
+    4300114: Bush
+    4300116: Bush
+    4300118: Bush
+    4300120: Bush
+    4300122: Bush
+    4300124: Bush
+    4300126: Bush
+    4300128: Bush
+    4300130: Bush
+    4300132: Bush
+    4300134: Bush
+    4300136: Bush
+    4300138: Bush
+    4300140: Tree
+    4300142: Tree
+    4300144: Tree
+    4300146: Tree
+    4300148: Tree
+    4300150: Tree
+    4300152: Tree
+    4300154: Tree
+    4300156: Tree
+    4300158: Tree
+    4300160: Tree
+    4300162: Stone
+    4300164: Stone
+    4300166: Stone
+    4300168: Stone
+    4300170: Stone
+    4300172: Stone
+    4300174: Stone
+    4300176: Stone
+    4300178: Stone
+    4300180: Fence
+    4300182: Fence
+    4300184: Fence
+    4300186: Fence
+    4300188: Fence
+    4300190: Fence
+    4300192: Fence
+    9500000: //RootNode
+  externalObjects: {}
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 0
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    rigImportErrors: 
+    rigImportWarnings: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    extraUserProperties: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 0.01
+    meshCompression: 0
+    addColliders: 0
+    importVisibility: 0
+    importBlendShapes: 1
+    importCameras: 0
+    importLights: 0
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 0
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 4
+    normalCalculationMode: 0
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    serializedVersion: 2
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    rootMotionBoneRotation: {x: 0, y: 0, z: 0, w: 1}
+    hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 0
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 0
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

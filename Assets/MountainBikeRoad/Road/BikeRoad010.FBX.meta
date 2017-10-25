@@ -1,0 +1,459 @@
+fileFormatVersion: 2
+guid: 5369448579de2664db116e212c855603
+timeCreated: 18446744011573954816
+ModelImporter:
+  serializedVersion: 22
+  fileIDToRecycleName:
+    100000: //RootNode
+    100002: GrassPlane
+    100004: GrassPlane 1
+    100006: GrassPlane 10
+    100008: GrassPlane 11
+    100010: GrassPlane 12
+    100012: GrassPlane 13
+    100014: GrassPlane 2
+    100016: GrassPlane 3
+    100018: GrassPlane 4
+    100020: GrassPlane 5
+    100022: GrassPlane 6
+    100024: GrassPlane 7
+    100026: GrassPlane 8
+    100028: GrassPlane 9
+    100030: Ground
+    100032: Ground 1
+    100034: Ground 2
+    100036: Ground 3
+    100038: Ground 4
+    100040: Ground 5
+    100042: Ground 6
+    100044: Rock
+    100046: Rock 1
+    100048: Rock 10
+    100050: Rock 11
+    100052: Rock 12
+    100054: Rock 13
+    100056: Rock 14
+    100058: Rock 15
+    100060: Rock 16
+    100062: Rock 17
+    100064: Rock 18
+    100066: Rock 19
+    100068: Rock 2
+    100070: Rock 20
+    100072: Rock 21
+    100074: Rock 22
+    100076: Rock 23
+    100078: Rock 24
+    100080: Rock 25
+    100082: Rock 26
+    100084: Rock 27
+    100086: Rock 28
+    100088: Rock 29
+    100090: Rock 3
+    100092: Rock 30
+    100094: Rock 31
+    100096: Rock 32
+    100098: Rock 33
+    100100: Rock 34
+    100102: Rock 35
+    100104: Rock 36
+    100106: Rock 37
+    100108: Rock 38
+    100110: Rock 39
+    100112: Rock 4
+    100114: Rock 40
+    100116: Rock 41
+    100118: Rock 42
+    100120: Rock 43
+    100122: Rock 44
+    100124: Rock 45
+    100126: Rock 46
+    100128: Rock 5
+    100130: Rock 6
+    100132: Rock 7
+    100134: Rock 8
+    100136: Rock 9
+    100138: Tree
+    100140: Tree 1
+    100142: Tree 2
+    100144: Tree 3
+    100146: Tree 4
+    100148: Tree 5
+    100150: Wave
+    400000: //RootNode
+    400002: GrassPlane
+    400004: GrassPlane 1
+    400006: GrassPlane 10
+    400008: GrassPlane 11
+    400010: GrassPlane 12
+    400012: GrassPlane 13
+    400014: GrassPlane 2
+    400016: GrassPlane 3
+    400018: GrassPlane 4
+    400020: GrassPlane 5
+    400022: GrassPlane 6
+    400024: GrassPlane 7
+    400026: GrassPlane 8
+    400028: GrassPlane 9
+    400030: Ground
+    400032: Ground 1
+    400034: Ground 2
+    400036: Ground 3
+    400038: Ground 4
+    400040: Ground 5
+    400042: Ground 6
+    400044: Rock
+    400046: Rock 1
+    400048: Rock 10
+    400050: Rock 11
+    400052: Rock 12
+    400054: Rock 13
+    400056: Rock 14
+    400058: Rock 15
+    400060: Rock 16
+    400062: Rock 17
+    400064: Rock 18
+    400066: Rock 19
+    400068: Rock 2
+    400070: Rock 20
+    400072: Rock 21
+    400074: Rock 22
+    400076: Rock 23
+    400078: Rock 24
+    400080: Rock 25
+    400082: Rock 26
+    400084: Rock 27
+    400086: Rock 28
+    400088: Rock 29
+    400090: Rock 3
+    400092: Rock 30
+    400094: Rock 31
+    400096: Rock 32
+    400098: Rock 33
+    400100: Rock 34
+    400102: Rock 35
+    400104: Rock 36
+    400106: Rock 37
+    400108: Rock 38
+    400110: Rock 39
+    400112: Rock 4
+    400114: Rock 40
+    400116: Rock 41
+    400118: Rock 42
+    400120: Rock 43
+    400122: Rock 44
+    400124: Rock 45
+    400126: Rock 46
+    400128: Rock 5
+    400130: Rock 6
+    400132: Rock 7
+    400134: Rock 8
+    400136: Rock 9
+    400138: Tree
+    400140: Tree 1
+    400142: Tree 2
+    400144: Tree 3
+    400146: Tree 4
+    400148: Tree 5
+    400150: Wave
+    2300000: GrassPlane
+    2300002: GrassPlane 1
+    2300004: GrassPlane 10
+    2300006: GrassPlane 11
+    2300008: GrassPlane 12
+    2300010: GrassPlane 13
+    2300012: GrassPlane 2
+    2300014: GrassPlane 3
+    2300016: GrassPlane 4
+    2300018: GrassPlane 5
+    2300020: GrassPlane 6
+    2300022: GrassPlane 7
+    2300024: GrassPlane 8
+    2300026: GrassPlane 9
+    2300028: Ground
+    2300030: Ground 1
+    2300032: Ground 2
+    2300034: Ground 3
+    2300036: Ground 4
+    2300038: Ground 5
+    2300040: Ground 6
+    2300042: Rock 1
+    2300044: Rock 10
+    2300046: Rock 11
+    2300048: Rock 12
+    2300050: Rock 13
+    2300052: Rock 14
+    2300054: Rock 15
+    2300056: Rock 16
+    2300058: Rock 17
+    2300060: Rock 18
+    2300062: Rock 19
+    2300064: Rock 2
+    2300066: Rock 20
+    2300068: Rock 21
+    2300070: Rock 22
+    2300072: Rock 23
+    2300074: Rock 24
+    2300076: Rock 25
+    2300078: Rock 26
+    2300080: Rock 27
+    2300082: Rock 28
+    2300084: Rock 29
+    2300086: Rock 3
+    2300088: Rock 30
+    2300090: Rock 31
+    2300092: Rock 32
+    2300094: Rock 33
+    2300096: Rock 34
+    2300098: Rock 35
+    2300100: Rock 36
+    2300102: Rock 37
+    2300104: Rock 38
+    2300106: Rock 39
+    2300108: Rock 4
+    2300110: Rock 40
+    2300112: Rock 41
+    2300114: Rock 42
+    2300116: Rock 43
+    2300118: Rock 44
+    2300120: Rock 45
+    2300122: Rock 46
+    2300124: Rock 5
+    2300126: Rock 6
+    2300128: Rock 7
+    2300130: Rock 8
+    2300132: Rock 9
+    2300134: Tree
+    2300136: Tree 1
+    2300138: Tree 2
+    2300140: Tree 3
+    2300142: Tree 4
+    2300144: Tree 5
+    2300146: Wave
+    3300000: GrassPlane
+    3300002: GrassPlane 1
+    3300004: GrassPlane 10
+    3300006: GrassPlane 11
+    3300008: GrassPlane 12
+    3300010: GrassPlane 13
+    3300012: GrassPlane 2
+    3300014: GrassPlane 3
+    3300016: GrassPlane 4
+    3300018: GrassPlane 5
+    3300020: GrassPlane 6
+    3300022: GrassPlane 7
+    3300024: GrassPlane 8
+    3300026: GrassPlane 9
+    3300028: Ground
+    3300030: Ground 1
+    3300032: Ground 2
+    3300034: Ground 3
+    3300036: Ground 4
+    3300038: Ground 5
+    3300040: Ground 6
+    3300042: Rock 1
+    3300044: Rock 10
+    3300046: Rock 11
+    3300048: Rock 12
+    3300050: Rock 13
+    3300052: Rock 14
+    3300054: Rock 15
+    3300056: Rock 16
+    3300058: Rock 17
+    3300060: Rock 18
+    3300062: Rock 19
+    3300064: Rock 2
+    3300066: Rock 20
+    3300068: Rock 21
+    3300070: Rock 22
+    3300072: Rock 23
+    3300074: Rock 24
+    3300076: Rock 25
+    3300078: Rock 26
+    3300080: Rock 27
+    3300082: Rock 28
+    3300084: Rock 29
+    3300086: Rock 3
+    3300088: Rock 30
+    3300090: Rock 31
+    3300092: Rock 32
+    3300094: Rock 33
+    3300096: Rock 34
+    3300098: Rock 35
+    3300100: Rock 36
+    3300102: Rock 37
+    3300104: Rock 38
+    3300106: Rock 39
+    3300108: Rock 4
+    3300110: Rock 40
+    3300112: Rock 41
+    3300114: Rock 42
+    3300116: Rock 43
+    3300118: Rock 44
+    3300120: Rock 45
+    3300122: Rock 46
+    3300124: Rock 5
+    3300126: Rock 6
+    3300128: Rock 7
+    3300130: Rock 8
+    3300132: Rock 9
+    3300134: Tree
+    3300136: Tree 1
+    3300138: Tree 2
+    3300140: Tree 3
+    3300142: Tree 4
+    3300144: Tree 5
+    3300146: Wave
+    4300000: Rock
+    4300002: Rock
+    4300004: Rock
+    4300006: Rock
+    4300008: Rock
+    4300010: Rock
+    4300012: Rock
+    4300014: Rock
+    4300016: Rock
+    4300018: Rock
+    4300020: Rock
+    4300022: Rock
+    4300024: Rock
+    4300026: Rock
+    4300028: Rock
+    4300030: Rock
+    4300032: Rock
+    4300034: Rock
+    4300036: Rock
+    4300038: Rock
+    4300040: Rock
+    4300042: Rock
+    4300044: Rock
+    4300046: Rock
+    4300048: Rock
+    4300050: Rock
+    4300052: Rock
+    4300054: Rock
+    4300056: Rock
+    4300058: Rock
+    4300060: Rock
+    4300062: Rock
+    4300064: Rock
+    4300066: Rock
+    4300068: Rock
+    4300070: Rock
+    4300072: Rock
+    4300074: Rock
+    4300076: Rock
+    4300078: Rock
+    4300080: Rock
+    4300082: Rock
+    4300084: Rock
+    4300086: Rock
+    4300088: Rock
+    4300090: Rock
+    4300092: Tree
+    4300094: Tree
+    4300096: Tree
+    4300098: Tree
+    4300100: Tree
+    4300102: Tree
+    4300104: Ground
+    4300106: Ground
+    4300108: Ground
+    4300110: Ground
+    4300112: Ground
+    4300114: Ground
+    4300116: Ground
+    4300118: Wave
+    4300120: GrassPlane
+    4300122: GrassPlane
+    4300124: GrassPlane
+    4300126: GrassPlane
+    4300128: GrassPlane
+    4300130: GrassPlane
+    4300132: GrassPlane
+    4300134: GrassPlane
+    4300136: GrassPlane
+    4300138: GrassPlane
+    4300140: GrassPlane
+    4300142: GrassPlane
+    4300144: GrassPlane
+    4300146: GrassPlane
+    9500000: //RootNode
+  externalObjects: {}
+  materials:
+    importMaterials: 1
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 0
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    motionNodeName: 
+    rigImportErrors: 
+    rigImportWarnings: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    extraUserProperties: []
+    clipAnimations: []
+    isReadable: 1
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 0.01
+    meshCompression: 0
+    addColliders: 0
+    importVisibility: 0
+    importBlendShapes: 1
+    importCameras: 0
+    importLights: 0
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    optimizeMeshForGPU: 1
+    keepQuads: 0
+    weldVertices: 1
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVPackMargin: 4
+    useFileScale: 0
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 4
+    normalCalculationMode: 0
+  importAnimation: 1
+  copyAvatar: 0
+  humanDescription:
+    serializedVersion: 2
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    rootMotionBoneName: 
+    rootMotionBoneRotation: {x: 0, y: 0, z: 0, w: 1}
+    hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 0
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  animationType: 2
+  humanoidOversampling: 1
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
