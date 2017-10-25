@@ -95,13 +95,14 @@ public abstract class WordListGenerator
 
 	protected IronPython.Runtime.List CategoryShuffle(System.Random rng, IronPython.Runtime.List list, int lengthOfEachList)
 	{
+		/////////////in order to select words from appropriate categories, build a dict with categories as keys and a list of words as values
 		Dictionary <string, IronPython.Runtime.List> categoriesToWords = BuildCategoryToWordDict (rng, list);
 
+		/////////////we will append words to this in the proper order and then return it
 		IronPython.Runtime.List returnList = new IronPython.Runtime.List();
 
 		bool finished = false;
 		int iterations = 0;
-
 		do 
 		{
 			iterations++;
@@ -111,6 +112,8 @@ public abstract class WordListGenerator
 				throw new UnityException("Error while shuffle catFR list");
 			}
 
+			////////////if there are less than three categories remaining, we are on the last list and can't complete it validly
+			////////////this is currently handled by simply trying the whole process again
 			if (categoriesToWords.Count < 3)
 			{
 				//start over
@@ -123,6 +126,7 @@ public abstract class WordListGenerator
 
 			IronPython.Runtime.List singleList = new IronPython.Runtime.List();
 
+			//////////find three random unique categories
 			string randomCategoryA = keyList [rng.Next (keyList.Count)];
 			string randomCategoryB;
 			do
@@ -137,6 +141,7 @@ public abstract class WordListGenerator
 			}
 			while (randomCategoryC.Equals(randomCategoryA) | randomCategoryC.Equals(randomCategoryB));
 
+			//////////get four words from each of these categories
 			IronPython.Runtime.List groupA = new IronPython.Runtime.List ();
 			IronPython.Runtime.List groupB = new IronPython.Runtime.List ();
 			IronPython.Runtime.List groupC = new IronPython.Runtime.List ();
@@ -154,6 +159,7 @@ public abstract class WordListGenerator
 				groupC.Add(categoriesToWords[randomCategoryC].pop());
 			}
 
+			//////////remove categories from dict if all 12 words have been used
 			if (categoriesToWords[randomCategoryA].Count == 0)
 				categoriesToWords.Remove(randomCategoryA);
 			if (categoriesToWords[randomCategoryB].Count == 0)
@@ -161,6 +167,8 @@ public abstract class WordListGenerator
 			if (categoriesToWords[randomCategoryC].Count == 0)
 				categoriesToWords.Remove(randomCategoryC);
 
+			//////////integers 0, 1, 2, 0, 1, 2 representing the order in which to present pairs of words from categories (A == 1, B == 2, etc.)
+			//////////make sure to fulfill the requirement that both halves have ABC and the end of the first half is not the beginning of the second
 			IronPython.Runtime.List groups = new IronPython.Runtime.List();
 			for (int i = 0; i < 3; i++)
 			{
@@ -175,8 +183,7 @@ public abstract class WordListGenerator
 					first_half_last_item = item;
 				index++;
 			}
-
-
+				
 			IronPython.Runtime.List secondHalf = new IronPython.Runtime.List();
 			for (int i = 0; i < 3; i++)
 			{
@@ -192,6 +199,7 @@ public abstract class WordListGenerator
 			foreach (int item in secondHalf)
 				groups.append(item);
 
+			//////////append words to the final list according to the integers gotten above
 			foreach(int groupNo in groups)
 			{
 				if (groupNo == 0)
@@ -211,6 +219,7 @@ public abstract class WordListGenerator
 				}
 			}
 
+			//////////if there are no more categories left, we're done
 			if (categoriesToWords.Count == 0)
 				finished = true;
 		}
