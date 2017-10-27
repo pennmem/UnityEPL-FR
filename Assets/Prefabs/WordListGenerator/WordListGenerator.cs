@@ -267,6 +267,7 @@ public abstract class FRListGenerator : WordListGenerator
 
 	public override IronPython.Runtime.List GenerateLists (int numberOfLists, int lengthOfEachList, System.Random rng)
 	{
+		Debug.Log (isCategory);
 		return GenerateListsOptionalCategory (numberOfLists, lengthOfEachList, isCategory, rng: rng);
 	}
 
@@ -292,25 +293,20 @@ public class FR1ListGenerator : FRListGenerator
 		IronPython.Runtime.List main_words;
 		if (isCategoryPool)
 		{
+			Debug.Log ("category pool");
 			practice_words = ReadWordsFromPoolTxt ("practice_cat_en", isCategoryPool);
 			main_words = ReadWordsFromPoolTxt ("ram_categorized_en", isCategoryPool);
+			practice_words = CategoryShuffle (rng, practice_words, lengthOfEachList);
+			main_words = CategoryShuffle (rng, main_words, lengthOfEachList);
 		}
 		else 
 		{
 			practice_words = ReadWordsFromPoolTxt ("practice_en", isCategoryPool);
 			main_words = ReadWordsFromPoolTxt ("ram_wordpool_en", isCategoryPool);
-		}
-
-		if (isCategoryPool)
-		{
-			practice_words = CategoryShuffle (rng, practice_words, lengthOfEachList);
-			main_words = CategoryShuffle (rng, main_words, lengthOfEachList);
-		}
-		else
-		{
 			practice_words = Shuffled (rng, practice_words);
 			main_words = Shuffled (rng, main_words);
 		}
+
 
 
 		////////////////////////////////////////////Call list creation functions from python
@@ -346,7 +342,7 @@ public class FR6ListGenerator : FRListGenerator
 
 
 		//////////////////////Start with FR1 lists
-		IronPython.Runtime.List words_with_listnos = new FR1ListGenerator ().GenerateLists (numberOfLists, lengthOfEachList, rng: rng);
+		IronPython.Runtime.List words_with_listnos = new FR1ListGenerator (catifyMe: isCategoryPool).GenerateLists (numberOfLists, lengthOfEachList, rng: rng);
 
 
 		//////////////////////Build type lists and assign tpyes
