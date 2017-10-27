@@ -2,27 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public struct ExperimentSettings
-{
-	public WordListGenerator wordListGenerator;
-	public string experimentName;
-	public string version;
-	public int numberOfLists;
-	public int wordsPerList;
-	public int countdownLength;
-	public int microphoneTestLength;
-	public float countdownTick;
-	public float wordPresentationLength;
-	public float minISI;
-	public float maxISI;
-	public float distractionLength;
-	public float answerConfirmationTime;
-	public float recallLength;
-	public float minPauseBeforeWords;
-	public float maxPauseBeforeWords;
-	public float minPauseBeforeRecall;
-	public float maxPauseBeforeRecall;
-}
+
 
 public class EditableExperiment : MonoBehaviour
 {

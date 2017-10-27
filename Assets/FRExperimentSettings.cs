@@ -1,6 +1,28 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+public struct ExperimentSettings
+{
+	public WordListGenerator wordListGenerator;
+	public string experimentName;
+	public string version;
+	public int numberOfLists;
+	public int wordsPerList;
+	public int countdownLength;
+	public int microphoneTestLength;
+	public float countdownTick;
+	public float wordPresentationLength;
+	public float minISI;
+	public float maxISI;
+	public float distractionLength;
+	public float answerConfirmationTime;
+	public float recallLength;
+	public float minPauseBeforeWords;
+	public float maxPauseBeforeWords;
+	public float minPauseBeforeRecall;
+	public float maxPauseBeforeRecall;
+}
+
 public static class FRExperimentSettings
 {
 	public static string[] GetExperimentNames()
@@ -69,7 +91,7 @@ public static class FRExperimentSettings
 		ExperimentSettings FR1Settings = new ExperimentSettings();
 		FR1Settings.experimentName = "FR1";
 		FR1Settings.version = "1.0";
-		FR1Settings.wordListGenerator = new FR1ListGenerator();
+		FR1Settings.wordListGenerator = new FRListGenerator (false, 0, 25, 0, 0, 0, 0);
 		FR1Settings.numberOfLists = 26;
 		FR1Settings.wordsPerList = 12;
 		FR1Settings.countdownLength = 10;
@@ -92,7 +114,7 @@ public static class FRExperimentSettings
 	{
 		ExperimentSettings CatFR1Settings = GetFR1Settings ();
 		CatFR1Settings.experimentName = "CatFR1";
-		CatFR1Settings.wordListGenerator = new FR1ListGenerator (catifyMe: true);
+		CatFR1Settings.wordListGenerator = new FRListGenerator (true, 0, 25, 0, 0, 0, 0);
 		return CatFR1Settings;
 	}
 
@@ -101,7 +123,7 @@ public static class FRExperimentSettings
 		ExperimentSettings FR6Settings = GetFR1Settings();
 		FR6Settings.experimentName = "FR6";
 		FR6Settings.version = "6.0";
-		FR6Settings.wordListGenerator = new FR6ListGenerator();
+		FR6Settings.wordListGenerator = new FRListGenerator (false, 16, 6, 3, 5, 5, 6);
 		return FR6Settings;
 	}
 
@@ -109,7 +131,7 @@ public static class FRExperimentSettings
 	{
 		ExperimentSettings CatFR6Settings = GetFR6Settings ();
 		CatFR6Settings.experimentName = "CatFR6";
-		CatFR6Settings.wordListGenerator = new FR6ListGenerator (catifyMe: true);
+		CatFR6Settings.wordListGenerator = new FRListGenerator (true, 16, 6, 3, 5, 5, 6);
 		return CatFR6Settings;
 	}
 

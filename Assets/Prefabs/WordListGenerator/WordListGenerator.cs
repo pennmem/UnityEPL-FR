@@ -256,44 +256,45 @@ public abstract class WordListGenerator
 	}
 }
 
-public abstract class FRListGenerator : WordListGenerator
+public class FRListGenerator : WordListGenerator
 {
 	private bool isCategory;
 
-	public FRListGenerator(bool catifyMe = false)
+	private int STIM_LIST_COUNT;
+	private int NONSTIM_LIST_COUNT;
+	private int BASELINE_LIST_COUNT;
+
+	private int A_STIM_COUNT;
+	private int B_STIM_COUNT;
+	private int AB_STIM_COUNT;
+
+	public FRListGenerator(bool catifyMe, int NEW_STIM_LIST_COUNT, int NEW_NONSTIM_LIST_COUNT, int NEW_BASELINE_LIST_COUNT, int NEW_A_STIM_COUNT, int NEW_B_STIM_COUNT, int NEW_AB_STIM_COUNT)
 	{
 		isCategory = catifyMe;
+		STIM_LIST_COUNT = NEW_STIM_LIST_COUNT;
+		NONSTIM_LIST_COUNT = NEW_NONSTIM_LIST_COUNT;
+		BASELINE_LIST_COUNT = NEW_BASELINE_LIST_COUNT;
+		A_STIM_COUNT = NEW_A_STIM_COUNT;
+		B_STIM_COUNT = NEW_B_STIM_COUNT;
+		AB_STIM_COUNT = NEW_AB_STIM_COUNT;
 	}
 
 	public override IronPython.Runtime.List GenerateLists (int numberOfLists, int lengthOfEachList, System.Random rng)
 	{
-		Debug.Log (isCategory);
 		return GenerateListsOptionalCategory (numberOfLists, lengthOfEachList, isCategory, rng: rng);
 	}
 
-	public abstract IronPython.Runtime.List GenerateListsOptionalCategory (int numberOfLists, int lengthOfEachList, bool isCategoryPool, System.Random rng);
-}
-
-public class FR1ListGenerator : FRListGenerator
-{
-	public FR1ListGenerator(bool catifyMe = false) : base(catifyMe: catifyMe)
-	{
-
-	}
-
-	public override IronPython.Runtime.List GenerateListsOptionalCategory (int numberOfLists, int lengthOfEachList, bool isCategoryPool, System.Random rng)
+	public IronPython.Runtime.List GenerateListsOptionalCategory (int numberOfLists, int lengthOfEachList, bool isCategoryPool, System.Random rng)
 	{
 		//////////////////////Load the python wordpool code
 		Microsoft.Scripting.Hosting.ScriptScope scope = BuildPythonScope();
 
 
 		//////////////////////Load the word pools
-
 		IronPython.Runtime.List practice_words;
 		IronPython.Runtime.List main_words;
 		if (isCategoryPool)
 		{
-			Debug.Log ("category pool");
 			practice_words = ReadWordsFromPoolTxt ("practice_cat_en", isCategoryPool);
 			main_words = ReadWordsFromPoolTxt ("ram_categorized_en", isCategoryPool);
 			practice_words = CategoryShuffle (rng, practice_words, lengthOfEachList);
@@ -308,41 +309,10 @@ public class FR1ListGenerator : FRListGenerator
 		}
 
 
-
 		////////////////////////////////////////////Call list creation functions from python
 		//////////////////////Concatenate into lists with numbers
 		var concatenate_session_lists = scope.GetVariable("concatenate_session_lists");
 		var words_with_listnos = concatenate_session_lists (practice_words, main_words, lengthOfEachList, numberOfLists-1); // -1 because the practice list doesn't count
-
-
-		return words_with_listnos;
-	}
-}
-
-
-public class FR6ListGenerator : FRListGenerator
-{
-	public FR6ListGenerator(bool catifyMe = false) : base(catifyMe: catifyMe)
-	{
-		
-	}
-
-	public override IronPython.Runtime.List GenerateListsOptionalCategory (int numberOfLists, int lengthOfEachList, bool isCategoryPool, System.Random rng)
-	{
-		const int STIM_LIST_COUNT = 16;
-		const int NONSTIM_LIST_COUNT = 6;
-		const int BASELINE_LIST_COUNT = 3;
-
-		const int A_STIM_COUNT = 5;
-		const int B_STIM_COUNT = 5;
-		const int AB_STIM_COUNT = 6;
-
-		//////////////////////Load the python wordpool code
-		Microsoft.Scripting.Hosting.ScriptScope scope = BuildPythonScope();
-
-
-		//////////////////////Start with FR1 lists
-		IronPython.Runtime.List words_with_listnos = new FR1ListGenerator (catifyMe: isCategoryPool).GenerateLists (numberOfLists, lengthOfEachList, rng: rng);
 
 
 		//////////////////////Build type lists and assign tpyes
