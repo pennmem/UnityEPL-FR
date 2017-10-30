@@ -83,19 +83,23 @@ public class EditableExperiment : MonoBehaviour
 				yield return DoIntroductionVideo ();
 				yield return DoSubjectSessionQuitPrompt ();
 				yield return DoMicrophoneTest ();
+				yield return PressAnyKey ("Press any key for practice trial.");
 			}
 
-			if (i == 1 && i != startList)
+			if (i == 1 && i != startList) 
+			{
 				yield return PressAnyKey ("Please let the experimenter know \n" +
-					"if you have any questions about \n" +
-					"what you just did.\n\n" +
-					"If you think you understand, \n" +
-					"Please explain the task to the \n" +
-					"experimenter in your own words.\n\n" +
-					"Press any key to continue \n" +
-					"to the first list.");
-			else if (i != 0)
-				yield return PressAnyKey ("Press any key to continue to trial " + i.ToString () + ".");
+				"if you have any questions about \n" +
+				"what you just did.\n\n" +
+				"If you think you understand, \n" +
+				"Please explain the task to the \n" +
+				"experimenter in your own words.\n\n" +
+				"Press any key to continue \n" +
+				"to the first list.");
+			}
+
+			if (i != 0)
+				yield return PressAnyKey ("Press any key for trial " + i.ToString () + ".");
 
 			yield return DoCountdown ();
 			yield return DoEncoding ();
