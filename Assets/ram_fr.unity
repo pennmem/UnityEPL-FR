@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657844, g: 0.49641222, b: 0.57481694, a: 1}
+  m_IndirectSpecularColor: {r: 0.4465934, g: 0.49642956, b: 0.57482487, a: 1}
 --- !u!157 &3
 LightmapSettings:
   m_ObjectHideFlags: 0
@@ -288,7 +288,7 @@ Prefab:
     - target: {fileID: 224608295462917530, guid: e6672ad97ff294adba0eb53a61d1502f,
         type: 2}
       propertyPath: m_LocalPosition.x
-      value: 800
+      value: 840
       objectReference: {fileID: 0}
     - target: {fileID: 224608295462917530, guid: e6672ad97ff294adba0eb53a61d1502f,
         type: 2}
@@ -487,36 +487,6 @@ Prefab:
     - target: {fileID: 4193480935844490, guid: 941b5dccbc0da4585a324a844ffff8a8, type: 2}
       propertyPath: m_RootOrder
       value: 4
-      objectReference: {fileID: 0}
-    - target: {fileID: 224370968818740456, guid: 941b5dccbc0da4585a324a844ffff8a8,
-        type: 2}
-      propertyPath: m_LocalPosition.x
-      value: 0.17999268
-      objectReference: {fileID: 0}
-    - target: {fileID: 224370968818740456, guid: 941b5dccbc0da4585a324a844ffff8a8,
-        type: 2}
-      propertyPath: m_LocalPosition.y
-      value: -476.525
-      objectReference: {fileID: 0}
-    - target: {fileID: 224126303121770298, guid: 941b5dccbc0da4585a324a844ffff8a8,
-        type: 2}
-      propertyPath: m_LocalPosition.x
-      value: -0.3199463
-      objectReference: {fileID: 0}
-    - target: {fileID: 224126303121770298, guid: 941b5dccbc0da4585a324a844ffff8a8,
-        type: 2}
-      propertyPath: m_LocalPosition.y
-      value: -6.6499634
-      objectReference: {fileID: 0}
-    - target: {fileID: 224772384124147248, guid: 941b5dccbc0da4585a324a844ffff8a8,
-        type: 2}
-      propertyPath: m_LocalPosition.x
-      value: 840
-      objectReference: {fileID: 0}
-    - target: {fileID: 224772384124147248, guid: 941b5dccbc0da4585a324a844ffff8a8,
-        type: 2}
-      propertyPath: m_LocalPosition.y
-      value: 525
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 941b5dccbc0da4585a324a844ffff8a8, type: 2}
