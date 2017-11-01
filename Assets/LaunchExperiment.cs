@@ -14,6 +14,8 @@ public class LaunchExperiment : MonoBehaviour
 		ushort listNumber;
 		ushort sessionNumber;
 
+		ExperimentSettings experimentSettings = FRExperimentSettings.GetSettingsByName (UnityEPL.GetExperimentName ());
+
 		if (participantNameInput.text.Equals (""))
 		{
 			cantGoPrompt.GetComponent<UnityEngine.UI.Text> ().text = "Please enter a participant";
@@ -26,15 +28,15 @@ public class LaunchExperiment : MonoBehaviour
 			cantGoPrompt.SetActive (true);
 			return;
 		}
-		if (!ushort.TryParse (listNumberInput.text, out listNumber))
+		if (!ushort.TryParse (listNumberInput.text, out listNumber) || listNumber < 0 || listNumber >= experimentSettings.numberOfLists)
 		{
-			cantGoPrompt.GetComponent<UnityEngine.UI.Text> ().text = "Please enter list number or 0 to start at the beginning";
+			cantGoPrompt.GetComponent<UnityEngine.UI.Text> ().text = "Please enter a valid list index (0 to start at the beginning)";
 			cantGoPrompt.SetActive (true);
 			return;
 		}
-		if (!ushort.TryParse (sessionNumberInput.text, out sessionNumber))
+		if (!ushort.TryParse (sessionNumberInput.text, out sessionNumber) || sessionNumber < 0)
 		{
-			cantGoPrompt.GetComponent<UnityEngine.UI.Text> ().text = "Please enter a valid session number";
+			cantGoPrompt.GetComponent<UnityEngine.UI.Text> ().text = "Please enter a valid session index (0 for the first session)";
 			cantGoPrompt.SetActive (true);
 			return;
 		}
@@ -48,7 +50,7 @@ public class LaunchExperiment : MonoBehaviour
 		UnityEPL.AddParticipant(participantNameInput.text);
 		UnityEPL.SetSessionNumber (sessionNumber);
 
-		EditableExperiment.ConfigureExperiment((ushort)(listNumber*FRExperimentSettings.GetSettingsByName(UnityEPL.GetExperimentName()).wordsPerList), sessionNumber);
+		EditableExperiment.ConfigureExperiment((ushort)(listNumber*experimentSettings.wordsPerList), sessionNumber);
 		UnityEngine.SceneManagement.SceneManager.LoadScene (FRExperimentSettings.ExperimentNameToExperimentScene(UnityEPL.GetExperimentName()));
 	}
 
