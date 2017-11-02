@@ -16,7 +16,7 @@ public class RamulatorInterface : MonoBehaviour
 	public ScriptedEventReporter scriptedEventReporter;
 
 	//how long to wait for ramulator to connect
-	const int timeoutDelay = 90;
+	const int timeoutDelay = 150;
 	const int unreceivedHeartbeatsToQuit = 8;
 
 	private int unreceivedHeartbeats = 0;

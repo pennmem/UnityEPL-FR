@@ -11,18 +11,18 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/ram_fr.unity
     guid: 96614c7e79221404ca1e47f410977a9d
-  - enabled: 1
+  - enabled: 0
     path: Assets/scalp_fr.unity
     guid: 806f98cfa662c4c1ea9bb15bb3ba714b
   - enabled: 0
-    path: 
+    path: Assets/__DELETED_GUID_Trash/85519800729c149e3921e29161896c25
     guid: 85519800729c149e3921e29161896c25
-  - enabled: 1
+  - enabled: 0
     path: Assets/spatial_fr.unity
     guid: 28edf40fbcced4a4b80683f555746755
   - enabled: 0
     path: 
-    guid: 0d99a6bd54ccd4e70b4a8f4c711cda54
+    guid: 00000000000000000000000000000000
   - enabled: 0
     path: 
-    guid: 70e3d132376e44d65ab0da750a9c09d0
+    guid: 00000000000000000000000000000000
