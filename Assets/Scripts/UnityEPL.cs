@@ -104,7 +104,7 @@ public static class UnityEPL
 		{
 			defaultRoot = System.IO.Path.GetFullPath (".");
 		}
-		defaultRoot = System.IO.Path.Combine(defaultRoot, "UnityEPLData");
+		defaultRoot = System.IO.Path.Combine(defaultRoot, "data");
 
 		string directory = System.IO.Path.Combine (defaultRoot, UnityEPL.GetExperimentName ());
 		directory = System.IO.Path.Combine (directory, string.Join ("", UnityEPL.GetParticipants ()));
