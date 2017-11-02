@@ -5,8 +5,7 @@ using UnityEngine;
 public class ParticipantSelection : MonoBehaviour
 {
 	public UnityEngine.UI.InputField participantNameInput;
-	public UnityEngine.UI.InputField listNumberInupt;
-	public UnityEngine.UI.InputField currentSessionInput;
+	public static int nextSessionNumber = 0;
 
 	void Start ()
 	{
@@ -36,8 +35,6 @@ public class ParticipantSelection : MonoBehaviour
 		UnityEngine.UI.Dropdown dropdown = GetComponent<UnityEngine.UI.Dropdown> ();
 		if (dropdown.value <= 1)
 		{
-			listNumberInupt.text = "0";
-			currentSessionInput.text = "0";
 			participantNameInput.text = "New participant";
 		}
 		else
@@ -56,54 +53,9 @@ public class ParticipantSelection : MonoBehaviour
 		
 		participantNameInput.text = selectedParticipant;
 
-		//identify earliest incomplete session
-		string[] sessionFiles = System.IO.Directory.GetFiles(EditableExperiment.ParticipantFolderPath(selectedParticipant));
-		int sessionNumber = 0;
-		for (sessionNumber = 0; sessionNumber < sessionFiles.Length; sessionNumber++)
+		while (System.IO.File.Exists (EditableExperiment.SessionFilePath (nextSessionNumber, selectedParticipant)))
 		{
-			if (!EditableExperiment.SessionComplete(sessionNumber, selectedParticipant))
-			{
-				break;
-			}
-		}
-
-
-		//load earliest incomplete session
-		string sessionFilePath = EditableExperiment.SessionFilePath(sessionNumber, selectedParticipant);
-		if (System.IO.File.Exists(sessionFilePath))
-		{
-			string[] loadedState = System.IO.File.ReadAllLines(sessionFilePath);
-			currentSessionInput.text = loadedState [0];
-			listNumberInupt.text = (int.Parse(loadedState [1])/12).ToString();
-			//load words
-			ExperimentSettings currentSettings = FRExperimentSettings.GetSettingsByName(UnityEPL.GetExperimentName());
-			int wordCount = int.Parse(loadedState [2]);
-			if (currentSettings.numberOfLists * currentSettings.wordsPerList != wordCount)
-				throw new UnityException ("Mismatch between saved word list and experiment settings.");
-			int wordStartLine = 3;
-			IronPython.Runtime.List words = new IronPython.Runtime.List();
-			for (int i = wordStartLine; i < currentSettings.numberOfLists * currentSettings.wordsPerList+wordStartLine; i++)
-			{
-				string wordString = loadedState [i];
-
-				IronPython.Runtime.PythonDictionary word = new IronPython.Runtime.PythonDictionary ();
-				string[] keyValues = wordString.Split (';');
-				foreach (string keyValue in keyValues)
-				{
-					if (keyValue.Equals (""))
-						continue;
-					string[] keyValuePair = keyValue.Split (':');
-					word [keyValuePair [0]] = keyValuePair [1];
-				}
-
-				words.Add (word);
-			}
-			EditableExperiment.SetWords (words);
-		}
-		else //start from the beginning if it doesn't exist yet
-		{
-			currentSessionInput.text = sessionNumber.ToString();
-			listNumberInupt.text = "0";
+			nextSessionNumber++;
 		}
 	}
 }

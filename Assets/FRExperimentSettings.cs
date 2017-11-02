@@ -27,14 +27,16 @@ public static class FRExperimentSettings
 {
 	public static string[] GetExperimentNames()
 	{
-		return new string[] { GetFR1Settings ().experimentName,
-							  GetCatFR1Settings ().experimentName,
-							  GetFR6Settings ().experimentName,
-							  GetCatFR6Settings ().experimentName,
-							  GetTestFR1Settings().experimentName,
-							  GetTestFR6Settings().experimentName,
-							  "FR1_scalp",
-							  "SFR"};
+		return new string[] {
+								//GetFR1Settings ().experimentName,
+								//GetCatFR1Settings ().experimentName,
+								GetFR6Settings ().experimentName,
+								GetCatFR6Settings ().experimentName,
+								//GetTestFR1Settings().experimentName,
+								//GetTestFR6Settings().experimentName,
+								//"FR1_scalp",
+								//"SFR",
+							};
 	}
 		
 	public static ExperimentSettings GetSettingsByName(string name)
