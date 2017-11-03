@@ -6,6 +6,9 @@ using UnityEngine;
 
 public class EditableExperiment : MonoBehaviour
 {
+	public delegate void StateChange(string text, bool on);
+	public static StateChange OnStateChange;
+
 	private static ushort wordsSeen;
 	private static ushort session;
 	private static List<IronPython.Runtime.PythonDictionary> words;
@@ -263,8 +266,11 @@ public class EditableExperiment : MonoBehaviour
 		SetRamulatorState ("WORD", state, dotNetWordData);
 	}
 
+	//WAITING, INSTRUCT, COUNTDOWN, ENCODING, WORD, DISTRACT, RETRIEVAL
 	private void SetRamulatorState(string stateName, bool state, Dictionary<string, string> extraData)
 	{
+		if (OnStateChange != null)
+			OnStateChange (stateName, state);
 		if (!stateName.Equals("WORD"))
 			extraData.Add ("phase_type", current_phase_type);
 		if (ramulatorInterface != null)
