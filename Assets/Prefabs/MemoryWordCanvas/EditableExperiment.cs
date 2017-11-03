@@ -67,7 +67,7 @@ public class EditableExperiment : MonoBehaviour
 		versionsData.Add ("Logfile version", "1");
 		scriptedEventReporter.ReportScriptedEvent("versions", versionsData, 0);
 
-		if (ramulatorInterface != null)
+		if (currentSettings.useRamulator)
 			yield return ramulatorInterface.BeginNewSession (session);
 
 		//starting from the beginning of the latest uncompleted list, do lists until the experiment is finished or stopped
@@ -75,10 +75,11 @@ public class EditableExperiment : MonoBehaviour
 
 		for (int i = startList; i < currentSettings.numberOfLists; i++)
 		{
-			if (ramulatorInterface != null)
+			current_phase_type = (string)words[wordsSeen] ["type"];
+
+			if (currentSettings.useRamulator)
 			{
 				ramulatorInterface.BeginNewTrial (i);
-				current_phase_type = (string)words[wordsSeen] ["type"];
 			}
 
 			if (startList == 0 && i == 0)
@@ -273,7 +274,7 @@ public class EditableExperiment : MonoBehaviour
 			OnStateChange (stateName, state);
 		if (!stateName.Equals("WORD"))
 			extraData.Add ("phase_type", current_phase_type);
-		if (ramulatorInterface != null)
+		if (currentSettings.useRamulator)
 			ramulatorInterface.SetState (stateName, state, extraData);
 	}
 
@@ -344,7 +345,7 @@ public class EditableExperiment : MonoBehaviour
 					}
 					ReportDistractorAnswered (correct, distractor, answer);
 					answerTime = Time.time;
-					if (ramulatorInterface != null)
+					if (currentSettings.useRamulator)
 						ramulatorInterface.SendMathMessage (distractor, answer, (int)((answerTime - displayTime) * 1000), correct);
 				}
 			}

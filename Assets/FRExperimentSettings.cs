@@ -21,6 +21,7 @@ public struct ExperimentSettings
 	public float maxPauseBeforeWords;
 	public float minPauseBeforeRecall;
 	public float maxPauseBeforeRecall;
+	public bool useRamulator;
 }
 
 public static class FRExperimentSettings
@@ -33,7 +34,8 @@ public static class FRExperimentSettings
 								GetFR6Settings ().experimentName,
 								GetCatFR6Settings ().experimentName,
 								//GetTestFR1Settings().experimentName,
-								//GetTestFR6Settings().experimentName,
+								GetTestFR6Settings().experimentName,
+								GetTestCatFR6Settings().experimentName,
 								//"FR1_scalp",
 								//"SFR",
 							};
@@ -55,6 +57,8 @@ public static class FRExperimentSettings
 				return GetTestFR1Settings ();
 			case "FR6_test":
 				return GetTestFR6Settings ();
+			case "CatFR6_test":
+				return GetTestCatFR6Settings ();
 			case "FR1_scalp":
 				return GetFR1Settings ();
 			case "SFR":
@@ -80,10 +84,8 @@ public static class FRExperimentSettings
 				return "ram_fr";
 			case "FR6_test":
 				return "ram_fr";
-			case "FR1_scalp":
-				return "scalp_fr";
-			case "SFR":
-				return "spatial_fr";
+			case "CatFR6_test":
+				return "ram_fr";
 		}
 		throw new UnityException ("That name was not recognized.");
 	}
@@ -109,6 +111,7 @@ public static class FRExperimentSettings
 		FR1Settings.maxPauseBeforeWords = 1.4f;
 		FR1Settings.minPauseBeforeRecall = 0.5f;
 		FR1Settings.maxPauseBeforeRecall = 0.7f;
+		FR1Settings.useRamulator = true;
 		return FR1Settings;
 	}
 
@@ -147,6 +150,7 @@ public static class FRExperimentSettings
 		testFR1Settings.maxISI = 0.01f;
 		testFR1Settings.distractionLength = 0.1f;
 		testFR1Settings.recallLength = 0.1f;
+		testFR1Settings.useRamulator = false;
 		return testFR1Settings;
 	}
 
@@ -160,6 +164,15 @@ public static class FRExperimentSettings
 		testFR6Settings.maxISI = 0.01f;
 		testFR6Settings.distractionLength = 0.1f;
 		testFR6Settings.recallLength = 0.1f;
+		testFR6Settings.useRamulator = false;
 		return testFR6Settings;
+	}
+
+	public static ExperimentSettings GetTestCatFR6Settings()
+	{
+		ExperimentSettings testCatFR6Settings = GetTestFR6Settings ();
+		testCatFR6Settings.experimentName = "CatFR6_test";
+		testCatFR6Settings.wordListGenerator = new FRListGenerator (true, 16, 6, 3, 5, 5, 6);
+		return testCatFR6Settings;
 	}
 }
