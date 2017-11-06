@@ -16,9 +16,20 @@ public class FlyPaths : MonoBehaviour
 
 	private bool stopFlight = false;
 
-	void Start()
+	void OnEnable()
 	{
-		BeginFlight (0);
+		EditableExperiment.OnStateChange += OnStateChange;
+	}
+
+	void OnDisable()
+	{
+		EditableExperiment.OnStateChange -= OnStateChange;
+	}
+
+	void OnStateChange(string stateName, bool on)
+	{
+		if (stateName.Equals("ENCODING") && on)
+			BeginFlight (0);
 	}
 
 	public void BeginFlight(int pathIndex)

@@ -22,6 +22,8 @@ public struct ExperimentSettings
 	public float minPauseBeforeRecall;
 	public float maxPauseBeforeRecall;
 	public bool useRamulator;
+	public bool isTwoParter;
+	public bool isCategoryPool;
 }
 
 public static class FRExperimentSettings
@@ -29,15 +31,15 @@ public static class FRExperimentSettings
 	public static string[] GetExperimentNames()
 	{
 		return new string[] {
-								//GetFR1Settings ().experimentName,
-								//GetCatFR1Settings ().experimentName,
+								GetFR1Settings ().experimentName,
+								GetCatFR1Settings ().experimentName,
 								GetFR6Settings ().experimentName,
 								GetCatFR6Settings ().experimentName,
 								//GetTestFR1Settings().experimentName,
 								GetTestFR6Settings().experimentName,
 								GetTestCatFR6Settings().experimentName,
 								//"FR1_scalp",
-								//"SFR",
+								"SFR",
 							};
 	}
 		
@@ -86,6 +88,8 @@ public static class FRExperimentSettings
 				return "ram_fr";
 			case "CatFR6_test":
 				return "ram_fr";
+			case "SFR":
+				return "sfr";
 		}
 		throw new UnityException ("That name was not recognized.");
 	}
@@ -95,8 +99,9 @@ public static class FRExperimentSettings
 		ExperimentSettings FR1Settings = new ExperimentSettings();
 		FR1Settings.experimentName = "FR1";
 		FR1Settings.version = "1.0";
-		FR1Settings.wordListGenerator = new FRListGenerator (false, 0, 25, 0, 0, 0, 0);
-		FR1Settings.numberOfLists = 26;
+		FR1Settings.wordListGenerator = new FRListGenerator (0, 12, 0, 0, 0, 0);
+		FR1Settings.isCategoryPool = false;
+		FR1Settings.numberOfLists = 13;
 		FR1Settings.wordsPerList = 12;
 		FR1Settings.countdownLength = 10;
 		FR1Settings.countdownTick = 1f;
@@ -111,7 +116,8 @@ public static class FRExperimentSettings
 		FR1Settings.maxPauseBeforeWords = 1.4f;
 		FR1Settings.minPauseBeforeRecall = 0.5f;
 		FR1Settings.maxPauseBeforeRecall = 0.7f;
-		FR1Settings.useRamulator = true;
+		FR1Settings.useRamulator = false;
+		FR1Settings.isTwoParter = true;
 		return FR1Settings;
 	}
 
@@ -119,16 +125,34 @@ public static class FRExperimentSettings
 	{
 		ExperimentSettings CatFR1Settings = GetFR1Settings ();
 		CatFR1Settings.experimentName = "CatFR1";
-		CatFR1Settings.wordListGenerator = new FRListGenerator (true, 0, 25, 0, 0, 0, 0);
+		CatFR1Settings.isCategoryPool = true;
 		return CatFR1Settings;
 	}
 
 	public static ExperimentSettings GetFR6Settings()
 	{
-		ExperimentSettings FR6Settings = GetFR1Settings();
+		ExperimentSettings FR6Settings = new ExperimentSettings();
 		FR6Settings.experimentName = "FR6";
 		FR6Settings.version = "6.0";
-		FR6Settings.wordListGenerator = new FRListGenerator (false, 16, 6, 3, 5, 5, 6);
+		FR6Settings.wordListGenerator = new FRListGenerator (16, 6, 3, 5, 5, 6);
+		FR6Settings.isCategoryPool = false;
+		FR6Settings.numberOfLists = 26;
+		FR6Settings.wordsPerList = 12;
+		FR6Settings.countdownLength = 10;
+		FR6Settings.countdownTick = 1f;
+		FR6Settings.wordPresentationLength = 1.6f;
+		FR6Settings.minISI = 0.75f;
+		FR6Settings.maxISI = 1f;
+		FR6Settings.distractionLength = 20f;
+		FR6Settings.answerConfirmationTime = 0f;
+		FR6Settings.recallLength = 30f;
+		FR6Settings.microphoneTestLength = 5;
+		FR6Settings.minPauseBeforeWords = 1f;
+		FR6Settings.maxPauseBeforeWords = 1.4f;
+		FR6Settings.minPauseBeforeRecall = 0.5f;
+		FR6Settings.maxPauseBeforeRecall = 0.7f;
+		FR6Settings.useRamulator = false;
+		FR6Settings.isTwoParter = false;
 		return FR6Settings;
 	}
 
@@ -136,7 +160,7 @@ public static class FRExperimentSettings
 	{
 		ExperimentSettings CatFR6Settings = GetFR6Settings ();
 		CatFR6Settings.experimentName = "CatFR6";
-		CatFR6Settings.wordListGenerator = new FRListGenerator (true, 16, 6, 3, 5, 5, 6);
+		CatFR6Settings.isCategoryPool = true;
 		return CatFR6Settings;
 	}
 
@@ -172,7 +196,7 @@ public static class FRExperimentSettings
 	{
 		ExperimentSettings testCatFR6Settings = GetTestFR6Settings ();
 		testCatFR6Settings.experimentName = "CatFR6_test";
-		testCatFR6Settings.wordListGenerator = new FRListGenerator (true, 16, 6, 3, 5, 5, 6);
+		testCatFR6Settings.isCategoryPool = true;
 		return testCatFR6Settings;
 	}
 }

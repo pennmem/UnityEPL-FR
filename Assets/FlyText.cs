@@ -7,42 +7,31 @@ public class FlyText : MonoBehaviour
 	public UnityEngine.UI.Text textElement;
 
 	public float startZ = 3;
-	public float staticZ = -4.5f;
 	public float hoverTime = 1.6f;
 
-	private bool startCaring = false;
+	bool is_encoding = false;
 
 	void OnEnable()
 	{
+		EditableExperiment.OnStateChange += OnStateChange;
 		TextDisplayer.OnText += OnText;
 	}
 
 	void OnDisable()
 	{
+		EditableExperiment.OnStateChange -= OnStateChange;
 		TextDisplayer.OnText -= OnText;
 	}
 		
-	private void ConstantState(bool active)
+	public void OnStateChange(string name, bool on)
 	{
-		//Debug.Log ("ConstantState");
-		textElement.color = new Color (0, 0, 0, 255);
-		gameObject.transform.localPosition = new Vector3 (gameObject.transform.localPosition.x, gameObject.transform.localPosition.y, staticZ);
-		gameObject.SetActive(active);
+		if (name.Equals("ENCODING"))
+			is_encoding = on;
 	}
 
 	public void OnText(string text)
 	{
-		//Debug.Log ("OnText:" + text);
-		for (int i = 0; i < text.Length; i++)
-		{
-			if (char.IsDigit (text, i))
-			{
-				startCaring = true;
-				ConstantState (true);
-				return;
-			}
-		}
-		if (!text.Equals("") && startCaring)
+		if (is_encoding)
 			StartCoroutine (DoFly ());
 	}
 

@@ -19948,12 +19948,12 @@ Prefab:
     - target: {fileID: 224608295462917530, guid: e6672ad97ff294adba0eb53a61d1502f,
         type: 2}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: 569.5
       objectReference: {fileID: 0}
     - target: {fileID: 224608295462917530, guid: e6672ad97ff294adba0eb53a61d1502f,
         type: 2}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 356
       objectReference: {fileID: 0}
     - target: {fileID: 224608295462917530, guid: e6672ad97ff294adba0eb53a61d1502f,
         type: 2}
@@ -20057,6 +20057,7 @@ Prefab:
     m_RemovedComponents:
     - {fileID: 114487739435193272, guid: e6672ad97ff294adba0eb53a61d1502f, type: 2}
     - {fileID: 114864122344205036, guid: e6672ad97ff294adba0eb53a61d1502f, type: 2}
+    - {fileID: 114924137073979980, guid: e6672ad97ff294adba0eb53a61d1502f, type: 2}
   m_ParentPrefab: {fileID: 100100000, guid: e6672ad97ff294adba0eb53a61d1502f, type: 2}
   m_IsPrefabParent: 0
 --- !u!1 &694604203 stripped
@@ -20070,12 +20071,6 @@ MonoBehaviour:
     type: 2}
   m_PrefabInternal: {fileID: 694604202}
   m_Script: {fileID: 708705254, guid: f70555f144d8491a825f0804e09c671c, type: 3}
---- !u!114 &694604205 stripped
-MonoBehaviour:
-  m_PrefabParentObject: {fileID: 114924137073979980, guid: e6672ad97ff294adba0eb53a61d1502f,
-    type: 2}
-  m_PrefabInternal: {fileID: 694604202}
-  m_Script: {fileID: 11500000, guid: f180c8d2d8e804d2ca402600895da790, type: 3}
 --- !u!1 &694604206 stripped
 GameObject:
   m_PrefabParentObject: {fileID: 1800808155648862, guid: e6672ad97ff294adba0eb53a61d1502f,
@@ -28530,7 +28525,6 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 953437274}
-  - component: {fileID: 953437275}
   m_Layer: 0
   m_Name: FlyingCamera
   m_TagString: Untagged
@@ -28553,21 +28547,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 15
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &953437275
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
-  m_GameObject: {fileID: 953437273}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9341ed68f41374bc496e4ddab66ea1d9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  textElement: {fileID: 0}
-  startZ: 3
-  staticZ: 4.5
-  hoverTime: 1.6
 --- !u!1001 &954275371
 Prefab:
   m_ObjectHideFlags: 0
@@ -43797,6 +43776,8 @@ GameObject:
   - component: {fileID: 1471787301}
   - component: {fileID: 1471787300}
   - component: {fileID: 1471787299}
+  - component: {fileID: 1471787302}
+  - component: {fileID: 1471787303}
   m_Layer: 0
   m_Name: MainExperimentCoroutine
   m_TagString: Untagged
@@ -43822,7 +43803,7 @@ MonoBehaviour:
   countdownVideoPlayer: {fileID: 32504547}
   pauseKey: 0
   pauseIndicator: {fileID: 694604206}
-  scriptedEventReporter: {fileID: 694604205}
+  scriptedEventReporter: {fileID: 1471787302}
   highBeep: {fileID: 79625864}
   lowBeep: {fileID: 79625863}
   lowerBeep: {fileID: 79625862}
@@ -43839,7 +43820,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6bf90851f61fb42fa874e4499ad85fc2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  wordEventReporter: {fileID: 694604205}
+  wordEventReporter: {fileID: 1471787302}
   textElements:
   - {fileID: 694604204}
   - {fileID: 1847769769}
@@ -43856,6 +43837,29 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 18
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1471787302
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1471787298}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f180c8d2d8e804d2ca402600895da790, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1471787303
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1471787298}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82da72d37f49c4fe6aab332fa22e445e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  blackScreen: {fileID: 0}
 --- !u!4 &1472062667 stripped
 Transform:
   m_PrefabParentObject: {fileID: 400008, guid: a2ee3a78d0b205f40a3fe9f728e70ba3, type: 2}
@@ -46311,6 +46315,7 @@ GameObject:
   - component: {fileID: 1571056727}
   - component: {fileID: 1571056726}
   - component: {fileID: 1571056725}
+  - component: {fileID: 1571056728}
   m_Layer: 5
   m_Name: FlyText
   m_TagString: Untagged
@@ -46394,6 +46399,20 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
+--- !u!114 &1571056728
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1571056723}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9341ed68f41374bc496e4ddab66ea1d9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  textElement: {fileID: 1847769769}
+  startZ: 12
+  hoverTime: 1.6
 --- !u!1001 &1571942497
 Prefab:
   m_ObjectHideFlags: 0

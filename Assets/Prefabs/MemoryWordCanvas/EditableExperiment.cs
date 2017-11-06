@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class EditableExperiment : MonoBehaviour
 {
-	public delegate void StateChange(string text, bool on);
+	public delegate void StateChange(string stateName, bool on);
 	public static StateChange OnStateChange;
 
 	private static ushort wordsSeen;
@@ -540,8 +540,10 @@ public class EditableExperiment : MonoBehaviour
 		wordsSeen = newWordsSeen;
 		session = newSessionNumber;
 		currentSettings = FRExperimentSettings.GetSettingsByName (UnityEPL.GetExperimentName ());
+		bool isEvenNumberSession = newSessionNumber % 2 == 0;
+		bool isTwoParter = currentSettings.isTwoParter;
 		if (words == null)
-			SetWords(currentSettings.wordListGenerator.GenerateListsAndWriteWordpool (currentSettings.numberOfLists, currentSettings.wordsPerList));
+			SetWords(currentSettings.wordListGenerator.GenerateListsAndWriteWordpool (currentSettings.numberOfLists, currentSettings.wordsPerList, currentSettings.isCategoryPool, isTwoParter, isEvenNumberSession, UnityEPL.GetParticipants()[0]));
 		SaveState ();
 	}
 
