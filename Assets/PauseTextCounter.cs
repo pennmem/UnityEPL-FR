@@ -4,17 +4,17 @@ using UnityEngine;
 
 public class PauseTextCounter : MonoBehaviour
 {
-	private float startTime;
+    private float startTime;
 
-	void OnEnable()
-	{
-		startTime = Time.time;
-	}
+    void OnEnable()
+    {
+        startTime = Time.time;
+    }
 
-	void Update () 
-	{
-		float aliveTime = Time.time - startTime;
+    void Update()
+    {
+        float aliveTime = Time.time - startTime;
 
-		GetComponent<UnityEngine.UI.Text> ().text = "Paused (" + Mathf.FloorToInt (aliveTime) + ")";
-	}
+        GetComponent<UnityEngine.UI.Text>().text = "Paused (" + Mathf.FloorToInt(aliveTime) + ")";
+    }
 }

@@ -4,21 +4,21 @@ using UnityEngine;
 
 public class BlackScreenActivator : MonoBehaviour
 {
-	public GameObject blackScreen;
+    public GameObject blackScreen;
 
-	void OnEnable()
-	{
-		EditableExperiment.OnStateChange += OnStateChange;
-	}
+    void OnEnable()
+    {
+        EditableExperiment.OnStateChange += OnStateChange;
+    }
 
-	void OnDisable()
-	{
-		EditableExperiment.OnStateChange -= OnStateChange;
-	}
+    void OnDisable()
+    {
+        EditableExperiment.OnStateChange -= OnStateChange;
+    }
 
-	void OnStateChange(string stateName, bool on)
-	{
-		if (stateName.Equals ("ENCODING"))
-			blackScreen.SetActive (!on);
-	}
+    void OnStateChange(string stateName, bool on)
+    {
+        if (stateName.Equals("ENCODING"))
+            blackScreen.SetActive(!on);
+    }
 }
