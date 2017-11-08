@@ -373,13 +373,13 @@ public class EditableExperiment : MonoBehaviour
         textDisplayer.DisplayText("display recall text", "*******");
         soundRecorder.StartRecording(Mathf.CeilToInt(currentSettings.recallLength));
 
-        float starDisplayTime = currentSettings.wordPresentationLength;
+        float starDisplayTime = currentSettings.recallTextDisplayLength;
         float firstPauseTime = currentSettings.recallLength;
         float secondPauseTime = 0f;
-        if (currentSettings.recallLength > currentSettings.wordPresentationLength)
+        if (currentSettings.recallLength > starDisplayTime)
         {
-            firstPauseTime = currentSettings.wordPresentationLength;
-            secondPauseTime = currentSettings.recallLength - currentSettings.wordPresentationLength;
+            firstPauseTime = starDisplayTime;
+            secondPauseTime = currentSettings.recallLength - starDisplayTime;
         }
         yield return PausableWait(firstPauseTime);
         textDisplayer.ClearText();

@@ -21,6 +21,7 @@ public struct ExperimentSettings
     public float maxPauseBeforeWords;
     public float minPauseBeforeRecall;
     public float maxPauseBeforeRecall;
+    public float recallTextDisplayLength;
     public bool useRamulator;
     public bool isTwoParter;
     public bool isCategoryPool;
@@ -35,11 +36,11 @@ public static class FRExperimentSettings
                                 GetCatFR1Settings ().experimentName,
                                 GetFR6Settings ().experimentName,
                                 GetCatFR6Settings ().experimentName,
-								//GetTestFR1Settings().experimentName,
-								GetTestFR6Settings().experimentName,
+                                //GetTestFR1Settings().experimentName,
+                                GetTestFR6Settings().experimentName,
                                 GetTestCatFR6Settings().experimentName,
-								//"FR1_scalp",
-								"SFR",
+                                //"FR1_scalp",
+                                "SFR",
                             };
     }
 
@@ -65,7 +66,6 @@ public static class FRExperimentSettings
                 return GetFR1Settings();
             case "SFR":
                 return GetFR1Settings();
-
         }
         throw new UnityException("No settings found with that name.");
     }
@@ -116,7 +116,8 @@ public static class FRExperimentSettings
         FR1Settings.maxPauseBeforeWords = 1.4f;
         FR1Settings.minPauseBeforeRecall = 0.5f;
         FR1Settings.maxPauseBeforeRecall = 0.7f;
-        FR1Settings.useRamulator = false;
+        FR1Settings.recallTextDisplayLength = 0.5f;
+        FR1Settings.useRamulator = true;
         FR1Settings.isTwoParter = true;
         return FR1Settings;
     }
@@ -151,7 +152,8 @@ public static class FRExperimentSettings
         FR6Settings.maxPauseBeforeWords = 1.4f;
         FR6Settings.minPauseBeforeRecall = 0.5f;
         FR6Settings.maxPauseBeforeRecall = 0.7f;
-        FR6Settings.useRamulator = false;
+        FR6Settings.recallTextDisplayLength = 0.5f;
+        FR6Settings.useRamulator = true;
         FR6Settings.isTwoParter = false;
         return FR6Settings;
     }
@@ -176,6 +178,14 @@ public static class FRExperimentSettings
         testFR1Settings.recallLength = 0.1f;
         testFR1Settings.useRamulator = false;
         return testFR1Settings;
+    }
+
+    public static ExperimentSettings GetTestCatFR1Settings()
+    {
+        ExperimentSettings testCatFR1Settings = GetTestFR1Settings();
+        testCatFR1Settings.experimentName = "CatFR1_test";
+        testCatFR1Settings.isCategoryPool = true;
+        return testCatFR1Settings;
     }
 
     public static ExperimentSettings GetTestFR6Settings()

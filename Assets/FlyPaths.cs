@@ -30,10 +30,13 @@ public class FlyPaths : MonoBehaviour
     {
         if (stateName.Equals("ENCODING") && on)
             BeginFlight(0);
+        if (stateName.Equals("ENCODING") && !on)
+            StopFlight();
     }
 
     public void BeginFlight(int pathIndex)
     {
+        Debug.Log("Beginning flight #" + pathIndex.ToString());
         StartCoroutine(DoFlight(pathIndex));
     }
 
@@ -84,6 +87,9 @@ public class FlyPaths : MonoBehaviour
             else
                 directionToNextPoint = flier.transform.forward;
 
+            Debug.Log(directionToNextPoint);
+            Debug.Log(speed);
+            Debug.Log(Time.deltaTime);
             flier.transform.position = flier.transform.position + directionToNextPoint * speed * Time.deltaTime;
 
             distanceTraveledSinceLastPoint = Vector3.Distance(flyPath.flyPoints[lastPassedPointIndex].transform.position, flier.transform.position);
@@ -95,6 +101,6 @@ public class FlyPaths : MonoBehaviour
 
             yield return null;
         }
-
+        Debug.Log("Flight over");
     }
 }

@@ -20052,7 +20052,7 @@ Prefab:
       objectReference: {fileID: 0}
     - target: {fileID: 1867217279982840, guid: e6672ad97ff294adba0eb53a61d1502f, type: 2}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 114487739435193272, guid: e6672ad97ff294adba0eb53a61d1502f, type: 2}
@@ -20071,6 +20071,11 @@ MonoBehaviour:
     type: 2}
   m_PrefabInternal: {fileID: 694604202}
   m_Script: {fileID: 708705254, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+--- !u!1 &694604205 stripped
+GameObject:
+  m_PrefabParentObject: {fileID: 1867217279982840, guid: e6672ad97ff294adba0eb53a61d1502f,
+    type: 2}
+  m_PrefabInternal: {fileID: 694604202}
 --- !u!1 &694604206 stripped
 GameObject:
   m_PrefabParentObject: {fileID: 1800808155648862, guid: e6672ad97ff294adba0eb53a61d1502f,
@@ -43859,7 +43864,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82da72d37f49c4fe6aab332fa22e445e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  blackScreen: {fileID: 0}
+  blackScreen: {fileID: 694604205}
 --- !u!4 &1472062667 stripped
 Transform:
   m_PrefabParentObject: {fileID: 400008, guid: a2ee3a78d0b205f40a3fe9f728e70ba3, type: 2}
@@ -46330,7 +46335,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1571056723}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 12}
+  m_LocalPosition: {x: 0, y: 0, z: 16}
   m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_Children:
   - {fileID: 1847769768}
@@ -46411,7 +46416,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   textElement: {fileID: 1847769769}
-  startZ: 12
+  startZ: 16
   hoverTime: 1.6
 --- !u!1001 &1571942497
 Prefab:
