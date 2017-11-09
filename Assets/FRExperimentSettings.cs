@@ -17,8 +17,8 @@ public struct ExperimentSettings
     public float distractionLength;
     public float answerConfirmationTime;
     public float recallLength;
-    public float minPauseBeforeWords;
-    public float maxPauseBeforeWords;
+    public float minOrientationStimulusLength;
+    public float maxOrientationStimulusLength;
     public float minPauseBeforeRecall;
     public float maxPauseBeforeRecall;
     public float recallTextDisplayLength;
@@ -94,6 +94,46 @@ public static class FRExperimentSettings
         throw new UnityException("That name was not recognized.");
     }
 
+//Short FR1 & CatFR1 Task Design
+//SESSION DESIGN//
+//A session begins by with an introductory video containing the task instructions
+//Each session includes one practice list and 12 experimental lists
+//A 10 second countdown video precedes the encoding phase of each list
+//Estimated time to complete each session is approximately 25 min
+//LIST ENCODING PHASE//
+//Each list starts with a orienting stimulus displayed for 1000–1400 ms (uniformly distributed)
+//12 words are then presented for 1600 ms each, each word preceded by an inter-stimulus interval of 750-1000ms.  There is no break after the last word has been displayed for 1600ms- distractors immediate appear on the screen.
+//DISTRACTOR PHASE
+//Arithmetic problems are presented for at least 20 s
+//Problems are presented in the form A+B+C = ?, where A/B/C are random integers 1–9
+//All keystrokes are recorded until the subject presses enter
+//After each arithmetic problem, if the 20 s time limit has been exceeded, a tone is presented indicating the end of the distractor phase and the beginning of the retrieval phase.
+//There is then a 1000-1400ms pause before recall.
+//RECALL PHASE//
+//Audio is recorded via the microphone for 30s
+//After 30 seconds a tone is presented, indicating the end of the retrieval phase and the end of that list.
+
+//Free Recall Word Pool and List Creation//
+//The word pool is adapted from the word pool used in the pyFR task, which has been run in a set of over 150 intracranial patients (Burke et al., 2013; Long et al., 2014).
+//A set of 288 words was chosen from the pyFR word pool, based on the recall performance of a separate set of participants who completed a large-scale study of free recall.
+//Recall performance in this large-scale task was modeled to estimate the effect of each individual word on recall, removing influences of serial position and frequency, concreteness, imageability and length.
+//Estimates for the words were used to identify the words at the top and bottom of the distribution for removal.
+//Word lists are constructed from the word pool according to an algorithm that generates unique lists with mean pairwise LSA similarity within each list of approximately 0.2.
+//Half of the words in the pool will be seen once in Session 1, and the other half will beseen in Session 2.
+
+//Categorized Free Recall Word Pool and ListCreation
+//The word pool was generated via a series of pilot studies conducted on Amazon Mechanical Turk. 
+//First, a set of 40 participants generated lists of exemplars from 28 categories.
+//The resulting exemplars were sorted according to the number of participants that produced that specific exemplar.
+//The top 25 exemplars from each category were then selected for the second pilot study (# of participants that produced each exemplar in the top 25 set, M = 19; range = 7-40).
+//In the second pilot study, a set of 45 participants rated (on a 1-7 scale) each of the 25 items from the 28 categories in terms of how ‘typical’ the item is of all members of the category.
+//From these ratings, the 12 most prototypical items from each category were selected. The three categories with the lowest mean prototypicality across the 12 exemplars were discarded, leaving 25 categories for inclusion in the study.
+//This process ensured that the exemplars that were chosen for the word pool were drawn only from highly prototypical members of each category (mean prototypicality rating across the final set = 6.3).
+//The 25 lists for the first session were constructed by randomly selecting three categories from the set and then randomly selecting four exemplars from each of those categories.
+//Category members were presented in pairs, with the order determined such that two pairs of items from the same category were never presented consecutively.
+//Lists will also have the constraint that half of the words from each category will be presented in the first half of the list, and the other half of the words will be presented in the second half of the list.
+
+
     public static ExperimentSettings GetFR1Settings()
     {
         ExperimentSettings FR1Settings = new ExperimentSettings();
@@ -112,10 +152,10 @@ public static class FRExperimentSettings
         FR1Settings.answerConfirmationTime = 0f;
         FR1Settings.recallLength = 30f;
         FR1Settings.microphoneTestLength = 5;
-        FR1Settings.minPauseBeforeWords = 1f;
-        FR1Settings.maxPauseBeforeWords = 1.4f;
-        FR1Settings.minPauseBeforeRecall = 0.5f;
-        FR1Settings.maxPauseBeforeRecall = 0.7f;
+        FR1Settings.minOrientationStimulusLength = 1f;
+        FR1Settings.maxOrientationStimulusLength = 1.4f;
+        FR1Settings.minPauseBeforeRecall = 1f;
+        FR1Settings.maxPauseBeforeRecall = 1.4f;
         FR1Settings.recallTextDisplayLength = 0.5f;
         FR1Settings.useRamulator = true;
         FR1Settings.isTwoParter = true;
@@ -148,10 +188,10 @@ public static class FRExperimentSettings
         FR6Settings.answerConfirmationTime = 0f;
         FR6Settings.recallLength = 30f;
         FR6Settings.microphoneTestLength = 5;
-        FR6Settings.minPauseBeforeWords = 1f;
-        FR6Settings.maxPauseBeforeWords = 1.4f;
-        FR6Settings.minPauseBeforeRecall = 0.5f;
-        FR6Settings.maxPauseBeforeRecall = 0.7f;
+        FR6Settings.minOrientationStimulusLength = 1f;
+        FR6Settings.maxOrientationStimulusLength = 1.4f;
+        FR6Settings.minPauseBeforeRecall = 1f;
+        FR6Settings.maxPauseBeforeRecall = 1.4f;
         FR6Settings.recallTextDisplayLength = 0.5f;
         FR6Settings.useRamulator = true;
         FR6Settings.isTwoParter = false;
