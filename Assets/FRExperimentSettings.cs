@@ -107,8 +107,8 @@ public static class FRExperimentSettings
 		FR1Settings.microphoneTestLength = 5;
 		FR1Settings.minPauseBeforeWords = 1f;
 		FR1Settings.maxPauseBeforeWords = 1.4f;
-		FR1Settings.minPauseBeforeRecall = 0.5f;
-		FR1Settings.maxPauseBeforeRecall = 0.7f;
+		FR1Settings.minPauseBeforeRecall = 1.0f;
+		FR1Settings.maxPauseBeforeRecall = 1.4f;
 		return FR1Settings;
 	}
 

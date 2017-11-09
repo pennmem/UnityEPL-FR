@@ -239,10 +239,10 @@ public class EditableExperiment : MonoBehaviour
 		yield return PausableWait (Random.Range (currentSettings.minPauseBeforeWords, currentSettings.maxPauseBeforeWords));
 		textDisplayer.ClearText ();
 		//SetRamulatorState ("ORIENT", false, new Dictionary<string, string> ());
-		yield return PausableWait (Random.Range (currentSettings.minISI, currentSettings.maxISI));
 
 		for (int i = 0; i < currentSettings.wordsPerList; i++)
 		{
+			yield return PausableWait (Random.Range (currentSettings.minISI, currentSettings.maxISI));
 			string word = (string)words[wordsSeen]["word"];
 			textDisplayer.DisplayText ("word stimulus", word);
 			SetRamulatorWordState (true, words [wordsSeen]);
@@ -250,7 +250,6 @@ public class EditableExperiment : MonoBehaviour
 			textDisplayer.ClearText ();
 			SetRamulatorWordState(false, words [wordsSeen]);
 			IncrementWordsSeen();
-			yield return PausableWait (Random.Range (currentSettings.minISI, currentSettings.maxISI));
 		}
 		SetRamulatorState ("ENCODING", false, new Dictionary<string, string> ());
 	}
