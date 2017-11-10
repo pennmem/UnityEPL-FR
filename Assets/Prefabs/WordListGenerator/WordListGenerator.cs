@@ -334,14 +334,6 @@ public class FRListGenerator : WordListGenerator
             {
                 main_words = (IronPython.Runtime.List)main_words.__getslice__(main_words.Count / 2, main_words.Count);
             }
-            if (!isEvenNumberSession && isCategoryPool)
-            {
-                practice_words = ReadWordsFromPoolTxt("practice_cat_en_2", isCategoryPool);
-            }
-            else if (!isEvenNumberSession && !isCategoryPool)
-            {
-                practice_words = ReadWordsFromPoolTxt("practice_en_2", isCategoryPool);
-            }
         }
         if (isCategoryPool)
         {
