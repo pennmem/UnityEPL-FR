@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class ExperimentSelection : MonoBehaviour
 {
+    public GameObject activatable;
+
     void Awake()
     {
         UnityEngine.UI.Dropdown dropdown = GetComponent<UnityEngine.UI.Dropdown>();
@@ -19,5 +21,6 @@ public class ExperimentSelection : MonoBehaviour
         UnityEngine.UI.Dropdown dropdown = GetComponent<UnityEngine.UI.Dropdown>();
         UnityEPL.SetExperimentName(dropdown.captionText.text);
         Debug.Log("Now using experiment: " + UnityEPL.GetExperimentName());
+        activatable.SetActive(FRExperimentSettings.GetSettingsByName(UnityEPL.GetExperimentName()).useSessionListSelection);
     }
 }

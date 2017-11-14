@@ -23,8 +23,6 @@ public class LaunchExperiment : MonoBehaviour
 
     public void DoLaunchExperiment()
     {
-        int sessionNumber = ParticipantSelection.nextSessionNumber;
-
         ExperimentSettings experimentSettings = FRExperimentSettings.GetSettingsByName(UnityEPL.GetExperimentName());
 
         if (participantNameInput.text.Equals(""))
@@ -39,6 +37,8 @@ public class LaunchExperiment : MonoBehaviour
             cantGoPrompt.SetActive(true);
             return;
         }
+
+        int sessionNumber = ParticipantSelection.nextSessionNumber;
         if (EditableExperiment.SessionComplete(sessionNumber, participantNameInput.text))
         {
             throw new UnityException("That session has already been completed");
@@ -48,7 +48,9 @@ public class LaunchExperiment : MonoBehaviour
         UnityEPL.AddParticipant(participantNameInput.text);
         UnityEPL.SetSessionNumber(sessionNumber);
 
-        EditableExperiment.ConfigureExperiment((ushort)0, (ushort)sessionNumber);
+        int listNumber = ParticipantSelection.nextListNumber;
+        IronPython.Runtime.List words = ParticipantSelection.nextWords;
+        EditableExperiment.ConfigureExperiment((ushort)(listNumber*12), (ushort)sessionNumber, newWords: words);
         UnityEngine.SceneManagement.SceneManager.LoadScene(FRExperimentSettings.ExperimentNameToExperimentScene(UnityEPL.GetExperimentName()));
     }
 

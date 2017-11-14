@@ -30,6 +30,7 @@ public struct ExperimentSettings
     public bool useRamulator;
     public bool isTwoParter;
     public bool isCategoryPool;
+    public bool useSessionListSelection;
 }
 
 public static class FRExperimentSettings
@@ -95,6 +96,7 @@ public static class FRExperimentSettings
         FR1Settings.recallTextDisplayLength = 1f;
         FR1Settings.useRamulator = true;
         FR1Settings.isTwoParter = true;
+        FR1Settings.useSessionListSelection = true;
         return FR1Settings;
     }
 
@@ -156,6 +158,7 @@ public static class FRExperimentSettings
         FR6Settings.recallTextDisplayLength = 0.5f;
         FR6Settings.useRamulator = true;
         FR6Settings.isTwoParter = false;
+        FR6Settings.useSessionListSelection = false;
         return FR6Settings;
     }
 

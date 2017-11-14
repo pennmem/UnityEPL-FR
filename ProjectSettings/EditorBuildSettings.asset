@@ -13,19 +13,19 @@ EditorBuildSettings:
     guid: 96614c7e79221404ca1e47f410977a9d
   - enabled: 0
     path: 
-    guid: 806f98cfa662c4c1ea9bb15bb3ba714b
+    guid: 00000000000000000000000000000000
   - enabled: 0
     path: 
-    guid: 85519800729c149e3921e29161896c25
-  - enabled: 0
-    path: 
-    guid: 28edf40fbcced4a4b80683f555746755
+    guid: 00000000000000000000000000000000
   - enabled: 0
     path: 
     guid: 00000000000000000000000000000000
   - enabled: 0
     path: 
     guid: 00000000000000000000000000000000
-  - enabled: 1
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 0
     path: Assets/sfr.unity
     guid: 217f50a4b9fbfda41b4f6faee8d22d02

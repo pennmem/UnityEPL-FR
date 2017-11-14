@@ -508,19 +508,6 @@ public class EditableExperiment : MonoBehaviour
         return System.IO.Path.Combine(Application.persistentDataPath, UnityEPL.GetExperimentName());
     }
 
-    public static void SetWords(IronPython.Runtime.List newWords)
-    {
-        List<IronPython.Runtime.PythonDictionary> dotNetWords = new List<IronPython.Runtime.PythonDictionary>();
-        foreach (IronPython.Runtime.PythonDictionary word in newWords)
-            dotNetWords.Add(word);
-        SetWords(dotNetWords);
-    }
-
-    public static void SetWords(List<IronPython.Runtime.PythonDictionary> newWords)
-    {
-        words = newWords;
-    }
-
     public static bool SessionComplete(int sessionNumber, string participantName)
     {
         string sessionFilePath = EditableExperiment.SessionFilePath(sessionNumber, participantName);
@@ -532,7 +519,7 @@ public class EditableExperiment : MonoBehaviour
         return wordsSeenInFile >= wordCount;
     }
 
-    public static void ConfigureExperiment(ushort newWordsSeen, ushort newSessionNumber)
+    public static void ConfigureExperiment(ushort newWordsSeen, ushort newSessionNumber, IronPython.Runtime.List newWords = null)
     {
         wordsSeen = newWordsSeen;
         session = newSessionNumber;
@@ -542,6 +529,19 @@ public class EditableExperiment : MonoBehaviour
         if (words == null)
             SetWords(currentSettings.wordListGenerator.GenerateListsAndWriteWordpool(currentSettings.numberOfLists, currentSettings.wordsPerList, currentSettings.isCategoryPool, isTwoParter, isEvenNumberSession, UnityEPL.GetParticipants()[0]));
         SaveState();
+    }
+
+    private static void SetWords(IronPython.Runtime.List newWords)
+    {
+        List<IronPython.Runtime.PythonDictionary> dotNetWords = new List<IronPython.Runtime.PythonDictionary>();
+        foreach (IronPython.Runtime.PythonDictionary word in newWords)
+            dotNetWords.Add(word);
+        SetWords(dotNetWords);
+    }
+
+    private static void SetWords(List<IronPython.Runtime.PythonDictionary> newWords)
+    {
+        words = newWords;
     }
 
     private void Quit()
