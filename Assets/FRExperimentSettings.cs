@@ -92,8 +92,8 @@ public static class FRExperimentSettings
         FR1Settings.maxOrientationStimulusLength = 1.4f;
         FR1Settings.minPauseBeforeRecall = 1f;
         FR1Settings.maxPauseBeforeRecall = 1.4f;
-        FR1Settings.recallTextDisplayLength = 0.5f;
-        FR1Settings.useRamulator = false;
+        FR1Settings.recallTextDisplayLength = 1f;
+        FR1Settings.useRamulator = true;
         FR1Settings.isTwoParter = true;
         return FR1Settings;
     }
@@ -189,6 +189,10 @@ public static class FRExperimentSettings
         testFR1Settings.maxISI = 0.01f;
         testFR1Settings.distractionLength = 0.1f;
         testFR1Settings.recallLength = 0.1f;
+        testFR1Settings.minOrientationStimulusLength = 0.05f;
+        testFR1Settings.maxOrientationStimulusLength = 0.1f;
+        testFR1Settings.minPauseBeforeRecall = 0.1f;
+        testFR1Settings.maxPauseBeforeRecall = 0.2f;
         testFR1Settings.useRamulator = false;
         return testFR1Settings;
     }
@@ -223,6 +227,10 @@ public static class FRExperimentSettings
         testFR6Settings.maxISI = 0.01f;
         testFR6Settings.distractionLength = 0.1f;
         testFR6Settings.recallLength = 0.1f;
+        testFR6Settings.minOrientationStimulusLength = 0.05f;
+        testFR6Settings.maxOrientationStimulusLength = 0.1f;
+        testFR6Settings.minPauseBeforeRecall = 0.1f;
+        testFR6Settings.maxPauseBeforeRecall = 0.2f;
         testFR6Settings.useRamulator = false;
         return testFR6Settings;
     }
@@ -254,10 +262,11 @@ public static class FRExperimentSettings
                                 GetFR6Settings ().experimentName,
                                 GetCatFR6Settings ().experimentName,
                                 //GetTestFR1Settings().experimentName,
-                                GetTestFR6Settings().experimentName,
-                                GetTestCatFR6Settings().experimentName,
+                                //GetTestCatFR1Settings().experimentName,
+                                //GetTestFR6Settings().experimentName,
+                                //GetTestCatFR6Settings().experimentName,
                                 //"FR1_scalp",
-                                "SFR",
+                                //"SFR",
                             };
     }
 
@@ -280,6 +289,8 @@ public static class FRExperimentSettings
                 return GetCatFR6Settings();
             case "FR1_test":
                 return GetTestFR1Settings();
+            case "CatFR1_test":
+                return GetTestCatFR1Settings();
             case "FR6_test":
                 return GetTestFR6Settings();
             case "CatFR6_test":
@@ -310,6 +321,8 @@ public static class FRExperimentSettings
             case "CatFR6":
                 return "ram_fr";
             case "FR1_test":
+                return "ram_fr";
+            case "CatFR1_test":
                 return "ram_fr";
             case "FR6_test":
                 return "ram_fr";

@@ -7,17 +7,34 @@ public abstract class WordListGenerator
 {
     public virtual IronPython.Runtime.List GenerateListsAndWriteWordpool(int numberOfLists, int lengthOfEachList, bool isCategoryPool, bool isTwoParter, bool isEvenNumberSession, string participantCode)
     {
-        WriteRAMWordpool();
+        WriteWordpoolToOutputFolder(isCategoryPool, isTwoParter);
         return GenerateLists(numberOfLists, lengthOfEachList, new System.Random(), isCategoryPool, isTwoParter, isEvenNumberSession, participantCode);
     }
 
     public abstract IronPython.Runtime.List GenerateLists(int numberOfLists, int lengthOfEachList, System.Random rng, bool isCategoryPool, bool isTwoParter, bool isEvenNumberSession, string participantCode);
 
-    private void WriteRAMWordpool()
+    private void WriteWordpoolToOutputFolder(bool isCategoryPool, bool isTwoParter)
     {
         string directory = UnityEPL.GetParticipantFolder();
-        string filePath = System.IO.Path.Combine(directory, "RAM_wordpool.txt");
-        string[] ram_wordpool_lines = GetWordpoolLines("ram_wordpool_en");
+        string filename;
+        if (isCategoryPool && !isTwoParter)
+        {
+            filename = "ram_categorized_en";
+        }
+        else if (!isCategoryPool && !isTwoParter)
+        {
+            filename = "ram_wordpool_en";
+        }
+        else if (isCategoryPool && isTwoParter)
+        {
+            filename = "short_ram_categorized_en";
+        }
+        else //(!isCategoryPool && isTwoParter) 
+        {
+            filename = "short_ram_wordpool_en";
+        }
+        string filePath = System.IO.Path.Combine(directory, filename);
+        string[] ram_wordpool_lines = GetWordpoolLines(filename);
         System.IO.Directory.CreateDirectory(directory);
         System.IO.File.WriteAllLines(filePath, ram_wordpool_lines);
     }
