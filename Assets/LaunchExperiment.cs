@@ -41,8 +41,9 @@ public class LaunchExperiment : MonoBehaviour
         int sessionNumber = ParticipantSelection.nextSessionNumber;
         if (EditableExperiment.SessionComplete(sessionNumber, participantNameInput.text))
         {
-            throw new UnityException("That session has already been completed");
-
+            cantGoPrompt.GetComponent<UnityEngine.UI.Text>().text = "That session has already been completed.";
+            cantGoPrompt.SetActive(true);
+            return;
         }
 
         UnityEPL.AddParticipant(participantNameInput.text);
