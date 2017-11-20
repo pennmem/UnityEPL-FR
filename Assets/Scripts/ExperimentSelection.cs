@@ -2,6 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// This is attached to the dropdown menu which selects experiments.
+/// 
+/// It only needs to call UnityEPL.SetExperimentName().
+/// </summary>
 public class ExperimentSelection : MonoBehaviour
 {
     public GameObject activatable;

@@ -2,6 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// This handles the button which launches the experiment.
+/// 
+/// DoLaunchExperiment is responsible for calling EditableExperiment.ConfigureExperiment with the proper parameters.
+/// </summary>
 public class LaunchExperiment : MonoBehaviour
 {
     public GameObject cantGoPrompt;

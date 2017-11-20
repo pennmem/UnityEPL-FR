@@ -2,6 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// This is attached to the error message that appears when someone tries to start the experiment with invalid parameters.
+/// 
+/// It simply makes the message fade away.
+/// </summary>
 public class FadeAndDeactivate : MonoBehaviour
 {
     public float fadeTime;

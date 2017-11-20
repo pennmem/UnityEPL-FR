@@ -2,6 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// This is attacked to the participant selection dropdown.  It is responsible for loading the information about the selected participant.
+/// 
+/// It also allows users to edit the loaded information with Increase/Decrease Session/List number buttons.
+/// </summary>
 public class ParticipantSelection : MonoBehaviour
 {
     public UnityEngine.UI.InputField participantNameInput;
