@@ -34,61 +34,49 @@ public class DataPoint
         time = newTime;
     }
 
-
-    //hacky, unity core functionality doesn't include json serialization of dictionaries yet
+    /// <summary>
+    /// Returns a JSON string representing this datapoint.
+    /// 
+    /// Strings conforming to certain formats will be converted to corresponding types.  For example, if a string looks like a number it will be represented as a JSON number type. 
+    /// </summary>
+    /// <returns>The json.</returns>
     public string ToJSON()
     {
         double unixTimestamp = ConvertToMillisecondsSinceEpoch(time);
         string JSONString = "{\"type\":\"" + type + "\",\"data\":{";
         foreach (string key in dataDict.Keys)
         {
-            string valueString = dataDict[key];
+            string valueString;
             double valueNumber;
             bool valueBool;
 
-            //stim channels
-            if (valueString.Length > 2 && valueString[0].Equals('(') && valueString[valueString.Length - 1].Equals(')'))
+            if (dataDict[key].Length > 2 && dataDict[key][0].Equals('(') && dataDict[key][dataDict[key].Length - 1].Equals(')')) //tuples
             {
-                char[] charArray = valueString.ToCharArray();
+                char[] charArray = dataDict[key].ToCharArray();
                 charArray[0] = '[';
                 charArray[charArray.Length - 1] = ']';
                 if (charArray[charArray.Length - 2].Equals(','))
                     charArray[charArray.Length - 2] = ' ';
                 valueString = new string(charArray);
             }
-
-            //embedded json
-            else if (valueString.Length > 1 && valueString[0].Equals('{') && valueString[valueString.Length - 1].Equals('}'))
-                ;
-
-            //bools
-            else if (bool.TryParse(valueString, out valueBool))
-                valueString = valueString.ToLower();
-
-            //numbers
-            else if (double.TryParse(valueString, out valueNumber))
-                ;
-
-            //everything else is a string
-            else
-                valueString = "\"" + valueString + "\"";
+            else if ((dataDict[key].Length > 1 && dataDict[key][0].Equals('{') && dataDict[key][dataDict[key].Length - 1].Equals('}')) ||
+                     (double.TryParse(dataDict[key], out valueNumber))) //embedded json or numbers
+            {
+                valueString = dataDict[key];
+            }
+            else if (bool.TryParse(dataDict[key], out valueBool)) //bools
+            {
+                valueString = dataDict[key].ToLower();
+            }
+            else //everything else is a string
+            {
+                valueString = "\"" + dataDict[key] + "\"";
+            }
             JSONString = JSONString + "\"" + key + "\":" + valueString + ",";
         }
         if (dataDict.Count > 0) JSONString = JSONString.Substring(0, JSONString.Length - 1);
         JSONString = JSONString + "},\"time\":" + unixTimestamp.ToString() + "}";
         return JSONString;
-    }
-
-    //unimplemented
-    public string ToSQL()
-    {
-        return "unimplemented";
-    }
-
-    //unimlemented
-    public string ToCSV()
-    {
-        return "unimplemented";
     }
 
     public static double ConvertToMillisecondsSinceEpoch(System.DateTime convertMe)

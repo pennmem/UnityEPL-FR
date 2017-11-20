@@ -5,7 +5,8 @@ using UnityEngine;
 [AddComponentMenu("UnityEPL/Handlers/Write to Disk Handler")]
 public class WriteToDiskHandler : DataHandler
 {
-    public enum FORMAT { JSON, CSV, SQL };
+    //more output formats may be added in the future
+    public enum FORMAT { JSON };
     public FORMAT outputFormat;
 
     [HideInInspector]
@@ -63,17 +64,9 @@ public class WriteToDiskHandler : DataHandler
             string extensionlessFileName = "session";//DataReporter.GetStartTime ().ToString("yyyy-MM-dd HH mm ss");
             switch (outputFormat)
             {
-                case FORMAT.CSV:
-                    writeMe = dataPoint.ToCSV();
-                    filePath = System.IO.Path.Combine(directory, extensionlessFileName + ".csv");
-                    break;
                 case FORMAT.JSON:
                     writeMe = dataPoint.ToJSON();
                     filePath = System.IO.Path.Combine(directory, extensionlessFileName + ".json");
-                    break;
-                case FORMAT.SQL:
-                    writeMe = dataPoint.ToSQL();
-                    filePath = System.IO.Path.Combine(directory, extensionlessFileName + ".sql");
                     break;
             }
             System.IO.File.AppendAllText(filePath, writeMe + System.Environment.NewLine);
