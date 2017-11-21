@@ -186,16 +186,16 @@ public static class FRExperimentSettings
     {
         ExperimentSettings testFR1Settings = GetFR1Settings();
         testFR1Settings.experimentName = "FR1_test";
-        testFR1Settings.countdownTick = 0.01f;
-        testFR1Settings.wordPresentationLength = 0.01f;
-        testFR1Settings.minISI = 0.005f;
-        testFR1Settings.maxISI = 0.01f;
-        testFR1Settings.distractionLength = 0.1f;
-        testFR1Settings.recallLength = 0.1f;
-        testFR1Settings.minOrientationStimulusLength = 0.05f;
-        testFR1Settings.maxOrientationStimulusLength = 0.1f;
-        testFR1Settings.minPauseBeforeRecall = 0.1f;
-        testFR1Settings.maxPauseBeforeRecall = 0.2f;
+        //testFR1Settings.countdownTick = 0.01f;
+        //testFR1Settings.wordPresentationLength = 0.01f;
+        //testFR1Settings.minISI = 0.005f;
+        //testFR1Settings.maxISI = 0.01f;
+        //testFR1Settings.distractionLength = 0.1f;
+        //testFR1Settings.recallLength = 0.1f;
+        //testFR1Settings.minOrientationStimulusLength = 0.05f;
+        //testFR1Settings.maxOrientationStimulusLength = 0.1f;
+        //testFR1Settings.minPauseBeforeRecall = 0.1f;
+        //testFR1Settings.maxPauseBeforeRecall = 0.2f;
         testFR1Settings.useRamulator = false;
         return testFR1Settings;
     }
@@ -224,16 +224,16 @@ public static class FRExperimentSettings
     {
         ExperimentSettings testFR6Settings = GetFR6Settings();
         testFR6Settings.experimentName = "FR6_test";
-        testFR6Settings.countdownTick = 0.01f;
-        testFR6Settings.wordPresentationLength = 0.01f;
-        testFR6Settings.minISI = 0.005f;
-        testFR6Settings.maxISI = 0.01f;
-        testFR6Settings.distractionLength = 0.1f;
-        testFR6Settings.recallLength = 0.1f;
-        testFR6Settings.minOrientationStimulusLength = 0.05f;
-        testFR6Settings.maxOrientationStimulusLength = 0.1f;
-        testFR6Settings.minPauseBeforeRecall = 0.1f;
-        testFR6Settings.maxPauseBeforeRecall = 0.2f;
+        //testFR6Settings.countdownTick = 0.01f;
+        //testFR6Settings.wordPresentationLength = 0.01f;
+        //testFR6Settings.minISI = 0.005f;
+        //testFR6Settings.maxISI = 0.01f;
+        //testFR6Settings.distractionLength = 0.1f;
+        //testFR6Settings.recallLength = 0.1f;
+        //testFR6Settings.minOrientationStimulusLength = 0.05f;
+        //testFR6Settings.maxOrientationStimulusLength = 0.1f;
+        //testFR6Settings.minPauseBeforeRecall = 0.1f;
+        //testFR6Settings.maxPauseBeforeRecall = 0.2f;
         testFR6Settings.useRamulator = false;
         return testFR6Settings;
     }
