@@ -124,14 +124,14 @@ public class EditableExperiment : MonoBehaviour
         do
         {
             yield return PressAnyKey("Press any key to record a sound after the beep.");
-            highBeep.Play();
+            lowBeep.Play();
             textDisplayer.DisplayText("microphone test recording", "Recording...");
             textDisplayer.ChangeColor(Color.red);
+            yield return PausableWait(lowBeep.clip.length);
             soundRecorder.StartRecording(currentSettings.microphoneTestLength);
             yield return PausableWait(currentSettings.microphoneTestLength);
             wavFilePath = System.IO.Path.Combine(UnityEPL.GetDataPath(), "microphone_test_" + DataReporter.RealWorldTime().ToString("yyyy-MM-dd_HH_mm_ss"));
             soundRecorder.StopRecording(wavFilePath);
-            lowBeep.Play();
 
             textDisplayer.DisplayText("microphone test playing", "Playing...");
             textDisplayer.ChangeColor(Color.green);
@@ -367,20 +367,13 @@ public class EditableExperiment : MonoBehaviour
         SetRamulatorState("RETRIEVAL", true, new Dictionary<string, string>());
         highBeep.Play();
         scriptedEventReporter.ReportScriptedEvent("Sound played", new Dictionary<string, string>() { { "sound name", "high beep" }, { "sound duration", highBeep.clip.length.ToString() } });
-        textDisplayer.DisplayText("display recall text", "*******");
-        soundRecorder.StartRecording(Mathf.CeilToInt(currentSettings.recallLength));
 
-        float starDisplayTime = currentSettings.recallTextDisplayLength;
-        float firstPauseTime = currentSettings.recallLength;
-        float secondPauseTime = 0f;
-        if (currentSettings.recallLength > starDisplayTime)
-        {
-            firstPauseTime = starDisplayTime;
-            secondPauseTime = currentSettings.recallLength - starDisplayTime;
-        }
-        yield return PausableWait(firstPauseTime);
+        textDisplayer.DisplayText("display recall text", "*******");
+        yield return PausableWait(currentSettings.recallTextDisplayLength);
         textDisplayer.ClearText();
-        yield return PausableWait(secondPauseTime);
+
+        soundRecorder.StartRecording(Mathf.CeilToInt(currentSettings.recallLength));
+        yield return PausableWait(currentSettings.recallLength);
 
         //path
         int listno = (wordsSeen / 12) - 1;
