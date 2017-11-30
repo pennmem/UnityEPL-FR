@@ -269,7 +269,7 @@ public static class FRExperimentSettings
                                 GetTestFR6Settings().experimentName,
                                 GetTestCatFR6Settings().experimentName,
                                 //"FR1_scalp",
-                                //"SFR",
+                                "SFR",
                             };
     }
 
@@ -298,10 +298,8 @@ public static class FRExperimentSettings
                 return GetTestFR6Settings();
             case "CatFR6_test":
                 return GetTestCatFR6Settings();
-            case "FR1_scalp":
-                return GetFR1Settings();
             case "SFR":
-                return GetFR1Settings();
+                return GetTestFR1Settings();
         }
         throw new UnityException("No settings found with that name.");
     }
