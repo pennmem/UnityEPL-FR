@@ -4,7 +4,7 @@ using UnityEngine;
 
 
 
-public class EditableExperiment : MonoBehaviour
+public class EditableExperiment : CoroutineExperiment
 {
     public delegate void StateChange(string stateName, bool on);
     public static StateChange OnStateChange;
@@ -15,18 +15,10 @@ public class EditableExperiment : MonoBehaviour
     private static ExperimentSettings currentSettings;
 
     public RamulatorInterface ramulatorInterface;
-    public TextDisplayer textDisplayer;
-    public SoundRecorder soundRecorder;
-    public VideoControl videoPlayer;
     public VideoControl countdownVideoPlayer;
     public KeyCode pauseKey = KeyCode.P;
     public GameObject pauseIndicator;
     public ScriptedEventReporter scriptedEventReporter;
-    public AudioSource highBeep;
-    public AudioSource lowBeep;
-    public AudioSource lowerBeep;
-    public GameObject microphoneTestMessage;
-    public AudioSource microphoneTestPlayback;
 
     private bool paused = false;
     private string current_phase_type;
@@ -61,7 +53,7 @@ public class EditableExperiment : MonoBehaviour
             throw new UnityException("Please call ConfigureExperiment before loading the experiment scene.");
 
         //write versions to logfile
-        Dictionary<string, string> versionsData = new Dictionary<string, string>();
+        Dictionary<string, object> versionsData = new Dictionary<string, object>();
         versionsData.Add("UnityEPL version", Application.version);
         versionsData.Add("Experiment version", currentSettings.version);
         versionsData.Add("Logfile version", "1");
@@ -85,7 +77,7 @@ public class EditableExperiment : MonoBehaviour
             if (startList == 0 && i == 0)
             {
                 yield return DoIntroductionVideo();
-                yield return DoSubjectSessionQuitPrompt();
+                yield return DoSubjectSessionQuitPrompt(UnityEPL.GetSessionNumber());
                 yield return DoMicrophoneTest();
                 yield return PressAnyKey("Press any key for practice trial.");
             }
@@ -115,110 +107,9 @@ public class EditableExperiment : MonoBehaviour
         textDisplayer.DisplayText("display end message", "Woo!  The experiment is over.");
     }
 
-    private IEnumerator DoMicrophoneTest()
-    {
-        microphoneTestMessage.SetActive(true);
-        bool repeat = false;
-        string wavFilePath;
-
-        do
-        {
-            yield return PressAnyKey("Press any key to record a sound after the beep.");
-            lowBeep.Play();
-            textDisplayer.DisplayText("microphone test recording", "Recording...");
-            textDisplayer.ChangeColor(Color.red);
-            yield return PausableWait(lowBeep.clip.length);
-            soundRecorder.StartRecording(currentSettings.microphoneTestLength);
-            yield return PausableWait(currentSettings.microphoneTestLength);
-            wavFilePath = System.IO.Path.Combine(UnityEPL.GetDataPath(), "microphone_test_" + DataReporter.RealWorldTime().ToString("yyyy-MM-dd_HH_mm_ss"));
-            soundRecorder.StopRecording(wavFilePath);
-
-            textDisplayer.DisplayText("microphone test playing", "Playing...");
-            textDisplayer.ChangeColor(Color.green);
-
-            microphoneTestPlayback.clip = soundRecorder.GetLastClip();
-            microphoneTestPlayback.Play();
-            yield return PausableWait(currentSettings.microphoneTestLength);
-            textDisplayer.ClearText();
-            textDisplayer.OriginalColor();
-
-            SetRamulatorState("WAITING", true, new Dictionary<string, string>());
-            textDisplayer.DisplayText("microphone test confirmation", "Did you hear the recording? \n(Y=Continue / N=Try Again / C=Cancel).");
-            while (!Input.GetKeyDown(KeyCode.Y) && !Input.GetKeyDown(KeyCode.N) && !Input.GetKeyDown(KeyCode.C))
-            {
-                yield return null;
-            }
-            textDisplayer.ClearText();
-            SetRamulatorState("WAITING", false, new Dictionary<string, string>());
-            if (Input.GetKey(KeyCode.C))
-                Quit();
-            repeat = Input.GetKey(KeyCode.N);
-        }
-        while (repeat);
-
-        if (!System.IO.File.Exists(wavFilePath + ".wav"))
-            yield return PressAnyKey("WARNING: Wav output file not detected.  Sounds may not be successfully recorded to disk.");
-
-        microphoneTestMessage.SetActive(false);
-    }
-
-    private IEnumerator DoSubjectSessionQuitPrompt()
-    {
-        yield return null;
-        SetRamulatorState("WAITING", true, new Dictionary<string, string>());
-        textDisplayer.DisplayText("subject/session confirmation", "Running " + UnityEPL.GetParticipants()[0] + " in session " + session.ToString() + " of " + UnityEPL.GetExperimentName() + ".\n Press Y to continue, N to quit.");
-        while (!Input.GetKeyDown(KeyCode.Y) && !Input.GetKeyDown(KeyCode.N))
-        {
-            yield return null;
-        }
-        textDisplayer.ClearText();
-        SetRamulatorState("WAITING", false, new Dictionary<string, string>());
-        if (Input.GetKey(KeyCode.N))
-            Quit();
-    }
-
-    private IEnumerator DoIntroductionVideo()
-    {
-        yield return PressAnyKey("Press any key to play movie.");
-
-        bool replay = false;
-        do
-        {
-            //start video player and wait for it to stop playing
-            SetRamulatorState("INSTRUCT", true, new Dictionary<string, string>());
-            videoPlayer.StartVideo();
-            while (videoPlayer.IsPlaying())
-                yield return null;
-            SetRamulatorState("INSTRUCT", false, new Dictionary<string, string>());
-
-            SetRamulatorState("WAITING", true, new Dictionary<string, string>());
-            textDisplayer.DisplayText("repeat video prompt", "Press Y to continue to practice list, \n Press N to replay instructional video.");
-            while (!Input.GetKeyDown(KeyCode.Y) && !Input.GetKeyDown(KeyCode.N))
-            {
-                yield return null;
-            }
-            textDisplayer.ClearText();
-            SetRamulatorState("WAITING", false, new Dictionary<string, string>());
-            replay = Input.GetKey(KeyCode.N);
-
-        }
-        while (replay);
-    }
-
-    private IEnumerator PressAnyKey(string displayText)
-    {
-        SetRamulatorState("WAITING", true, new Dictionary<string, string>());
-        yield return null;
-        textDisplayer.DisplayText("press any key prompt", displayText);
-        while (!Input.anyKeyDown)
-            yield return null;
-        textDisplayer.ClearText();
-        SetRamulatorState("WAITING", false, new Dictionary<string, string>());
-    }
-
     private IEnumerator DoCountdown()
     {
-        SetRamulatorState("COUNTDOWN", true, new Dictionary<string, string>());
+        SetRamulatorState("COUNTDOWN", true, new Dictionary<string, object>());
         countdownVideoPlayer.StartVideo();
         while (countdownVideoPlayer.IsPlaying())
             yield return null;
@@ -227,12 +118,12 @@ public class EditableExperiment : MonoBehaviour
         //			textDisplayer.DisplayText ("countdown display", (currentSettings.countdownLength - i).ToString ());
         //			yield return PausableWait (currentSettings.countdownTick);
         //		}
-        SetRamulatorState("COUNTDOWN", false, new Dictionary<string, string>());
+        SetRamulatorState("COUNTDOWN", false, new Dictionary<string, object>());
     }
 
     private IEnumerator DoEncoding()
     {
-        SetRamulatorState("ENCODING", true, new Dictionary<string, string>());
+        SetRamulatorState("ENCODING", true, new Dictionary<string, object>());
 
         int currentList = wordsSeen / currentSettings.wordsPerList;
         wordsSeen = (ushort)(currentList * currentSettings.wordsPerList);
@@ -253,19 +144,19 @@ public class EditableExperiment : MonoBehaviour
             SetRamulatorWordState(false, words[wordsSeen]);
             IncrementWordsSeen();
         }
-        SetRamulatorState("ENCODING", false, new Dictionary<string, string>());
+        SetRamulatorState("ENCODING", false, new Dictionary<string, object>());
     }
 
     private void SetRamulatorWordState(bool state, IronPython.Runtime.PythonDictionary wordData)
     {
-        Dictionary<string, string> dotNetWordData = new Dictionary<string, string>();
+        Dictionary<string, object> dotNetWordData = new Dictionary<string, object>();
         foreach (string key in wordData.Keys)
             dotNetWordData.Add(key, wordData[key] == null ? "" : wordData[key].ToString());
         SetRamulatorState("WORD", state, dotNetWordData);
     }
 
     //WAITING, INSTRUCT, COUNTDOWN, ENCODING, WORD, DISTRACT, RETRIEVAL
-    private void SetRamulatorState(string stateName, bool state, Dictionary<string, string> extraData)
+    protected override void SetRamulatorState(string stateName, bool state, Dictionary<string, object> extraData)
     {
         if (OnStateChange != null)
             OnStateChange(stateName, state);
@@ -277,7 +168,7 @@ public class EditableExperiment : MonoBehaviour
 
     private IEnumerator DoDistractor()
     {
-        SetRamulatorState("DISTRACT", true, new Dictionary<string, string>());
+        SetRamulatorState("DISTRACT", true, new Dictionary<string, object>());
         float endTime = Time.time + currentSettings.distractionLength;
 
         string distractor = "";
@@ -350,12 +241,12 @@ public class EditableExperiment : MonoBehaviour
         }
         textDisplayer.OriginalColor();
         textDisplayer.ClearText();
-        SetRamulatorState("DISTRACT", false, new Dictionary<string, string>());
+        SetRamulatorState("DISTRACT", false, new Dictionary<string, object>());
     }
 
     private void ReportDistractorAnswered(bool correct, string problem, string answer)
     {
-        Dictionary<string, string> dataDict = new Dictionary<string, string>();
+        Dictionary<string, object> dataDict = new Dictionary<string, object>();
         dataDict.Add("correctness", correct.ToString());
         dataDict.Add("problem", problem);
         dataDict.Add("answer", answer);
@@ -364,9 +255,9 @@ public class EditableExperiment : MonoBehaviour
 
     private IEnumerator DoRecall()
     {
-        SetRamulatorState("RETRIEVAL", true, new Dictionary<string, string>());
+        SetRamulatorState("RETRIEVAL", true, new Dictionary<string, object>());
         highBeep.Play();
-        scriptedEventReporter.ReportScriptedEvent("Sound played", new Dictionary<string, string>() { { "sound name", "high beep" }, { "sound duration", highBeep.clip.length.ToString() } });
+        scriptedEventReporter.ReportScriptedEvent("Sound played", new Dictionary<string, object>() { { "sound name", "high beep" }, { "sound duration", highBeep.clip.length.ToString() } });
 
         textDisplayer.DisplayText("display recall text", "*******");
         yield return PausableWait(currentSettings.recallTextDisplayLength);
@@ -385,8 +276,8 @@ public class EditableExperiment : MonoBehaviour
         soundRecorder.StopRecording(wavFilePath);
         textDisplayer.ClearText();
         lowBeep.Play();
-        scriptedEventReporter.ReportScriptedEvent("Sound played", new Dictionary<string, string>() { { "sound name", "low beep" }, { "sound duration", lowBeep.clip.length.ToString() } });
-        SetRamulatorState("RETRIEVAL", false, new Dictionary<string, string>());
+        scriptedEventReporter.ReportScriptedEvent("Sound played", new Dictionary<string, object>() { { "sound name", "low beep" }, { "sound duration", lowBeep.clip.length.ToString() } });
+        SetRamulatorState("RETRIEVAL", false, new Dictionary<string, object>());
     }
 
     private void WriteLstFile(string lstFilePath)
@@ -537,12 +428,4 @@ public class EditableExperiment : MonoBehaviour
         words = newWords;
     }
 
-    private void Quit()
-    {
-#if UNITY_EDITOR
-        UnityEditor.EditorApplication.isPlaying = false;
-#else
-		Application.Quit();
-#endif
-    }
 }

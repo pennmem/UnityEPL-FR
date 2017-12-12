@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657844, g: 0.49641222, b: 0.57481694, a: 1}
+  m_IndirectSpecularColor: {r: 0.4465934, g: 0.49642956, b: 0.57482487, a: 1}
 --- !u!157 &3
 LightmapSettings:
   m_ObjectHideFlags: 0
@@ -212,6 +212,7 @@ MonoBehaviour:
   reportKeyStrokes: 1
   reportMouseClicks: 1
   reportMousePosition: 0
+  framesPerMousePositionReport: 60
 --- !u!4 &91538651
 Transform:
   m_ObjectHideFlags: 0
@@ -288,12 +289,12 @@ Prefab:
     - target: {fileID: 224608295462917530, guid: e6672ad97ff294adba0eb53a61d1502f,
         type: 2}
       propertyPath: m_LocalPosition.x
-      value: 345
+      value: 575
       objectReference: {fileID: 0}
     - target: {fileID: 224608295462917530, guid: e6672ad97ff294adba0eb53a61d1502f,
         type: 2}
       propertyPath: m_LocalPosition.y
-      value: 215.5
+      value: 359.5
       objectReference: {fileID: 0}
     - target: {fileID: 224608295462917530, guid: e6672ad97ff294adba0eb53a61d1502f,
         type: 2}
@@ -440,6 +441,21 @@ Prefab:
       propertyPath: microphoneTestPlayback
       value: 
       objectReference: {fileID: 1977761844}
+    - target: {fileID: 114864122344205036, guid: e6672ad97ff294adba0eb53a61d1502f,
+        type: 2}
+      propertyPath: scriptedEventReporter
+      value: 
+      objectReference: {fileID: 621434365}
+    - target: {fileID: 114864122344205036, guid: e6672ad97ff294adba0eb53a61d1502f,
+        type: 2}
+      propertyPath: microphoneTestMessage
+      value: 
+      objectReference: {fileID: 621434366}
+    - target: {fileID: 114864122344205036, guid: e6672ad97ff294adba0eb53a61d1502f,
+        type: 2}
+      propertyPath: pauseIndicator
+      value: 
+      objectReference: {fileID: 621434367}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: e6672ad97ff294adba0eb53a61d1502f, type: 2}
   m_IsPrefabParent: 0
@@ -449,6 +465,39 @@ MonoBehaviour:
     type: 2}
   m_PrefabInternal: {fileID: 621434364}
   m_Script: {fileID: 11500000, guid: f180c8d2d8e804d2ca402600895da790, type: 3}
+--- !u!1 &621434366 stripped
+GameObject:
+  m_PrefabParentObject: {fileID: 1885532220077830, guid: e6672ad97ff294adba0eb53a61d1502f,
+    type: 2}
+  m_PrefabInternal: {fileID: 621434364}
+--- !u!1 &621434367 stripped
+GameObject:
+  m_PrefabParentObject: {fileID: 1800808155648862, guid: e6672ad97ff294adba0eb53a61d1502f,
+    type: 2}
+  m_PrefabInternal: {fileID: 621434364}
+--- !u!1 &621434368 stripped
+GameObject:
+  m_PrefabParentObject: {fileID: 1518305524060620, guid: e6672ad97ff294adba0eb53a61d1502f,
+    type: 2}
+  m_PrefabInternal: {fileID: 621434364}
+--- !u!114 &621434369 stripped
+MonoBehaviour:
+  m_PrefabParentObject: {fileID: 114266094678627528, guid: e6672ad97ff294adba0eb53a61d1502f,
+    type: 2}
+  m_PrefabInternal: {fileID: 621434364}
+  m_Script: {fileID: 708705254, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+--- !u!114 &621434370
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 621434368}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e953a612378b646aab6fbbef7379b6c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  textElement: {fileID: 621434369}
 --- !u!1001 &874305714
 Prefab:
   m_ObjectHideFlags: 0
@@ -517,7 +566,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1082459999}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.000015258789, y: 0.0000076293945, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1365816938}
@@ -643,7 +692,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1365816937}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 345, y: 215.5, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1082460000}

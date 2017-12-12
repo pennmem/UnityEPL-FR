@@ -46,7 +46,7 @@ public class RamulatorInterface : MonoBehaviour
 
 
         //SendSessionEvent//////////////////////////////////////////////////////////////////////
-        System.Collections.Generic.Dictionary<string, string> sessionData = new Dictionary<string, string>();
+        System.Collections.Generic.Dictionary<string, object> sessionData = new Dictionary<string, object>();
         sessionData.Add("name", UnityEPL.GetExperimentName());
         sessionData.Add("version", Application.version);
         sessionData.Add("subject", UnityEPL.GetParticipants()[0]);
@@ -61,7 +61,7 @@ public class RamulatorInterface : MonoBehaviour
 
 
         //SendReadyEvent////////////////////////////////////////////////////////////////////
-        DataPoint ready = new DataPoint("READY", DataReporter.RealWorldTime(), new Dictionary<string, string>());
+        DataPoint ready = new DataPoint("READY", DataReporter.RealWorldTime(), new Dictionary<string, object>());
         SendMessageToRamulator(ready.ToJSON());
         yield return null;
 
@@ -107,7 +107,7 @@ public class RamulatorInterface : MonoBehaviour
     {
         if (zmqSocket == null)
             throw new Exception("Please begin a session before beginning trials");
-        System.Collections.Generic.Dictionary<string, string> sessionData = new Dictionary<string, string>();
+        System.Collections.Generic.Dictionary<string, object> sessionData = new Dictionary<string, object>();
         sessionData.Add("trial", trialNumber.ToString());
         DataPoint sessionDataPoint = new DataPoint("TRIAL", DataReporter.RealWorldTime(), sessionData);
         SendMessageToRamulator(sessionDataPoint.ToJSON());
@@ -115,7 +115,7 @@ public class RamulatorInterface : MonoBehaviour
 
     //ramulator expects this when you display words to the subject.
     //for words, stateName is "WORD"
-    public void SetState(string stateName, bool stateToggle, System.Collections.Generic.Dictionary<string, string> sessionData)
+    public void SetState(string stateName, bool stateToggle, System.Collections.Generic.Dictionary<string, object> sessionData)
     {
         sessionData.Add("name", stateName);
         sessionData.Add("value", stateToggle.ToString());
@@ -125,7 +125,7 @@ public class RamulatorInterface : MonoBehaviour
 
     public void SendMathMessage(string problem, string response, int responseTimeMs, bool correct)
     {
-        Dictionary<string, string> mathData = new Dictionary<string, string>();
+        Dictionary<string, object> mathData = new Dictionary<string, object>();
         mathData.Add("problem", problem);
         mathData.Add("response", response);
         mathData.Add("response_time_ms", responseTimeMs.ToString());
@@ -175,7 +175,7 @@ public class RamulatorInterface : MonoBehaviour
 
     private void ReportMessage(string message, bool sent)
     {
-        Dictionary<string, string> messageDataDict = new Dictionary<string, string>();
+        Dictionary<string, object> messageDataDict = new Dictionary<string, object>();
         messageDataDict.Add("message", message);
         messageDataDict.Add("sent", sent.ToString());
         scriptedEventReporter.ReportScriptedEvent("network", messageDataDict);

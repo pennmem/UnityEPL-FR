@@ -15,6 +15,11 @@ public abstract class DataReporter : MonoBehaviour
     private static double OSStartTime;
     private static float unityTimeStartTime;
 
+    protected bool IsMacOS()
+    {
+        return Application.platform == RuntimePlatform.OSXEditor || Application.platform == RuntimePlatform.OSXPlayer;
+    }
+
     void Awake()
     {
         if (!startTimeInitialized)
@@ -23,7 +28,8 @@ public abstract class DataReporter : MonoBehaviour
             unityTimeStartTime = Time.realtimeSinceStartup;
             startTimeInitialized = true;
         }
-        if (!nativePluginRunning)
+
+        if (IsMacOS() && !nativePluginRunning)
         {
             OSStartTime = UnityEPL.StartCocoaPlugin();
             nativePluginRunning = true;
@@ -35,19 +41,31 @@ public abstract class DataReporter : MonoBehaviour
 
     void OnDestroy()
     {
-        if (nativePluginRunning)
+        if (IsMacOS() && nativePluginRunning)
         {
             UnityEPL.StopCocoaPlugin();
             nativePluginRunning = false;
         }
     }
 
+    /// <summary>
+    /// The number of data points currently queued in this object.
+    /// 
+    /// Datapoints are dequeued when read. (Usually when  handled by a DataHandler.)
+    /// </summary>
+    /// <returns>The data point count.</returns>
     public int UnreadDataPointCount()
     {
         return eventQueue.Count;
     }
 
-    //UnityEPL users can use this to pull data points out manually on a per-reporter basis
+    /// <summary>
+    /// If you want to be responsible yourself for handling data points, instead of letting DataHandlers handle them, you can call this.
+    /// 
+    /// Read datapoints will be dequeueud and not read by other users of this object.
+    /// </summary>
+    /// <returns>The data points.</returns>
+    /// <param name="count">How many data points to read.</param>
     public DataPoint[] ReadDataPoints(int count)
     {
         if (eventQueue.Count < count)
@@ -64,8 +82,6 @@ public abstract class DataReporter : MonoBehaviour
         return dataPoints;
     }
 
-    //changing time scale will affect this!!
-    //TODO: Get the frame display time in a way unaffected by time scale?
     protected System.DateTime RealWorldFrameDisplayTime()
     {
         double secondsSinceUnityStart = Time.unscaledTime - unityTimeStartTime;
@@ -78,7 +94,10 @@ public abstract class DataReporter : MonoBehaviour
         return GetStartTime().AddSeconds(secondsSinceOSStart);
     }
 
-
+    /// <summary>
+    /// Returns the System.DateTime time at startup plus the (higher precision) unity time elapsed since startup, resulting in a value representing the current real world time.
+    /// </summary>
+    /// <returns>The real world time.</returns>
     public static System.DateTime RealWorldTime()
     {
         double secondsSinceUnityStart = Time.realtimeSinceStartup - unityTimeStartTime;

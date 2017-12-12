@@ -6,7 +6,7 @@ using UnityEngine;
 public class WriteToDiskHandler : DataHandler
 {
     //more output formats may be added in the future
-    public enum FORMAT { JSON };
+    public enum FORMAT { JSON_LINES };
     public FORMAT outputFormat;
 
     [HideInInspector]
@@ -51,22 +51,27 @@ public class WriteToDiskHandler : DataHandler
             waitingPoints.Enqueue(dataPoint);
     }
 
+    /// <summary>
+    /// Writes data from the waitingPoints queue to disk.  The waitingPoints queue will be automatically updated whenever reporters report data.
+    /// 
+    /// DoWrite() will also be automatically be called periodically according to the settings in the component inspector window, but you can invoke this manually if desired.
+    /// </summary>
     public void DoWrite()
     {
-        string directory = UnityEPL.GetDataPath();
-        System.IO.Directory.CreateDirectory(directory);
-        string filePath = System.IO.Path.Combine(directory, "unnamed_file");
-
         while (waitingPoints.Count > 0)
         {
+            string directory = UnityEPL.GetDataPath();
+            System.IO.Directory.CreateDirectory(directory);
+            string filePath = System.IO.Path.Combine(directory, "unnamed_file");
+
             DataPoint dataPoint = waitingPoints.Dequeue();
             string writeMe = "unrecognized type";
             string extensionlessFileName = "session";//DataReporter.GetStartTime ().ToString("yyyy-MM-dd HH mm ss");
             switch (outputFormat)
             {
-                case FORMAT.JSON:
+                case FORMAT.JSON_LINES:
                     writeMe = dataPoint.ToJSON();
-                    filePath = System.IO.Path.Combine(directory, extensionlessFileName + ".json");
+                    filePath = System.IO.Path.Combine(directory, extensionlessFileName + ".jsonl");
                     break;
             }
             System.IO.File.AppendAllText(filePath, writeMe + System.Environment.NewLine);
