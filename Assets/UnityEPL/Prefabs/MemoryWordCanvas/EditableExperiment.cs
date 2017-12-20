@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -294,28 +294,6 @@ public class EditableExperiment : CoroutineExperiment
         WriteAllLinesNoExtraNewline(lstFile.FullName, lines);
     }
 
-    //thanks Virtlink from stackoverflow
-    private static void WriteAllLinesNoExtraNewline(string path, params string[] lines)
-    {
-        if (path == null)
-            throw new UnityException("path argument should not be null");
-        if (lines == null)
-            throw new UnityException("lines argument should not be null");
-
-        using (var stream = System.IO.File.OpenWrite(path))
-        using (System.IO.StreamWriter writer = new System.IO.StreamWriter(stream))
-        {
-            if (lines.Length > 0)
-            {
-                for (int i = 0; i < lines.Length - 1; i++)
-                {
-                    writer.WriteLine(lines[i]);
-                }
-                writer.Write(lines[lines.Length - 1]);
-            }
-        }
-    }
-
     private int GetNumberInput()
     {
         if (Input.GetKeyDown(KeyCode.Keypad0) || Input.GetKeyDown(KeyCode.Alpha0))
@@ -427,5 +405,28 @@ public class EditableExperiment : CoroutineExperiment
     {
         words = newWords;
     }
-
+    
+    //thanks Virtlink from stackoverflow
+    protected static void WriteAllLinesNoExtraNewline(string path, params string[] lines)
+    {
+        if (path == null)
+        throw new UnityException("path argument should not be null");
+        if (lines == null)
+        throw new UnityException("lines argument should not be null");
+        
+        using (var stream = System.IO.File.OpenWrite(path))
+        {
+            using (System.IO.StreamWriter writer = new System.IO.StreamWriter(stream))
+            {
+                if (lines.Length > 0)
+                {
+                    for (int i = 0; i < lines.Length - 1; i++)
+                    {
+                        writer.WriteLine(lines[i]);
+                    }
+                    writer.Write(lines[lines.Length - 1]);
+                }
+            }
+        }
+    }
 }
