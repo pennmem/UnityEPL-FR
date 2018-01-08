@@ -37,6 +37,7 @@ public class FlyPaths : MonoBehaviour
     public void BeginFlight(int pathIndex)
     {
         Debug.Log("Beginning flight #" + pathIndex.ToString());
+        stopFlight = false;
         StartCoroutine(DoFlight(pathIndex));
     }
 

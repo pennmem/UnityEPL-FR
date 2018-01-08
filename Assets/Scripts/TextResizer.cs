@@ -14,7 +14,7 @@ public class TextResizer : MonoBehaviour
     private Vector2 originalAnchorMin;
     private Vector2 originalAnchorMax;
 
-    private const int SIZE_WHEN_SENTENCE = 80;
+    private const int SIZE_WHEN_SENTENCE = 60;
     private const int SIZE_WHEN_NOT = 300;
 
     void OnEnable()
