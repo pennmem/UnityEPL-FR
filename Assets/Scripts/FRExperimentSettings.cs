@@ -184,7 +184,26 @@ public static class FRExperimentSettings
     ///     Stimulation happens on three amplitudes.  Amplitudes are the same within a list.  The exact amplitudes are chosen by ramulator.  The task is responsible for sending an index (1, 2, or 3).
     ///     Each amplitude is used for four separate lists.
     /// </summary>
-    /// <returns>The CatFR 6 settings.</returns>
+    /// <returns>The PS5 settings.</returns>
+    public static ExperimentSettings GetPS5Settings()
+    {
+        ExperimentSettings PS5Settings = GetFR1Settings();
+        PS5Settings.wordListGenerator = new FRListGenerator(12, 0, 0, 12, 0, 0, 3);
+        PS5Settings.experimentName = "PS5";
+        return PS5Settings;
+    }
+
+    /// <summary>
+    /// Gets the test ps5 settings.
+    /// </summary>
+    /// <returns>The test PS5 settings.</returns>
+    public static ExperimentSettings GetTestPS5Settings()
+    {
+        ExperimentSettings testPS5Settings = GetPS5Settings();
+        testPS5Settings.experimentName = "PS5_test";
+        testPS5Settings.useRamulator = false;
+        return testPS5Settings;
+    }
 
     /// <summary>
     /// Gets the test FR 1 settings.
@@ -274,10 +293,12 @@ public static class FRExperimentSettings
                                 GetCatFR1Settings ().experimentName,
                                 GetFR6Settings ().experimentName,
                                 GetCatFR6Settings ().experimentName,
+                                GetPS5Settings().experimentName,
                                 GetTestFR1Settings().experimentName,
                                 GetTestCatFR1Settings().experimentName,
                                 GetTestFR6Settings().experimentName,
                                 GetTestCatFR6Settings().experimentName,
+                                GetTestPS5Settings().experimentName,
                                 //"FR1_scalp",
                                 "SFR",
                             };
@@ -300,6 +321,8 @@ public static class FRExperimentSettings
                 return GetFR6Settings();
             case "CatFR6":
                 return GetCatFR6Settings();
+            case "PS5":
+                return GetPS5Settings();
             case "FR1_test":
                 return GetTestFR1Settings();
             case "CatFR1_test":
@@ -308,6 +331,8 @@ public static class FRExperimentSettings
                 return GetTestFR6Settings();
             case "CatFR6_test":
                 return GetTestCatFR6Settings();
+            case "PS5_test":
+                return GetTestPS5Settings();
             case "SFR":
                 return GetTestFR1Settings();
         }
@@ -331,6 +356,8 @@ public static class FRExperimentSettings
                 return "ram_fr";
             case "CatFR6":
                 return "ram_fr";
+            case "PS5":
+                return "ram_fr";
             case "FR1_test":
                 return "ram_fr";
             case "CatFR1_test":
@@ -338,6 +365,8 @@ public static class FRExperimentSettings
             case "FR6_test":
                 return "ram_fr";
             case "CatFR6_test":
+                return "ram_fr";
+            case "PS5_test":
                 return "ram_fr";
             case "SFR":
                 return "sfr";
