@@ -400,14 +400,19 @@ public class FRListGenerator : WordListGenerator
 
         ////////////////////Build amplitude index list and assign amplitude indeces
         IronPython.Runtime.List amplitude_index_list = new IronPython.Runtime.List();
-        int lists_per_amplitude_index = STIM_LIST_COUNT / AMPLITUDE_COUNT;
+        int lists_per_amplitude_index = 0;
+        if (AMPLITUDE_COUNT != 0)
+            lists_per_amplitude_index = STIM_LIST_COUNT / AMPLITUDE_COUNT;
         for (int amplitude_index = 0; amplitude_index < AMPLITUDE_COUNT; amplitude_index++)
         {
             for (int i = 0; i < lists_per_amplitude_index; i++)
                 amplitude_index_list.Add(amplitude_index);
         }
+        amplitude_index_list = Shuffled(rng, amplitude_index_list);
+
         var assign_amplitudes_from_amplitude_index_list = scope.GetVariable("assign_amplitudes_from_amplitude_index_list");
         var words_with_amplitude_indices = assign_amplitudes_from_amplitude_index_list(words_with_stim_channels, amplitude_index_list);
+
 
         return words_with_amplitude_indices;
     }
