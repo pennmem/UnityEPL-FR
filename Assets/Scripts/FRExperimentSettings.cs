@@ -76,7 +76,7 @@ public static class FRExperimentSettings
         ExperimentSettings FR1Settings = new ExperimentSettings();
         FR1Settings.experimentName = "FR1";
         FR1Settings.version = "1.0";
-        FR1Settings.wordListGenerator = new FRListGenerator(0, 12, 0, 0, 0, 0);
+        FR1Settings.wordListGenerator = new FRListGenerator(0, 12, 0, 0, 0, 0, 0);
         FR1Settings.isCategoryPool = false;
         FR1Settings.numberOfLists = 13;
         FR1Settings.wordsPerList = 12;
@@ -138,7 +138,7 @@ public static class FRExperimentSettings
         ExperimentSettings FR6Settings = new ExperimentSettings();
         FR6Settings.experimentName = "FR6";
         FR6Settings.version = "6.0";
-        FR6Settings.wordListGenerator = new FRListGenerator(16, 6, 3, 5, 5, 6);
+        FR6Settings.wordListGenerator = new FRListGenerator(16, 6, 3, 5, 5, 6, 1);
         FR6Settings.isCategoryPool = false;
         FR6Settings.numberOfLists = 26;
         FR6Settings.wordsPerList = 12;
@@ -175,6 +175,16 @@ public static class FRExperimentSettings
         CatFR6Settings.isCategoryPool = true;
         return CatFR6Settings;
     }
+
+    /// <summary>
+    /// Gets the PS5 settings.
+    /// 
+    /// PS5 is the same as FR1, with the following exceptions:
+    ///     All lists (except the practice list) are stim lists
+    ///     Stimulation happens on three amplitudes.  Amplitudes are the same within a list.  The exact amplitudes are chosen by ramulator.  The task is responsible for sending an index (1, 2, or 3).
+    ///     Each amplitude is used for four separate lists.
+    /// </summary>
+    /// <returns>The CatFR 6 settings.</returns>
 
     /// <summary>
     /// Gets the test FR 1 settings.

@@ -120,7 +120,7 @@ def _assign_stim_attribute_from_stim_attribute_list(pool, attribute_list, attrib
             if (word['listno'] != stim_listno):
                 stim_listno = word['listno']
                 current_attribute_index += 1
-            pool[i][attribute_name] = attribute_list[current_stimspec_attribute]
+            pool[i][attribute_name] = attribute_list[current_attribute_index]
 
     return pool
 

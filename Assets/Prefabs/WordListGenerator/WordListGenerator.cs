@@ -284,7 +284,9 @@ public class FRListGenerator : WordListGenerator
     private int B_STIM_COUNT;
     private int AB_STIM_COUNT;
 
-    public FRListGenerator(int NEW_STIM_LIST_COUNT, int NEW_NONSTIM_LIST_COUNT, int NEW_BASELINE_LIST_COUNT, int NEW_A_STIM_COUNT, int NEW_B_STIM_COUNT, int NEW_AB_STIM_COUNT)
+    private int AMPLITUDE_COUNT;
+
+    public FRListGenerator(int NEW_STIM_LIST_COUNT, int NEW_NONSTIM_LIST_COUNT, int NEW_BASELINE_LIST_COUNT, int NEW_A_STIM_COUNT, int NEW_B_STIM_COUNT, int NEW_AB_STIM_COUNT, int NEW_AMPLITUDE_COUNT)
     {
         STIM_LIST_COUNT = NEW_STIM_LIST_COUNT;
         NONSTIM_LIST_COUNT = NEW_NONSTIM_LIST_COUNT;
@@ -292,6 +294,7 @@ public class FRListGenerator : WordListGenerator
         A_STIM_COUNT = NEW_A_STIM_COUNT;
         B_STIM_COUNT = NEW_B_STIM_COUNT;
         AB_STIM_COUNT = NEW_AB_STIM_COUNT;
+        AMPLITUDE_COUNT = NEW_AMPLITUDE_COUNT;
     }
 
     public override IronPython.Runtime.List GenerateLists(int numberOfLists, int lengthOfEachList, System.Random rng, bool isCategoryPool, bool isTwoParter, bool isEvenNumberSession, string participantCode)
@@ -394,6 +397,18 @@ public class FRListGenerator : WordListGenerator
         var assign_multistim_from_stim_channels_list = scope.GetVariable("assign_multistim_from_stim_channels_list");
         var words_with_stim_channels = assign_multistim_from_stim_channels_list(words_with_types, stim_channels_list);
 
-        return words_with_stim_channels;
+
+        ////////////////////Build amplitude index list and assign amplitude indeces
+        IronPython.Runtime.List amplitude_index_list = new IronPython.Runtime.List();
+        int lists_per_amplitude_index = STIM_LIST_COUNT / AMPLITUDE_COUNT;
+        for (int amplitude_index = 0; amplitude_index < AMPLITUDE_COUNT; amplitude_index++)
+        {
+            for (int i = 0; i < lists_per_amplitude_index; i++)
+                amplitude_index_list.Add(amplitude_index);
+        }
+        var assign_amplitudes_from_amplitude_index_list = scope.GetVariable("assign_amplitudes_from_amplitude_index_list");
+        var words_with_amplitude_indices = assign_amplitudes_from_amplitude_index_list(words_with_stim_channels, amplitude_index_list);
+
+        return words_with_amplitude_indices;
     }
 }
