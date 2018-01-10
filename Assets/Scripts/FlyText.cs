@@ -23,7 +23,7 @@ public class FlyText : MonoBehaviour
         TextDisplayer.OnText -= OnText;
     }
 
-    public void OnStateChange(string name, bool on)
+    public void OnStateChange(string name, bool on, Dictionary<string, object> extraData)
     {
         if (name.Equals("ENCODING"))
             is_encoding = on;
