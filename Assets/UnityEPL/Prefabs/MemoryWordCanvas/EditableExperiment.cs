@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class EditableExperiment : CoroutineExperiment
 {
-    public delegate void StateChange(string stateName, bool on);
+    public delegate void StateChange(string stateName, bool on, Dictionary<string, object> extraData);
     public static StateChange OnStateChange;
 
     private static ushort wordsSeen;
@@ -97,11 +97,23 @@ public class EditableExperiment : CoroutineExperiment
             if (i != 0)
                 yield return PressAnyKey("Press any key for trial " + i.ToString() + ".");
 
+            SetRamulatorState("COUNTDOWN", true, new Dictionary<string, object>() { { "current_trial", i } });
             yield return DoCountdown();
+            SetRamulatorState("COUNTDOWN", false, new Dictionary<string, object>() { { "current_trial", i } });
+
+            SetRamulatorState("ENCODING", true, new Dictionary<string, object>() { { "current_trial", i } });
             yield return DoEncoding();
+            SetRamulatorState("ENCODING", false, new Dictionary<string, object>() { { "current_trial", i } });
+
+            SetRamulatorState("DISTRACT", true, new Dictionary<string, object>() { { "current_trial", i } });
             yield return DoDistractor();
+            SetRamulatorState("DISTRACT", false, new Dictionary<string, object>() { { "current_trial", i } });
+
             yield return PausableWait(Random.Range(currentSettings.minPauseBeforeRecall, currentSettings.maxPauseBeforeRecall));
+
+            SetRamulatorState("RETRIEVAL", true, new Dictionary<string, object>() { { "current_trial", i } });
             yield return DoRecall();
+            SetRamulatorState("RETRIEVAL", false, new Dictionary<string, object>() { { "current_trial", i } });
         }
 
         textDisplayer.DisplayText("display end message", "Woo!  The experiment is over.");
@@ -109,21 +121,21 @@ public class EditableExperiment : CoroutineExperiment
 
     private IEnumerator DoCountdown()
     {
-        SetRamulatorState("COUNTDOWN", true, new Dictionary<string, object>());
+
         countdownVideoPlayer.StartVideo();
         while (countdownVideoPlayer.IsPlaying())
             yield return null;
-        //		for (int i = 0; i < currentSettings.countdownLength; i++)
-        //		{
-        //			textDisplayer.DisplayText ("countdown display", (currentSettings.countdownLength - i).ToString ());
-        //			yield return PausableWait (currentSettings.countdownTick);
-        //		}
-        SetRamulatorState("COUNTDOWN", false, new Dictionary<string, object>());
+        //      for (int i = 0; i < currentSettings.countdownLength; i++)
+        //      {
+        //          textDisplayer.DisplayText ("countdown display", (currentSettings.countdownLength - i).ToString ());
+        //          yield return PausableWait (currentSettings.countdownTick);
+        //      }
+
     }
 
     private IEnumerator DoEncoding()
     {
-        SetRamulatorState("ENCODING", true, new Dictionary<string, object>());
+
 
         int currentList = wordsSeen / currentSettings.wordsPerList;
         wordsSeen = (ushort)(currentList * currentSettings.wordsPerList);
@@ -144,7 +156,7 @@ public class EditableExperiment : CoroutineExperiment
             SetRamulatorWordState(false, words[wordsSeen]);
             IncrementWordsSeen();
         }
-        SetRamulatorState("ENCODING", false, new Dictionary<string, object>());
+
     }
 
     private void SetRamulatorWordState(bool state, IronPython.Runtime.PythonDictionary wordData)
@@ -159,7 +171,7 @@ public class EditableExperiment : CoroutineExperiment
     protected override void SetRamulatorState(string stateName, bool state, Dictionary<string, object> extraData)
     {
         if (OnStateChange != null)
-            OnStateChange(stateName, state);
+            OnStateChange(stateName, state, extraData);
         if (!stateName.Equals("WORD"))
             extraData.Add("phase_type", current_phase_type);
         if (currentSettings.useRamulator)
@@ -168,7 +180,7 @@ public class EditableExperiment : CoroutineExperiment
 
     private IEnumerator DoDistractor()
     {
-        SetRamulatorState("DISTRACT", true, new Dictionary<string, object>());
+
         float endTime = Time.time + currentSettings.distractionLength;
 
         string distractor = "";
@@ -241,7 +253,7 @@ public class EditableExperiment : CoroutineExperiment
         }
         textDisplayer.OriginalColor();
         textDisplayer.ClearText();
-        SetRamulatorState("DISTRACT", false, new Dictionary<string, object>());
+
     }
 
     private void ReportDistractorAnswered(bool correct, string problem, string answer)
@@ -255,7 +267,7 @@ public class EditableExperiment : CoroutineExperiment
 
     private IEnumerator DoRecall()
     {
-        SetRamulatorState("RETRIEVAL", true, new Dictionary<string, object>());
+
         highBeep.Play();
         scriptedEventReporter.ReportScriptedEvent("Sound played", new Dictionary<string, object>() { { "sound name", "high beep" }, { "sound duration", highBeep.clip.length.ToString() } });
 
@@ -263,7 +275,7 @@ public class EditableExperiment : CoroutineExperiment
         yield return PausableWait(currentSettings.recallTextDisplayLength);
         textDisplayer.ClearText();
 
-        soundRecorder.StartRecording(Mathf.CeilToInt(currentSettings.recallLength)+1);
+        soundRecorder.StartRecording(Mathf.CeilToInt(currentSettings.recallLength));
         yield return PausableWait(currentSettings.recallLength);
 
         //path
@@ -277,7 +289,7 @@ public class EditableExperiment : CoroutineExperiment
         textDisplayer.ClearText();
         lowBeep.Play();
         scriptedEventReporter.ReportScriptedEvent("Sound played", new Dictionary<string, object>() { { "sound name", "low beep" }, { "sound duration", lowBeep.clip.length.ToString() } });
-        SetRamulatorState("RETRIEVAL", false, new Dictionary<string, object>());
+
     }
 
     private void WriteLstFile(string lstFilePath)
@@ -405,15 +417,15 @@ public class EditableExperiment : CoroutineExperiment
     {
         words = newWords;
     }
-    
+
     //thanks Virtlink from stackoverflow
     protected static void WriteAllLinesNoExtraNewline(string path, params string[] lines)
     {
         if (path == null)
-        throw new UnityException("path argument should not be null");
+            throw new UnityException("path argument should not be null");
         if (lines == null)
-        throw new UnityException("lines argument should not be null");
-        
+            throw new UnityException("lines argument should not be null");
+
         using (var stream = System.IO.File.OpenWrite(path))
         {
             using (System.IO.StreamWriter writer = new System.IO.StreamWriter(stream))
