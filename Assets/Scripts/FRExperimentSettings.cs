@@ -93,7 +93,7 @@ public static class FRExperimentSettings
         FR1Settings.maxOrientationStimulusLength = 1.4f;
         FR1Settings.minPauseBeforeRecall = 1f;
         FR1Settings.maxPauseBeforeRecall = 1.4f;
-        FR1Settings.recallTextDisplayLength = 0.5f;
+        FR1Settings.recallTextDisplayLength = 1f;
         FR1Settings.useRamulator = true;
         FR1Settings.isTwoParter = true;
         FR1Settings.useSessionListSelection = true;
@@ -155,7 +155,7 @@ public static class FRExperimentSettings
         FR6Settings.maxOrientationStimulusLength = 1.4f;
         FR6Settings.minPauseBeforeRecall = 1f;
         FR6Settings.maxPauseBeforeRecall = 1.4f;
-        FR6Settings.recallTextDisplayLength = 0.5f;
+        FR6Settings.recallTextDisplayLength = 1f;
         FR6Settings.useRamulator = true;
         FR6Settings.isTwoParter = false;
         FR6Settings.useSessionListSelection = false;
@@ -181,7 +181,7 @@ public static class FRExperimentSettings
     /// 
     /// PS5 is the same as FR1, with the following exceptions:
     ///     All lists (except the practice list) are stim lists
-    ///     Stimulation happens on three amplitudes.  Amplitudes are the same within a list.  The exact amplitudes are chosen by ramulator.  The task is responsible for sending an index (1, 2, or 3).
+    ///     Stimulation happens on three amplitudes.  Amplitudes are the same within a list.  The exact amplitudes are chosen by ramulator.  The task is responsible for sending an index (0, 1, or 2).
     ///     Each amplitude is used for four separate lists.
     /// </summary>
     /// <returns>The PS5 settings.</returns>
