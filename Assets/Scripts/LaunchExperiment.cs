@@ -28,8 +28,6 @@ public class LaunchExperiment : MonoBehaviour
 
     public void DoLaunchExperiment()
     {
-        ExperimentSettings experimentSettings = FRExperimentSettings.GetSettingsByName(UnityEPL.GetExperimentName());
-
         if (participantNameInput.text.Equals(""))
         {
             cantGoPrompt.GetComponent<UnityEngine.UI.Text>().text = "Please enter a participant";

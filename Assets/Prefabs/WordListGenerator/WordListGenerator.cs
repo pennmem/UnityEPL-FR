@@ -154,8 +154,6 @@ public abstract class WordListGenerator
 
             List<string> keyList = new List<string>(categoriesToWords.Keys);
 
-            IronPython.Runtime.List singleList = new IronPython.Runtime.List();
-
             //////////find three random unique categories
             string randomCategoryA = keyList[rng.Next(keyList.Count)];
             string randomCategoryB;
