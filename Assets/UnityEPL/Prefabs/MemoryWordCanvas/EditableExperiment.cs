@@ -275,7 +275,7 @@ public class EditableExperiment : CoroutineExperiment
         yield return PausableWait(currentSettings.recallTextDisplayLength);
         textDisplayer.ClearText();
 
-        soundRecorder.StartRecording(Mathf.CeilToInt(currentSettings.recallLength)+1);
+        soundRecorder.StartRecording(Mathf.CeilToInt(currentSettings.recallLength));
         yield return PausableWait(currentSettings.recallLength);
 
         //path
@@ -289,7 +289,6 @@ public class EditableExperiment : CoroutineExperiment
         textDisplayer.ClearText();
         lowBeep.Play();
         scriptedEventReporter.ReportScriptedEvent("Sound played", new Dictionary<string, object>() { { "sound name", "low beep" }, { "sound duration", lowBeep.clip.length.ToString() } });
-
     }
 
     private void WriteLstFile(string lstFilePath)

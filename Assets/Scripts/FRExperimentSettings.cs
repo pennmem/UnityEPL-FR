@@ -93,7 +93,7 @@ public static class FRExperimentSettings
         FR1Settings.maxOrientationStimulusLength = 1.4f;
         FR1Settings.minPauseBeforeRecall = 1f;
         FR1Settings.maxPauseBeforeRecall = 1.4f;
-        FR1Settings.recallTextDisplayLength = 1f;
+        FR1Settings.recallTextDisplayLength = 0.5f;
         FR1Settings.useRamulator = true;
         FR1Settings.isTwoParter = true;
         FR1Settings.useSessionListSelection = true;

@@ -87,10 +87,7 @@ public class FlyPaths : MonoBehaviour
                 directionToNextPoint = Vector3.Normalize(flyPath.flyPoints[lastPassedPointIndex + 1].transform.position - flyPath.flyPoints[lastPassedPointIndex].transform.position);
             else
                 directionToNextPoint = flier.transform.forward;
-
-            Debug.Log(directionToNextPoint);
-            Debug.Log(speed);
-            Debug.Log(Time.deltaTime);
+            
             flier.transform.position = flier.transform.position + directionToNextPoint * speed * Time.deltaTime;
 
             distanceTraveledSinceLastPoint = Vector3.Distance(flyPath.flyPoints[lastPassedPointIndex].transform.position, flier.transform.position);

@@ -18,7 +18,7 @@ public class ActivateDuringWord : MonoBehaviour
 
     private void OnWord (string stateName, bool on, Dictionary<string, object> extraData)
     {
-        if (stateName.Equals("WORD"))
+        if (stateName.Equals("WORD") || stateName.Equals("ORIENT"))
         {
             activateMe.SetActive(on);
         }
