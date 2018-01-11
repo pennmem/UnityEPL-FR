@@ -16,7 +16,7 @@ public class BlackScreenActivator : MonoBehaviour
         EditableExperiment.OnStateChange -= OnStateChange;
     }
 
-    void OnStateChange(string stateName, bool on, Dictionary<string, object> extraData)
+    void OnStateChange(string stateName, bool on)
     {
         if (stateName.Equals("ENCODING"))
             blackScreen.SetActive(!on);

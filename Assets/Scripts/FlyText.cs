@@ -23,7 +23,7 @@ public class FlyText : MonoBehaviour
         TextDisplayer.OnText -= OnText;
     }
 
-    public void OnStateChange(string name, bool on, Dictionary<string, object> extraData)
+    public void OnStateChange(string name, bool on)
     {
         if (name.Equals("ENCODING"))
             is_encoding = on;
@@ -39,12 +39,14 @@ public class FlyText : MonoBehaviour
     {
         //Debug.Log ("DoFly");
         float startTime = Time.time;
-        gameObject.transform.localPosition = new Vector3(gameObject.transform.localPosition.x, gameObject.transform.localPosition.y, startZ);
+        Vector3 startPosition = new Vector3(gameObject.transform.localPosition.x, gameObject.transform.localPosition.y, startZ);
+        gameObject.transform.localPosition = startPosition;
         Vector3 hoverPosition = gameObject.transform.position;
         while (Time.time < startTime + hoverTime)
         {
-            gameObject.transform.position = hoverPosition;
+            gameObject.transform.position = new Vector3(hoverPosition.x, gameObject.transform.position.y, hoverPosition.z);
             yield return null;
         }
+        gameObject.transform.localPosition = startPosition;
     }
 }

@@ -16,11 +16,6 @@ public class FlyPaths : MonoBehaviour
 
     private bool stopFlight = false;
 
-    void Start()
-    {
-        //shuffle flypath
-    }
-
     void OnEnable()
     {
         EditableExperiment.OnStateChange += OnStateChange;
@@ -31,13 +26,10 @@ public class FlyPaths : MonoBehaviour
         EditableExperiment.OnStateChange -= OnStateChange;
     }
 
-    void OnStateChange(string stateName, bool on, Dictionary<string, object> extraData)
+    void OnStateChange(string stateName, bool on)
     {
         if (stateName.Equals("ENCODING") && on)
-        {
-            int current_trial = (int)extraData["current_trial"];
-            BeginFlight(current_trial);
-        }
+            BeginFlight(0);
         if (stateName.Equals("ENCODING") && !on)
             StopFlight();
     }
