@@ -16,6 +16,11 @@ public class FlyPaths : MonoBehaviour
 
     private bool stopFlight = false;
 
+    void Start()
+    {
+        //shuffle flypath
+    }
+
     void OnEnable()
     {
         EditableExperiment.OnStateChange += OnStateChange;
@@ -29,7 +34,10 @@ public class FlyPaths : MonoBehaviour
     void OnStateChange(string stateName, bool on, Dictionary<string, object> extraData)
     {
         if (stateName.Equals("ENCODING") && on)
-            BeginFlight(0);
+        {
+            int current_trial = (int)extraData["current_trial"];
+            BeginFlight(current_trial);
+        }
         if (stateName.Equals("ENCODING") && !on)
             StopFlight();
     }
@@ -87,7 +95,7 @@ public class FlyPaths : MonoBehaviour
                 directionToNextPoint = Vector3.Normalize(flyPath.flyPoints[lastPassedPointIndex + 1].transform.position - flyPath.flyPoints[lastPassedPointIndex].transform.position);
             else
                 directionToNextPoint = flier.transform.forward;
-            
+
             flier.transform.position = flier.transform.position + directionToNextPoint * speed * Time.deltaTime;
 
             distanceTraveledSinceLastPoint = Vector3.Distance(flyPath.flyPoints[lastPassedPointIndex].transform.position, flier.transform.position);
