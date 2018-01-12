@@ -141,9 +141,11 @@ public class EditableExperiment : CoroutineExperiment
         wordsSeen = (ushort)(currentList * currentSettings.wordsPerList);
         Debug.Log("Beginning list index " + currentList.ToString());
 
+        SetRamulatorState("ORIENT", true, new Dictionary<string, object>());
         textDisplayer.DisplayText("orientation stimulus", "+");
         yield return PausableWait(Random.Range(currentSettings.minOrientationStimulusLength, currentSettings.maxOrientationStimulusLength));
         textDisplayer.ClearText();
+        SetRamulatorState("ORIENT", false, new Dictionary<string, object>());
 
         for (int i = 0; i < currentSettings.wordsPerList; i++)
         {
