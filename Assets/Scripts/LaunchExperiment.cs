@@ -13,6 +13,7 @@ public class LaunchExperiment : MonoBehaviour
     public UnityEngine.UI.InputField participantNameInput;
     public UnityEngine.GameObject launchButton;
     public UnityEngine.GameObject greyedLaunchButton;
+    public UnityEngine.GameObject loadingButton;
 
     void Update()
     {
@@ -28,17 +29,22 @@ public class LaunchExperiment : MonoBehaviour
 
     public void DoLaunchExperiment()
     {
+        StartCoroutine(LaunchExperimentCoroutine());
+    }
+
+    private IEnumerator LaunchExperimentCoroutine()
+    {
         if (participantNameInput.text.Equals(""))
         {
             cantGoPrompt.GetComponent<UnityEngine.UI.Text>().text = "Please enter a participant";
             cantGoPrompt.SetActive(true);
-            return;
+            yield break;
         }
         if (!IsValidParticipantName(participantNameInput.text))
         {
             cantGoPrompt.GetComponent<UnityEngine.UI.Text>().text = "Please enter a valid participant name (ex. R1123E or LTP123)";
             cantGoPrompt.SetActive(true);
-            return;
+            yield break;
         }
 
         int sessionNumber = ParticipantSelection.nextSessionNumber;
@@ -46,7 +52,7 @@ public class LaunchExperiment : MonoBehaviour
         {
             cantGoPrompt.GetComponent<UnityEngine.UI.Text>().text = "That session has already been completed.";
             cantGoPrompt.SetActive(true);
-            return;
+            yield break;
         }
 
         UnityEPL.AddParticipant(participantNameInput.text);
@@ -54,7 +60,10 @@ public class LaunchExperiment : MonoBehaviour
 
         int listNumber = ParticipantSelection.nextListNumber;
         IronPython.Runtime.List words = ParticipantSelection.nextWords;
-        EditableExperiment.ConfigureExperiment((ushort)(listNumber*12), (ushort)sessionNumber, newWords: words);
+        EditableExperiment.ConfigureExperiment((ushort)(listNumber * 12), (ushort)sessionNumber, newWords: words);
+        launchButton.SetActive(false);
+        loadingButton.SetActive(true);
+        yield return null;
         UnityEngine.SceneManagement.SceneManager.LoadScene(FRExperimentSettings.ExperimentNameToExperimentScene(UnityEPL.GetExperimentName()));
     }
 

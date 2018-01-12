@@ -205,7 +205,6 @@ public class EditableExperiment : CoroutineExperiment
             }
             if (Time.time - answerTime > currentSettings.answerConfirmationTime && answered)
             {
-                textDisplayer.ChangeColor(Color.white);
                 answered = false;
                 distractorProblem = DistractorProblem();
                 distractor = distractorProblem[0].ToString() + " + " + distractorProblem[1].ToString() + " + " + distractorProblem[2].ToString() + " = ";
