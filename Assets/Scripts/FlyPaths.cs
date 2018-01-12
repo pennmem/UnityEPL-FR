@@ -12,13 +12,18 @@ public class FlyPaths : MonoBehaviour
 {
     public GameObject flier;
     public float speed = 1f;
-    public FlyPath[] flyPaths;
+    public List<FlyPath> flyPaths;
 
     private bool stopFlight = false;
 
     void Start()
     {
-        //shuffle flypath
+        string participantCode = UnityEPL.GetParticipants()[0];
+        System.Random reliable_random = new System.Random(participantCode.GetHashCode());
+        List<FlyPath> nonpracticeFlyPaths = new List<FlyPath>(flyPaths.GetRange(1, flyPaths.Count - 1));
+        nonpracticeFlyPaths.Shuffle(reliable_random);
+        flyPaths.RemoveRange(1, flyPaths.Count - 1);
+        flyPaths.AddRange(nonpracticeFlyPaths);
     }
 
     void OnEnable()
@@ -56,7 +61,7 @@ public class FlyPaths : MonoBehaviour
 
     private IEnumerator DoFlight(int pathIndex)
     {
-        if (pathIndex < 0 || pathIndex >= flyPaths.Length)
+        if (pathIndex < 0 || pathIndex >= flyPaths.Count)
             throw new UnityException("That path index doesn't exist.");
 
         FlyPath flyPath = flyPaths[pathIndex];
@@ -108,5 +113,21 @@ public class FlyPaths : MonoBehaviour
             yield return null;
         }
         Debug.Log("Flight over");
+    }
+}
+
+static class MyExtensions
+{
+    public static void Shuffle<T>(this IList<T> list, System.Random rng)
+    {
+        int n = list.Count;
+        while (n > 1)
+        {
+            n--;
+            int k = rng.Next(n + 1);
+            T value = list[k];
+            list[k] = list[n];
+            list[n] = value;
+        }
     }
 }
