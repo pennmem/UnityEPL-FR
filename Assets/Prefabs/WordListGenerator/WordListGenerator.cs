@@ -35,8 +35,19 @@ public abstract class WordListGenerator
         }
         string filePath = System.IO.Path.Combine(directory, filename);
         string[] ram_wordpool_lines = GetWordpoolLines(filename);
+
+        if (isCategoryPool)
+        {
+            for (int i = 0; i < ram_wordpool_lines.Length; i++)
+            {
+                string line = ram_wordpool_lines[i];
+                string[] split_line = line.Split('\t');
+                ram_wordpool_lines[i] = split_line[1];
+            }
+        }
+
         System.IO.Directory.CreateDirectory(directory);
-        System.IO.File.WriteAllLines(filePath, ram_wordpool_lines);
+        System.IO.File.WriteAllLines(filePath + ".txt", ram_wordpool_lines);
     }
 
     private string[] GetWordpoolLines(string path)
