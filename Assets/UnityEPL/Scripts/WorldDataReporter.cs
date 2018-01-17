@@ -29,9 +29,9 @@ public class WorldDataReporter : DataReporter
         if (reportEntersView || reportLeavesView) CheckView();
     }
 
-    public void DoReport()
+    public void DoReport(System.Collections.Generic.Dictionary<string, object> extraData = null)
     {
-        System.Collections.Generic.Dictionary<string, object> transformDict = new System.Collections.Generic.Dictionary<string, object>();
+        System.Collections.Generic.Dictionary<string, object> transformDict = new System.Collections.Generic.Dictionary<string, object>(extraData);
         transformDict.Add("positionX", transform.position.x);
         transformDict.Add("positionY", transform.position.y);
         transformDict.Add("positionZ", transform.position.z);

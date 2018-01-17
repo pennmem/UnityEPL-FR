@@ -294,11 +294,11 @@ public static class FRExperimentSettings
                                 GetFR6Settings ().experimentName,
                                 GetCatFR6Settings ().experimentName,
                                 GetPS5Settings().experimentName,
-                                GetTestFR1Settings().experimentName,
-                                GetTestCatFR1Settings().experimentName,
-                                GetTestFR6Settings().experimentName,
-                                GetTestCatFR6Settings().experimentName,
-                                GetTestPS5Settings().experimentName,
+                                //GetTestFR1Settings().experimentName,
+                                //GetTestCatFR1Settings().experimentName,
+                                //GetTestFR6Settings().experimentName,
+                                //GetTestCatFR6Settings().experimentName,
+                                //GetTestPS5Settings().experimentName,
                                 //"FR1_scalp",
                                 "SFR",
                             };
@@ -323,16 +323,16 @@ public static class FRExperimentSettings
                 return GetCatFR6Settings();
             case "PS5":
                 return GetPS5Settings();
-            case "FR1_test":
-                return GetTestFR1Settings();
-            case "CatFR1_test":
-                return GetTestCatFR1Settings();
-            case "FR6_test":
-                return GetTestFR6Settings();
-            case "CatFR6_test":
-                return GetTestCatFR6Settings();
-            case "PS5_test":
-                return GetTestPS5Settings();
+            //case "FR1_test":
+            //    return GetTestFR1Settings();
+            //case "CatFR1_test":
+            //    return GetTestCatFR1Settings();
+            //case "FR6_test":
+            //    return GetTestFR6Settings();
+            //case "CatFR6_test":
+            //    return GetTestCatFR6Settings();
+            //case "PS5_test":
+                //return GetTestPS5Settings();
             case "SFR":
                 return GetTestFR1Settings();
         }
@@ -358,16 +358,16 @@ public static class FRExperimentSettings
                 return "ram_fr";
             case "PS5":
                 return "ram_fr";
-            case "FR1_test":
-                return "ram_fr";
-            case "CatFR1_test":
-                return "ram_fr";
-            case "FR6_test":
-                return "ram_fr";
-            case "CatFR6_test":
-                return "ram_fr";
-            case "PS5_test":
-                return "ram_fr";
+            //case "FR1_test":
+            //    return "ram_fr";
+            //case "CatFR1_test":
+            //    return "ram_fr";
+            //case "FR6_test":
+            //    return "ram_fr";
+            //case "CatFR6_test":
+            //    return "ram_fr";
+            //case "PS5_test":
+                //return "ram_fr";
             case "SFR":
                 return "sfr";
         }

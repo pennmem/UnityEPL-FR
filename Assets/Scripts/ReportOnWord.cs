@@ -18,9 +18,9 @@ public class ReportOnWord : MonoBehaviour
 
     private void OnWord(string stateName, bool on, Dictionary<string, object> extraData)
     {
-        if (stateName.Equals("WORD") || stateName.Equals("ORIENT"))
+        if (on && stateName.Equals("WORD"))
         {
-            reporter.DoReport();
+            reporter.DoReport(new Dictionary<string, object>() {{"word", extraData["word"]}});
         }
     }
 }
