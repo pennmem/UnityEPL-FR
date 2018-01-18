@@ -15,6 +15,7 @@ public class SoundRecorder : MonoBehaviour
     public void StopRecording(string outputFilePath)
     {
         SavWav.Save(outputFilePath, recording);
+		Microphone.End ("");
     }
 
     public AudioClip GetLastClip()
