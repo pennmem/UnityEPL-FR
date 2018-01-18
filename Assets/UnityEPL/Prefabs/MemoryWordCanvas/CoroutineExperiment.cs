@@ -5,6 +5,7 @@ using UnityEngine;
 public abstract class CoroutineExperiment : MonoBehaviour
 {
     private const int MICROPHONE_TEST_LENGTH = 5;
+	private const float MICROPHONE_TEST_GAP = 1f;
     
     public SoundRecorder soundRecorder;
     public TextDisplayer textDisplayer;
@@ -52,6 +53,8 @@ public abstract class CoroutineExperiment : MonoBehaviour
             wavFilePath = System.IO.Path.Combine(UnityEPL.GetDataPath(), "microphone_test_" + DataReporter.RealWorldTime().ToString("yyyy-MM-dd_HH_mm_ss"));
             soundRecorder.StopRecording(wavFilePath);
             
+			textDisplayer.ClearText();
+			yield return new WaitForSeconds(MICROPHONE_TEST_GAP);
             textDisplayer.DisplayText("microphone test playing", "Playing...");
             textDisplayer.ChangeColor(Color.green);
             
