@@ -286,7 +286,7 @@ public class EditableExperiment : CoroutineExperiment
         string lstFilePath = System.IO.Path.Combine(output_directory, listno.ToString() + ".lst");
         WriteLstFile(lstFilePath);
 
-        soundRecorder.StopRecording(wavFilePath);
+        soundRecorder.StopRecording(Mathf.CeilToInt(currentSettings.recallLength), wavFilePath);
         textDisplayer.ClearText();
         lowBeep.Play();
         scriptedEventReporter.ReportScriptedEvent("Sound played", new Dictionary<string, object>() { { "sound name", "low beep" }, { "sound duration", lowBeep.clip.length.ToString() } });

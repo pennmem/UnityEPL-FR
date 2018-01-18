@@ -48,17 +48,18 @@ public abstract class CoroutineExperiment : MonoBehaviour
             textDisplayer.DisplayText("microphone test recording", "Recording...");
             textDisplayer.ChangeColor(Color.red);
             yield return new WaitForSeconds(lowBeep.clip.length);
+
             soundRecorder.StartRecording(MICROPHONE_TEST_LENGTH);
             yield return new WaitForSeconds(MICROPHONE_TEST_LENGTH);
-            wavFilePath = System.IO.Path.Combine(UnityEPL.GetDataPath(), "microphone_test_" + DataReporter.RealWorldTime().ToString("yyyy-MM-dd_HH_mm_ss"));
-            soundRecorder.StopRecording(wavFilePath);
-            
+            wavFilePath = System.IO.Path.Combine(UnityEPL.GetDataPath(), "microphone_test_" + DataReporter.RealWorldTime().ToString("yyyy-MM-dd_HH_mm_ss") + ".wav");
+            soundRecorder.StopRecording(MICROPHONE_TEST_LENGTH, wavFilePath);
 			textDisplayer.ClearText();
+
 			yield return new WaitForSeconds(MICROPHONE_TEST_GAP);
+
             textDisplayer.DisplayText("microphone test playing", "Playing...");
             textDisplayer.ChangeColor(Color.green);
-            
-            audioPlayback.clip = soundRecorder.GetLastClip();
+            audioPlayback.clip = soundRecorder.AudioClipFromDatapath(wavFilePath);
             audioPlayback.Play();
             yield return new WaitForSeconds(MICROPHONE_TEST_LENGTH);
             textDisplayer.ClearText();
@@ -79,7 +80,7 @@ public abstract class CoroutineExperiment : MonoBehaviour
         while (repeat);
         
         if (!System.IO.File.Exists(wavFilePath + ".wav"))
-        yield return PressAnyKey("WARNING: Wav output file not detected.  Sounds may not be successfully recorded to disk.");
+            yield return PressAnyKey("WARNING: Wav output file not detected.  Sounds may not be successfully recorded to disk.");
         
         microphoneTestMessage.SetActive(false);
     }
