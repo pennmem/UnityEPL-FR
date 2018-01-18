@@ -282,7 +282,7 @@ public class EditableExperiment : CoroutineExperiment
         //path
         int listno = (wordsSeen / 12) - 1;
         string output_directory = UnityEPL.GetDataPath();
-        string wavFilePath = System.IO.Path.Combine(output_directory, listno.ToString());
+        string wavFilePath = System.IO.Path.Combine(output_directory, listno.ToString() + ".wav");
         string lstFilePath = System.IO.Path.Combine(output_directory, listno.ToString() + ".lst");
         WriteLstFile(lstFilePath);
 
