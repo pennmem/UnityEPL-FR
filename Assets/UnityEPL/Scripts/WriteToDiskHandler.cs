@@ -71,7 +71,7 @@ public class WriteToDiskHandler : DataHandler
             {
                 case FORMAT.JSON_LINES:
                     writeMe = dataPoint.ToJSON();
-                    filePath = System.IO.Path.Combine(directory, extensionlessFileName + ".jsonl");
+                    filePath = System.IO.Path.Combine(directory, extensionlessFileName + ".json");
                     break;
             }
             System.IO.File.AppendAllText(filePath, writeMe + System.Environment.NewLine);
