@@ -11,15 +11,15 @@ public class SoundRecorder : MonoBehaviour
     public void StartRecording(int secondsMaxLength)
     {
         recording = Microphone.Start("", false, secondsMaxLength*2, 44100);
-        float[] mostRecentSample = new float[] {0};
-        while (mostRecentSample[0].Equals(0f))
-        {
-            int recordedUpToSample = 0;
-            int microphonePosition = Microphone.GetPosition("") - 1;
-            if (microphonePosition > 0)
-                recordedUpToSample = microphonePosition;
-            recording.GetData(mostRecentSample, recordedUpToSample);
-        }
+        //float[] mostRecentSample = new float[] {0};
+        //while (mostRecentSample[0].Equals(0f))
+        //{
+        //    int recordedUpToSample = 0;
+        //    int microphonePosition = Microphone.GetPosition("") - 1;
+        //    if (microphonePosition > 0)
+        //        recordedUpToSample = microphonePosition;
+        //    recording.GetData(mostRecentSample, recordedUpToSample);
+        //}
         offset = Microphone.GetPosition("");
         Debug.Log("Recording offset due to microphone latency: " + offset.ToString());
     }
