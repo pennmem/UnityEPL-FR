@@ -5,34 +5,51 @@ using UnityEngine;
 public class SoundRecorder : MonoBehaviour
 {
     private AudioClip recording;
-    private int offset;
+    private int startSample;
+
+    private const int SECONDS_IN_MEMORY = 600;
+
+    void OnEnable()
+    {
+        recording = Microphone.Start("", true, SECONDS_IN_MEMORY, 44100);
+    }
+
+    void OnDisable()
+    {
+        Microphone.End("");
+    }
 
     //using the system's default device
-    public void StartRecording(int secondsMaxLength)
+    public void StartRecording()
     {
-        recording = Microphone.Start("", false, secondsMaxLength*2, 44100);
-        //float[] mostRecentSample = new float[] {0};
-        //while (mostRecentSample[0].Equals(0f))
-        //{
-        //    int recordedUpToSample = 0;
-        //    int microphonePosition = Microphone.GetPosition("") - 1;
-        //    if (microphonePosition > 0)
-        //        recordedUpToSample = microphonePosition;
-        //    recording.GetData(mostRecentSample, recordedUpToSample);
-        //}
-        offset = Microphone.GetPosition("");
+        startSample = Microphone.GetPosition("");
         //Debug.Log("Recording offset due to microphone latency: " + offset.ToString());
     }
 
-    public void StopRecording(int waitForDuration, string outputFilePath)
+    public void StopRecording(int recordingLength, string outputFilePath)
     {
-        while (Microphone.GetPosition("") < waitForDuration * 44100 + offset)
+        int outputLength = 44100 * recordingLength;
+        AudioClip croppedClip = AudioClip.Create("cropped recording", outputLength, 1, 44100, false);
+
+        float[] saveData = new float[outputLength];
+        if (startSample < recording.samples - outputLength)
         {
-            
+            Debug.Log("No wraparound");
+            recording.GetData(saveData, startSample);
         }
-        AudioClip croppedClip = AudioClip.Create("cropped recording", 44100 * waitForDuration, 1, 44100, false);
-        float[] saveData = new float[44100 * waitForDuration];
-        recording.GetData(saveData, offset);
+        else
+        {
+            Debug.Log("Yes wraparound");
+            float[] tailData = new float[recording.samples - startSample];
+            recording.GetData(tailData, startSample);
+            float[] headData = new float[outputLength - tailData.Length];
+            recording.GetData(headData, 0);
+            for (int i = 0; i < tailData.Length; i++)
+                saveData[i] = tailData[i];
+            for (int i = 0; i < headData.Length; i++)
+                saveData[tailData.Length + i] = headData[i];
+        }
+
         croppedClip.SetData(saveData, 0);
         SavWav.Save(outputFilePath, croppedClip);
     }
@@ -41,6 +58,10 @@ public class SoundRecorder : MonoBehaviour
     {
         string url = "file:///" + datapath;
         WWW audioFile = new WWW(url);
+        while(!audioFile.isDone)
+        {
+            
+        }
         return audioFile.GetAudioClip();
     }
 }

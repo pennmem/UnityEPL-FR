@@ -276,7 +276,7 @@ public class EditableExperiment : CoroutineExperiment
         yield return PausableWait(currentSettings.recallTextDisplayLength);
         textDisplayer.ClearText();
 
-        soundRecorder.StartRecording(Mathf.CeilToInt(currentSettings.recallLength));
+        soundRecorder.StartRecording();
         yield return PausableWait(currentSettings.recallLength);
 
         //path
