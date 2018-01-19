@@ -21,7 +21,7 @@ public class SoundRecorder : MonoBehaviour
         //    recording.GetData(mostRecentSample, recordedUpToSample);
         //}
         offset = Microphone.GetPosition("");
-        Debug.Log("Recording offset due to microphone latency: " + offset.ToString());
+        //Debug.Log("Recording offset due to microphone latency: " + offset.ToString());
     }
 
     public void StopRecording(int waitForDuration, string outputFilePath)
