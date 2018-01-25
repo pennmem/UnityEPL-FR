@@ -1,4 +1,16 @@
 category	word
+Bears	BROWN
+Bears	BLUE
+Bears	BLACK
+Bears	POLAR
+Bears	PANDABEAR
+Bears	BEETS
+Bears	RAWR
+Bears	BATTLESTARGALLACTICA
+Bears	CHICAGO
+Bears	SCARY
+Bears	BIG
+Bears	POOH
 Appliances	REFRIGERATOR
 Appliances	WASHER
 Appliances	STOVE
