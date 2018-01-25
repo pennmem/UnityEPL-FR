@@ -7,32 +7,25 @@ public abstract class WordListGenerator
 {
     public virtual IronPython.Runtime.List GenerateListsAndWriteWordpool(int numberOfLists, int lengthOfEachList, bool isCategoryPool, bool isTwoParter, bool isEvenNumberSession, string participantCode)
     {
-        WriteWordpoolToOutputFolder(isCategoryPool, isTwoParter);
+        WriteWordpoolToOutputFolder(isCategoryPool);
         return GenerateLists(numberOfLists, lengthOfEachList, new System.Random(), isCategoryPool, isTwoParter, isEvenNumberSession, participantCode);
     }
 
     public abstract IronPython.Runtime.List GenerateLists(int numberOfLists, int lengthOfEachList, System.Random rng, bool isCategoryPool, bool isTwoParter, bool isEvenNumberSession, string participantCode);
 
-    private void WriteWordpoolToOutputFolder(bool isCategoryPool, bool isTwoParter)
+    private void WriteWordpoolToOutputFolder(bool isCategoryPool)
     {
         string directory = UnityEPL.GetParticipantFolder();
         string filename;
-        if (isCategoryPool && !isTwoParter)
+        if (isCategoryPool)
         {
             filename = "ram_categorized_en";
         }
-        else if (!isCategoryPool && !isTwoParter)
+        else
         {
             filename = "ram_wordpool_en";
         }
-        else if (isCategoryPool && isTwoParter)
-        {
-            filename = "short_ram_categorized_en";
-        }
-        else //(!isCategoryPool && isTwoParter) 
-        {
-            filename = "short_ram_wordpool_en";
-        }
+
         string filePath = System.IO.Path.Combine(directory, filename);
         string[] ram_wordpool_lines = GetWordpoolLines(filename);
 
@@ -317,28 +310,15 @@ public class FRListGenerator : WordListGenerator
         Microsoft.Scripting.Hosting.ScriptScope scope = BuildPythonScope();
 
 
-        //////////////////////Load the word pools
-        IronPython.Runtime.List practice_words;
-        IronPython.Runtime.List main_words;
-        if (isCategoryPool && !isTwoParter)
+        //////////////////////Load the word pool
+        IronPython.Runtime.List all_words;
+        if (isCategoryPool)
         {
-            practice_words = ReadWordsFromPoolTxt("practice_cat_en", isCategoryPool);
-            main_words = ReadWordsFromPoolTxt("ram_categorized_en", isCategoryPool);
+            all_words = ReadWordsFromPoolTxt("ram_categorized_en", isCategoryPool);
         }
-        else if (!isCategoryPool && !isTwoParter)
+        else
         {
-            practice_words = ReadWordsFromPoolTxt("practice_en", isCategoryPool);
-            main_words = ReadWordsFromPoolTxt("ram_wordpool_en", isCategoryPool);
-        }
-        else if (isCategoryPool && isTwoParter)
-        {
-            practice_words = ReadWordsFromPoolTxt("practice_cat_en", isCategoryPool);
-            main_words = ReadWordsFromPoolTxt("short_ram_categorized_en", isCategoryPool);
-        }
-        else //(!isCategoryPool && isTwoParter) 
-        {
-            practice_words = ReadWordsFromPoolTxt("practice_en", isCategoryPool);
-            main_words = ReadWordsFromPoolTxt("short_ram_wordpool_en", isCategoryPool);
+            all_words = ReadWordsFromPoolTxt("ram_wordpool_en", isCategoryPool);
         }
 
         //////////////////////For two part experiments, reliably shuffle according to participant name and construct halves, then shuffle again
@@ -348,37 +328,35 @@ public class FRListGenerator : WordListGenerator
             System.Random reliable_random = new System.Random(participantCode.GetHashCode());
             if (!isCategoryPool)
             {
-                main_words = Shuffled(reliable_random, main_words);
+                all_words = Shuffled(reliable_random, all_words);
             }
             else
             {
-                main_words = CategoryShuffle(reliable_random, main_words, 12);
+                all_words = CategoryShuffle(reliable_random, all_words, 12);
             }
 
             if (isEvenNumberSession)
             {
-                main_words = (IronPython.Runtime.List)main_words.__getslice__(0, main_words.Count / 2);
+                all_words = (IronPython.Runtime.List)all_words.__getslice__(0, all_words.Count / 2);
             }
             else
             {
-                main_words = (IronPython.Runtime.List)main_words.__getslice__(main_words.Count / 2, main_words.Count);
+                all_words = (IronPython.Runtime.List)all_words.__getslice__(all_words.Count / 2, all_words.Count);
             }
         }
         if (isCategoryPool)
         {
-            practice_words = CategoryShuffle(rng, practice_words, lengthOfEachList);
-            main_words = CategoryShuffle(rng, main_words, lengthOfEachList);
+            all_words = CategoryShuffle(rng, all_words, lengthOfEachList);
         }
         else
         {
-            practice_words = Shuffled(rng, practice_words);
-            main_words = Shuffled(rng, main_words);
+            all_words = Shuffled(rng, all_words);
         }
 
         ////////////////////////////////////////////Call list creation functions from python
         //////////////////////Concatenate into lists with numbers
-        var concatenate_session_lists = scope.GetVariable("concatenate_session_lists");
-        var words_with_listnos = concatenate_session_lists(practice_words, main_words, lengthOfEachList, numberOfLists - 1); // -1 because the practice list doesn't count
+        var assign_list_numbers_from_word_list = scope.GetVariable("assign_list_numbers_from_word_list");
+        var words_with_listnos = assign_list_numbers_from_word_list(all_words, numberOfLists);
 
 
         //////////////////////Build type lists and assign tpyes

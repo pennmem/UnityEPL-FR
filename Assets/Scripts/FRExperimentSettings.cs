@@ -76,7 +76,7 @@ public static class FRExperimentSettings
         ExperimentSettings FR1Settings = new ExperimentSettings();
         FR1Settings.experimentName = "FR1";
         FR1Settings.version = "1.0";
-        FR1Settings.wordListGenerator = new FRListGenerator(0, 12, 0, 0, 0, 0, 0);
+        FR1Settings.wordListGenerator = new FRListGenerator(0, 13, 0, 0, 0, 0, 0);
         FR1Settings.isCategoryPool = false;
         FR1Settings.numberOfLists = 13;
         FR1Settings.wordsPerList = 12;
@@ -138,7 +138,7 @@ public static class FRExperimentSettings
         ExperimentSettings FR6Settings = new ExperimentSettings();
         FR6Settings.experimentName = "FR6";
         FR6Settings.version = "6.0";
-        FR6Settings.wordListGenerator = new FRListGenerator(16, 6, 3, 5, 5, 6, 1);
+        FR6Settings.wordListGenerator = new FRListGenerator(16, 6, 4, 5, 5, 6, 1);
         FR6Settings.isCategoryPool = false;
         FR6Settings.numberOfLists = 26;
         FR6Settings.wordsPerList = 12;
@@ -188,7 +188,7 @@ public static class FRExperimentSettings
     public static ExperimentSettings GetPS5Settings()
     {
         ExperimentSettings PS5Settings = GetFR1Settings();
-        PS5Settings.wordListGenerator = new FRListGenerator(12, 0, 0, 12, 0, 0, 3);
+        PS5Settings.wordListGenerator = new FRListGenerator(13, 0, 1, 12, 0, 0, 3);
         PS5Settings.experimentName = "PS5";
         return PS5Settings;
     }
