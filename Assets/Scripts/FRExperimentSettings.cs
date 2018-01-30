@@ -188,7 +188,7 @@ public static class FRExperimentSettings
     public static ExperimentSettings GetPS5Settings()
     {
         ExperimentSettings PS5Settings = GetFR1Settings();
-        PS5Settings.wordListGenerator = new FRListGenerator(13, 0, 1, 12, 0, 0, 3);
+        PS5Settings.wordListGenerator = new FRListGenerator(12, 0, 1, 12, 0, 0, 3);
         PS5Settings.experimentName = "PS5";
         return PS5Settings;
     }
