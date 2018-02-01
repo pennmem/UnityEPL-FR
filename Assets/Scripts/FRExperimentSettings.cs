@@ -194,6 +194,20 @@ public static class FRExperimentSettings
     }
 
     /// <summary>
+    /// Gets the CatPS5 settings.
+    /// 
+    /// CatPS5 is the same as PS5, but uses the cat wordpool.
+    /// </summary>
+    /// <returns>The PS5 settings.</returns>
+    public static ExperimentSettings GetCatPS5Settings()
+    {
+        ExperimentSettings CatPS5Settings = GetFR1Settings();
+        CatPS5Settings.experimentName = "PS5_CatFR";
+        CatPS5Settings.isCategoryPool = true;
+        return CatPS5Settings;
+    }
+
+    /// <summary>
     /// Gets the test ps5 settings.
     /// </summary>
     /// <returns>The test PS5 settings.</returns>
@@ -294,6 +308,7 @@ public static class FRExperimentSettings
                                 GetFR6Settings ().experimentName,
                                 GetCatFR6Settings ().experimentName,
                                 GetPS5Settings().experimentName,
+                                GetCatPS5Settings().experimentName,
                                 //GetTestFR1Settings().experimentName,
                                 //GetTestCatFR1Settings().experimentName,
                                 //GetTestFR6Settings().experimentName,
@@ -323,6 +338,8 @@ public static class FRExperimentSettings
                 return GetCatFR6Settings();
             case "PS5":
                 return GetPS5Settings();
+            case "PS5_CatFR":
+                return GetCatPS5Settings();
             //case "FR1_test":
             //    return GetTestFR1Settings();
             //case "CatFR1_test":
@@ -357,6 +374,8 @@ public static class FRExperimentSettings
             case "CatFR6":
                 return "ram_fr";
             case "PS5":
+                return "ram_fr";
+            case "PS5_CatFR":
                 return "ram_fr";
             //case "FR1_test":
             //    return "ram_fr";
