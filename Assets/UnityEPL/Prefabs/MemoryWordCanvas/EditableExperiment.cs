@@ -67,7 +67,7 @@ public class EditableExperiment : CoroutineExperiment
 
         for (int i = startList; i < currentSettings.numberOfLists; i++)
         {
-            current_phase_type = (string)words[wordsSeen]["type"];
+            current_phase_type = (string)words[wordsSeen]["phase_type"];
 
             if (currentSettings.useRamulator)
             {
