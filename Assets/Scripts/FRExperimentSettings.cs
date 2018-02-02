@@ -315,7 +315,7 @@ public static class FRExperimentSettings
                                 //GetTestCatFR6Settings().experimentName,
                                 //GetTestPS5Settings().experimentName,
                                 //"FR1_scalp",
-                                "SFR",
+                                //"SFR",
                             };
     }
 
@@ -350,8 +350,8 @@ public static class FRExperimentSettings
             //    return GetTestCatFR6Settings();
             //case "PS5_test":
                 //return GetTestPS5Settings();
-            case "SFR":
-                return GetTestFR1Settings();
+            //case "SFR":
+            //    return GetTestFR1Settings();
         }
         throw new UnityException("No settings found with that name.");
     }
@@ -387,8 +387,8 @@ public static class FRExperimentSettings
             //    return "ram_fr";
             //case "PS5_test":
                 //return "ram_fr";
-            case "SFR":
-                return "sfr";
+            //case "SFR":
+            //    return "sfr";
         }
         throw new UnityException("That name was not recognized.");
     }
