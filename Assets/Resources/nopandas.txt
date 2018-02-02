@@ -46,14 +46,14 @@ def assign_list_types_from_type_list(pool, num_baseline, stim_nonstim, num_ps=0)
     for i in range(len(pool)):
         word = pool[i]
         if word['listno'] < num_baseline:
-            pool[i]['type'] = "BASELINE"
+            pool[i]['phase_type'] = "BASELINE"
             pool[i]['stim_channels'] = None
         elif word['listno'] < num_baseline + num_ps:
-            pool[i]['type'] = "PS"
+            pool[i]['phase_type'] = "PS"
             pool[i]['stim_channels'] = None
         else:
             stimtype = stim_nonstim[word['listno']-num_ps-num_baseline]
-            pool[i]['type'] = stimtype
+            pool[i]['phase_type'] = stimtype
             pool[i]['stim_channels'] = (0,) if stimtype == "STIM" else None
 
     return pool
@@ -88,7 +88,7 @@ def _assign_stim_attribute_from_stim_attribute_list(pool, attribute_list, attrib
     """
     assert len(pool) > 0, "Empty pool"
 
-    stim_words = [word for word in pool if word['type'] == "STIM"]
+    stim_words = [word for word in pool if word['phase_type'] == "STIM"]
     unique_listnos = set()
     for word in stim_words:
         unique_listnos.add(word['listno'])
@@ -99,7 +99,7 @@ def _assign_stim_attribute_from_stim_attribute_list(pool, attribute_list, attrib
     stim_listno = -1
     for i in range(len(pool)):
         word = pool[i]
-        if (word['type'] == "STIM"):
+        if (word['phase_type'] == "STIM"):
             if (word['listno'] != stim_listno):
                 stim_listno = word['listno']
                 current_attribute_index += 1
