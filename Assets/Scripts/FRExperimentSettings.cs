@@ -201,7 +201,7 @@ public static class FRExperimentSettings
     /// <returns>The PS5 settings.</returns>
     public static ExperimentSettings GetCatPS5Settings()
     {
-        ExperimentSettings CatPS5Settings = GetFR1Settings();
+        ExperimentSettings CatPS5Settings = GetPS5Settings();
         CatPS5Settings.experimentName = "PS5_CatFR";
         CatPS5Settings.isCategoryPool = true;
         return CatPS5Settings;
