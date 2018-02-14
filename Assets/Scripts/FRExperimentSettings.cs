@@ -189,7 +189,7 @@ public static class FRExperimentSettings
     {
         ExperimentSettings PS5Settings = GetFR1Settings();
         PS5Settings.wordListGenerator = new FRListGenerator(12, 0, 1, 12, 0, 0, 3);
-        PS5Settings.experimentName = "PS5";
+        PS5Settings.experimentName = "PS5_FR";
         return PS5Settings;
     }
 
@@ -336,7 +336,7 @@ public static class FRExperimentSettings
                 return GetFR6Settings();
             case "CatFR6":
                 return GetCatFR6Settings();
-            case "PS5":
+            case "PS5_FR":
                 return GetPS5Settings();
             case "PS5_CatFR":
                 return GetCatPS5Settings();
@@ -373,7 +373,7 @@ public static class FRExperimentSettings
                 return "ram_fr";
             case "CatFR6":
                 return "ram_fr";
-            case "PS5":
+            case "PS5_FR":
                 return "ram_fr";
             case "PS5_CatFR":
                 return "ram_fr";
