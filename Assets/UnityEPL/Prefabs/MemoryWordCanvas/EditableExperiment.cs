@@ -57,7 +57,7 @@ public class EditableExperiment : CoroutineExperiment
         versionsData.Add("UnityEPL version", Application.version);
         versionsData.Add("Experiment version", currentSettings.version);
         versionsData.Add("Logfile version", "1");
-        scriptedEventReporter.ReportScriptedEvent("versions", versionsData, 0);
+        scriptedEventReporter.ReportScriptedEvent("versions", versionsData);
 
         if (currentSettings.useRamulator)
             yield return ramulatorInterface.BeginNewSession(session);
