@@ -48,6 +48,7 @@ public class EditableExperiment : CoroutineExperiment
     IEnumerator Start()
     {
         Cursor.visible = false;
+        Application.runInBackground = true;
 
         if (currentSettings.Equals(default(ExperimentSettings)))
             throw new UnityException("Please call ConfigureExperiment before loading the experiment scene.");
