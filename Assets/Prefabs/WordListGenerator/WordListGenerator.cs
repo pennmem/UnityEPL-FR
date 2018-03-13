@@ -280,6 +280,7 @@ public class FRListGenerator : WordListGenerator
 {
     private int STIM_LIST_COUNT;
     private int NONSTIM_LIST_COUNT;
+    private int EMBEDDED_LIST_COUNT;
     private int BASELINE_LIST_COUNT;
 
     private int A_STIM_COUNT;
@@ -288,10 +289,11 @@ public class FRListGenerator : WordListGenerator
 
     private int AMPLITUDE_COUNT;
 
-    public FRListGenerator(int NEW_STIM_LIST_COUNT, int NEW_NONSTIM_LIST_COUNT, int NEW_BASELINE_LIST_COUNT, int NEW_A_STIM_COUNT, int NEW_B_STIM_COUNT, int NEW_AB_STIM_COUNT, int NEW_AMPLITUDE_COUNT)
+    public FRListGenerator(int NEW_STIM_LIST_COUNT, int NEW_NONSTIM_LIST_COUNT, int NEW_EMBEDDED_LIST_COUNT, int NEW_BASELINE_LIST_COUNT, int NEW_A_STIM_COUNT, int NEW_B_STIM_COUNT, int NEW_AB_STIM_COUNT, int NEW_AMPLITUDE_COUNT)
     {
         STIM_LIST_COUNT = NEW_STIM_LIST_COUNT;
         NONSTIM_LIST_COUNT = NEW_NONSTIM_LIST_COUNT;
+        EMBEDDED_LIST_COUNT = NEW_EMBEDDED_LIST_COUNT;
         BASELINE_LIST_COUNT = NEW_BASELINE_LIST_COUNT;
         A_STIM_COUNT = NEW_A_STIM_COUNT;
         B_STIM_COUNT = NEW_B_STIM_COUNT;
@@ -365,6 +367,8 @@ public class FRListGenerator : WordListGenerator
             stim_nostim_list.Add("STIM");
         for (int i = 0; i < NONSTIM_LIST_COUNT; i++)
             stim_nostim_list.Add("NON-STIM");
+        for (int i = 0; i < EMBEDDED_LIST_COUNT; i++)
+            stim_nostim_list.Add("EMBEDDED");
         stim_nostim_list = Shuffled(rng, stim_nostim_list);
 
         var assign_list_types_from_type_list = scope.GetVariable("assign_list_types_from_type_list");

@@ -24,7 +24,7 @@ def assign_list_types_from_type_list(pool, num_baseline, stim_nonstim, num_ps=0)
         * ``BASELINE``
         * ``PS``
         * ``STIM``
-        * ``NON-STIM``
+        * ``NON-STIM`` (or ``EMBEDDED``)
 
         :param list pool: Input word pool.  list of dictionaries with (word, listno) keys
         :param int num_baseline: Number of baseline trials
