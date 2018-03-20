@@ -277,17 +277,16 @@ public class EditableExperiment : CoroutineExperiment
         yield return PausableWait(currentSettings.recallTextDisplayLength);
         textDisplayer.ClearText();
 
-        soundRecorder.StartRecording();
-        yield return PausableWait(currentSettings.recallLength);
-
         //path
         int listno = (wordsSeen / 12) - 1;
         string output_directory = UnityEPL.GetDataPath();
         string wavFilePath = System.IO.Path.Combine(output_directory, listno.ToString() + ".wav");
         string lstFilePath = System.IO.Path.Combine(output_directory, listno.ToString() + ".lst");
         WriteLstFile(lstFilePath);
+        soundRecorder.StartRecording(wavFilePath);
+        yield return PausableWait(currentSettings.recallLength);
 
-        soundRecorder.StopRecording(Mathf.CeilToInt(currentSettings.recallLength), wavFilePath);
+        soundRecorder.StopRecording();
         textDisplayer.ClearText();
         lowBeep.Play();
         scriptedEventReporter.ReportScriptedEvent("Sound played", new Dictionary<string, object>() { { "sound name", "low beep" }, { "sound duration", lowBeep.clip.length.ToString() } });
