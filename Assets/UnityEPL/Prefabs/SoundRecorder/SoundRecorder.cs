@@ -46,18 +46,20 @@ public class SoundRecorder : MonoBehaviour
 
         isRecording = false;
 
-        int recordingLength = Mathf.CeilToInt(Time.unscaledTime - startTime);
+        float recordingLength = Time.unscaledTime - startTime;
 
-        int outputLength = SAMPLE_RATE * recordingLength;
+        int outputLength = Mathf.RoundToInt(SAMPLE_RATE * recordingLength);
         AudioClip croppedClip = AudioClip.Create("cropped recording", outputLength, 1, SAMPLE_RATE, false);
 
         float[] saveData = new float[outputLength];
         if (startSample < recording.samples - outputLength)
         {
+            Debug.Log("No wraparound");
             recording.GetData(saveData, startSample);
         }
         else
         {
+            Debug.Log("Yes wraparound");
             float[] tailData = new float[recording.samples - startSample];
             recording.GetData(tailData, startSample);
             float[] headData = new float[outputLength - tailData.Length];
