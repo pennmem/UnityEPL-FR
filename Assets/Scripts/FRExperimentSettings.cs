@@ -76,7 +76,7 @@ public static class FRExperimentSettings
         ExperimentSettings FR1Settings = new ExperimentSettings();
         FR1Settings.experimentName = "FR1";
         FR1Settings.version = "1.0";
-        FR1Settings.wordListGenerator = new FRListGenerator(0, 13, 0, 0, 0, 0, 0, 0);
+        FR1Settings.wordListGenerator = new FRListGenerator(0, 13, 0, 0, 0, 0, 0);
         FR1Settings.isCategoryPool = false;
         FR1Settings.numberOfLists = 13;
         FR1Settings.wordsPerList = 12;
@@ -138,7 +138,7 @@ public static class FRExperimentSettings
         ExperimentSettings FR6Settings = new ExperimentSettings();
         FR6Settings.experimentName = "FR6";
         FR6Settings.version = "6.0";
-        FR6Settings.wordListGenerator = new FRListGenerator(16, 6, 0, 4, 5, 5, 6, 1);
+        FR6Settings.wordListGenerator = new FRListGenerator(16, 6, 4, 5, 5, 6, 1);
         FR6Settings.isCategoryPool = false;
         FR6Settings.numberOfLists = 26;
         FR6Settings.wordsPerList = 12;
@@ -188,7 +188,7 @@ public static class FRExperimentSettings
     public static ExperimentSettings GetPS5Settings()
     {
         ExperimentSettings PS5Settings = GetFR1Settings();
-        PS5Settings.wordListGenerator = new FRListGenerator(12, 0, 0, 1, 12, 0, 0, 3);
+        PS5Settings.wordListGenerator = new FRListGenerator(12, 0, 1, 12, 0, 0, 3);
         PS5Settings.experimentName = "PS5_FR";
         return PS5Settings;
     }
@@ -208,31 +208,31 @@ public static class FRExperimentSettings
     }
 
     /// <summary>
-    /// Gets the Embedded_FR settings.
+    /// Gets the TICL_FR settings.
     /// 
-    /// Embedded_FR consist of 25 EMBEDDED lists.
+    /// TICL_FR consist of 25 EMBEDDED lists.
     /// </summary>
     /// <returns>The PS5 settings.</returns>
-    public static ExperimentSettings GetEmbeddedFRSettings()
+    public static ExperimentSettings GetTICLFRSettings()
     {
-        ExperimentSettings EmbeddedFRSettings = GetFR6Settings();
-        EmbeddedFRSettings.wordListGenerator = new FRListGenerator(0, 0, 26, 0, 0, 0, 0, 0);
-        EmbeddedFRSettings.experimentName = "Embedded_FR";
-        return EmbeddedFRSettings;
+        ExperimentSettings TICLFRSettings = GetFR6Settings();
+        TICLFRSettings.wordListGenerator = new FRListGenerator(11, 11, 4, 11, 0, 0, 1);
+        TICLFRSettings.experimentName = "TICL_FR";
+        return TICLFRSettings;
     }
 
     /// <summary>
-    /// Gets the Embedded_CatFR settings.
+    /// Gets the TICL_CatFR settings.
     /// 
-    /// This is the same as Embedded_FR, but uses the cat wordpool.
+    /// This is the same as TICL_FR, but uses the cat wordpool.
     /// </summary>
     /// <returns>The PS5 settings.</returns>
-    public static ExperimentSettings GetEmbeddedCatFRSettings()
+    public static ExperimentSettings GetTICLCatFRSettings()
     {
-        ExperimentSettings EmbeddedCatFRSettings = GetEmbeddedFRSettings();
-        EmbeddedCatFRSettings.experimentName = "Embedded_CatFR";
-        EmbeddedCatFRSettings.isCategoryPool = true;
-        return EmbeddedCatFRSettings;
+        ExperimentSettings TICLCatFRSettings = GetTICLFRSettings();
+        TICLCatFRSettings.experimentName = "TICL_CatFR";
+        TICLCatFRSettings.isCategoryPool = true;
+        return TICLCatFRSettings;
     }
 
     /// <summary>
@@ -337,9 +337,9 @@ public static class FRExperimentSettings
                                 GetCatFR6Settings ().experimentName,
                                 GetPS5Settings().experimentName,
                                 GetCatPS5Settings().experimentName,
-                                GetEmbeddedFRSettings().experimentName,
-                                GetEmbeddedCatFRSettings().experimentName,
-                                //GetTestFR1Settings().experimentName,
+                                GetTICLFRSettings().experimentName,
+                                GetTICLCatFRSettings().experimentName,
+                                GetTestFR1Settings().experimentName,
                                 //GetTestCatFR1Settings().experimentName,
                                 //GetTestFR6Settings().experimentName,
                                 //GetTestCatFR6Settings().experimentName,
@@ -370,12 +370,12 @@ public static class FRExperimentSettings
                 return GetPS5Settings();
             case "PS5_CatFR":
                 return GetCatPS5Settings();
-            case "Embedded_FR":
-                return GetEmbeddedFRSettings();
-            case "Embedded_CatFR":
-                return GetEmbeddedCatFRSettings();
-            //case "FR1_test":
-            //    return GetTestFR1Settings();
+            case "TICL_FR":
+                return GetTICLFRSettings();
+            case "TICL_CatFR":
+                return GetTICLCatFRSettings();
+            case "FR1_test":
+                return GetTestFR1Settings();
             //case "CatFR1_test":
             //    return GetTestCatFR1Settings();
             //case "FR6_test":
@@ -411,12 +411,12 @@ public static class FRExperimentSettings
                 return "ram_fr";
             case "PS5_CatFR":
                 return "ram_fr";
-            case "Embedded_FR":
+            case "TICL_FR":
                 return "ram_fr";
-            case "Embedded_CatFR":
+            case "TICL_CatFR":
                 return "ram_fr";
-            //case "FR1_test":
-            //    return "ram_fr";
+            case "FR1_test":
+                return "ram_fr";
             //case "CatFR1_test":
             //    return "ram_fr";
             //case "FR6_test":
