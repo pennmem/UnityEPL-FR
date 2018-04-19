@@ -207,6 +207,35 @@ public static class FRExperimentSettings
         return CatPS5Settings;
     }
 
+        /// <summary>
+    /// Gets the PS4 settings.
+    /// 
+    /// PS4 is 26 lists, 4 baseline and then 22 PS.  No other special parameters are required.
+    /// </summary>
+    /// <returns>The PS4 settings.</returns>
+    public static ExperimentSettings GetPS4Settings()
+    {
+        ExperimentSettings PS4Settings = GetFR6Settings();
+        PS4Settings.wordListGenerator = new FRListGenerator(0, 0, 4, 0, 0, 0, 1, NEW_PS_LIST_COUNT: 22);
+        PS4Settings.experimentName = "PS4_FR";
+        PS4Settings.version = "4.1";
+        return PS4Settings;
+    }
+
+    /// <summary>
+    /// Gets the CatPS4 settings.
+    /// 
+    /// CatPS4 is the same as P45, but uses the cat wordpool.
+    /// </summary>
+    /// <returns>The PS5 settings.</returns>
+    public static ExperimentSettings GetCatPS4Settings()
+    {
+        ExperimentSettings CatPS4Settings = GetPS4Settings();
+        CatPS4Settings.experimentName = "PS4_CatFR";
+        CatPS4Settings.isCategoryPool = true;
+        return CatPS4Settings;
+    }
+
     /// <summary>
     /// Gets the TICL_FR settings.
     /// 
@@ -337,6 +366,8 @@ public static class FRExperimentSettings
                                 GetCatFR6Settings ().experimentName,
                                 GetPS5Settings().experimentName,
                                 GetCatPS5Settings().experimentName,
+                                GetPS4Settings().experimentName,
+                                GetCatPS4Settings().experimentName,
                                 GetTICLFRSettings().experimentName,
                                 GetTICLCatFRSettings().experimentName,
                                 GetTestFR1Settings().experimentName,
@@ -366,6 +397,10 @@ public static class FRExperimentSettings
                 return GetFR6Settings();
             case "CatFR6":
                 return GetCatFR6Settings();
+            case "PS4_FR":
+                return GetPS4Settings();
+            case "PS4_CatFR":
+                return GetCatPS4Settings();
             case "PS5_FR":
                 return GetPS5Settings();
             case "PS5_CatFR":
@@ -410,6 +445,10 @@ public static class FRExperimentSettings
             case "PS5_FR":
                 return "ram_fr";
             case "PS5_CatFR":
+                return "ram_fr";
+            case "PS4_FR":
+                return "ram_fr";
+            case "PS4_CatFR":
                 return "ram_fr";
             case "TICL_FR":
                 return "ram_fr";

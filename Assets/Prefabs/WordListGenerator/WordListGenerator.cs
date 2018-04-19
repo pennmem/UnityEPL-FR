@@ -281,6 +281,7 @@ public class FRListGenerator : WordListGenerator
     private int STIM_LIST_COUNT;
     private int NONSTIM_LIST_COUNT;
     private int BASELINE_LIST_COUNT;
+    private int PS_LIST_COUNT;
 
     private int A_STIM_COUNT;
     private int B_STIM_COUNT;
@@ -288,11 +289,12 @@ public class FRListGenerator : WordListGenerator
 
     private int AMPLITUDE_COUNT;
 
-    public FRListGenerator(int NEW_STIM_LIST_COUNT, int NEW_NONSTIM_LIST_COUNT, int NEW_BASELINE_LIST_COUNT, int NEW_A_STIM_COUNT, int NEW_B_STIM_COUNT, int NEW_AB_STIM_COUNT, int NEW_AMPLITUDE_COUNT)
+    public FRListGenerator(int NEW_STIM_LIST_COUNT, int NEW_NONSTIM_LIST_COUNT, int NEW_BASELINE_LIST_COUNT, int NEW_A_STIM_COUNT, int NEW_B_STIM_COUNT, int NEW_AB_STIM_COUNT, int NEW_AMPLITUDE_COUNT, int NEW_PS_LIST_COUNT = 0)
     {
         STIM_LIST_COUNT = NEW_STIM_LIST_COUNT;
         NONSTIM_LIST_COUNT = NEW_NONSTIM_LIST_COUNT;
         BASELINE_LIST_COUNT = NEW_BASELINE_LIST_COUNT;
+        PS_LIST_COUNT = NEW_PS_LIST_COUNT;
         A_STIM_COUNT = NEW_A_STIM_COUNT;
         B_STIM_COUNT = NEW_B_STIM_COUNT;
         AB_STIM_COUNT = NEW_AB_STIM_COUNT;
@@ -368,7 +370,7 @@ public class FRListGenerator : WordListGenerator
         stim_nostim_list = Shuffled(rng, stim_nostim_list);
 
         var assign_list_types_from_type_list = scope.GetVariable("assign_list_types_from_type_list");
-        var words_with_types = assign_list_types_from_type_list(words_with_listnos, BASELINE_LIST_COUNT, stim_nostim_list);
+        var words_with_types = assign_list_types_from_type_list(words_with_listnos, BASELINE_LIST_COUNT, stim_nostim_list, num_ps: PS_LIST_COUNT);
 
 
         //////////////////////Build stim channel lists and assign stim channels
