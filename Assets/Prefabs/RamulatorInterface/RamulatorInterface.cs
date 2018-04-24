@@ -105,8 +105,6 @@ public class RamulatorInterface : MonoBehaviour
     //ramulator expects this before the beginning of a new list
     public void BeginNewTrial(int trialNumber)
     {
-        if (zmqSocket == null)
-            throw new Exception("Please begin a session before beginning trials");
         System.Collections.Generic.Dictionary<string, object> sessionData = new Dictionary<string, object>();
         sessionData.Add("trial", trialNumber.ToString());
         DataPoint sessionDataPoint = new DataPoint("TRIAL", DataReporter.RealWorldTime(), sessionData);
@@ -168,8 +166,9 @@ public class RamulatorInterface : MonoBehaviour
 
     private void SendMessageToRamulator(string message)
     {
-        bool wouldNotHaveBlocked = zmqSocket.TrySendFrame(message, more: false);
-        Debug.Log("Tried to send a message: " + message + " \nWouldNotHaveBlocked: " + wouldNotHaveBlocked.ToString());
+        if (zmqSocket != null)
+            zmqSocket.TrySendFrame(message, more: false);
+
         ReportMessage(message, true);
     }
 

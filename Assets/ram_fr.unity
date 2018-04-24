@@ -752,6 +752,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ramulatorInterface: {fileID: 1222569298}
+  soundRecorder: {fileID: 2025745181}
 --- !u!4 &1256171958
 Transform:
   m_ObjectHideFlags: 0

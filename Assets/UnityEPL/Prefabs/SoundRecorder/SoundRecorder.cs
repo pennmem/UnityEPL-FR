@@ -5,13 +5,12 @@ using UnityEngine;
 public class SoundRecorder : MonoBehaviour
 {
     private AudioClip recording;
-    private int startSample;
     private float startTime;
     private bool isRecording = false;
     private string nextOutputPath;
 
     private const int SECONDS_IN_MEMORY = 600;
-    private const int SAMPLE_RATE = 44100;
+    public const int SAMPLE_RATE = 44100;
 
     void OnEnable()
     {
@@ -32,7 +31,6 @@ public class SoundRecorder : MonoBehaviour
         }
 
         nextOutputPath = outputFilePath;
-        startSample = Microphone.GetPosition("");
         startTime = Time.unscaledTime;
         isRecording = true;
     }
@@ -51,27 +49,36 @@ public class SoundRecorder : MonoBehaviour
         int outputLength = Mathf.RoundToInt(SAMPLE_RATE * recordingLength);
         AudioClip croppedClip = AudioClip.Create("cropped recording", outputLength, 1, SAMPLE_RATE, false);
 
-        float[] saveData = new float[outputLength];
-        if (startSample < recording.samples - outputLength)
+        float[] saveData = LastSamples(outputLength);
+
+        croppedClip.SetData(saveData, 0);
+
+        SavWav.Save(nextOutputPath, croppedClip);
+    }
+
+    public float[] LastSamples(int sampleCount)
+    {
+        float[] lastSamples = new float[sampleCount];
+        int startSample = Microphone.GetPosition("") - sampleCount;
+
+        if (startSample < recording.samples - sampleCount)
         {
-            Debug.Log("No wraparound");
-            recording.GetData(saveData, startSample);
+            recording.GetData(lastSamples, startSample);
         }
         else
         {
-            Debug.Log("Yes wraparound");
+            Debug.Log("audio wraparound");
             float[] tailData = new float[recording.samples - startSample];
             recording.GetData(tailData, startSample);
-            float[] headData = new float[outputLength - tailData.Length];
+            float[] headData = new float[sampleCount - tailData.Length];
             recording.GetData(headData, 0);
             for (int i = 0; i < tailData.Length; i++)
-                saveData[i] = tailData[i];
+                lastSamples[i] = tailData[i];
             for (int i = 0; i < headData.Length; i++)
-                saveData[tailData.Length + i] = headData[i];
+                lastSamples[tailData.Length + i] = headData[i];
         }
 
-        croppedClip.SetData(saveData, 0);
-        SavWav.Save(nextOutputPath, croppedClip);
+        return lastSamples;
     }
 
     public AudioClip AudioClipFromDatapath(string datapath)

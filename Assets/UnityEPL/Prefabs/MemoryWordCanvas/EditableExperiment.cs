@@ -70,10 +70,7 @@ public class EditableExperiment : CoroutineExperiment
         {
             current_phase_type = (string)words[wordsSeen]["phase_type"];
 
-            if (currentSettings.useRamulator)
-            {
-                ramulatorInterface.BeginNewTrial(i);
-            }
+            ramulatorInterface.BeginNewTrial(i);
 
             if (startList == 0 && i == 0)
             {
@@ -177,8 +174,7 @@ public class EditableExperiment : CoroutineExperiment
             OnStateChange(stateName, state, extraData);
         if (!stateName.Equals("WORD"))
             extraData.Add("phase_type", current_phase_type);
-        if (currentSettings.useRamulator)
-            ramulatorInterface.SetState(stateName, state, extraData);
+        ramulatorInterface.SetState(stateName, state, extraData);
     }
 
     private IEnumerator DoDistractor()
@@ -247,8 +243,8 @@ public class EditableExperiment : CoroutineExperiment
                     }
                     ReportDistractorAnswered(correct, distractor, answer);
                     answerTime = Time.time;
-                    if (currentSettings.useRamulator)
-                        ramulatorInterface.SendMathMessage(distractor, answer, (int)((answerTime - displayTime) * 1000), correct);
+
+                    ramulatorInterface.SendMathMessage(distractor, answer, (int)((answerTime - displayTime) * 1000), correct);
                 }
             }
             yield return null;
