@@ -753,6 +753,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ramulatorInterface: {fileID: 1222569298}
   soundRecorder: {fileID: 2025745181}
+  speakingThreshold: 0.003
+  testClip: {fileID: 8300000, guid: caf3dce22d600441c83793ff65c3c086, type: 3}
 --- !u!4 &1256171958
 Transform:
   m_ObjectHideFlags: 0

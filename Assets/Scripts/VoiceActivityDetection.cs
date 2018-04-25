@@ -6,9 +6,33 @@ public class VoiceActivityDetection : MonoBehaviour
 {
     public RamulatorInterface ramulatorInterface;
     public SoundRecorder soundRecorder;
-    public float speakingThreshold = 0.01f;
+    public float speakingThreshold = 0.003f;
+    //public AudioClip testClip;
 
     private bool talkingState = false;
+
+	//private void Start()
+	//{
+ //       for (int i = 0; i < testClip.samples - 4410 * 10; i += 4410 * 5)
+ //       {
+ //           float[] samples = new float[4410*5];
+ //           testClip.GetData(samples, i);
+ //           double sum = 0;
+ //           foreach (float sample in samples)
+ //               sum += Mathf.Abs(sample);
+ //           double average = sum / samples.Length;
+ //           if (average > speakingThreshold && !talkingState)
+ //           {
+ //               talkingState = true;
+ //               Debug.Log("word:" + (i / 44100).ToString());
+ //           }
+ //           else
+ //           {
+ //               talkingState = false;
+ //           }
+ //       }
+ //       Debug.Log("test over");
+	//}
 
 	private void Update()
 	{
