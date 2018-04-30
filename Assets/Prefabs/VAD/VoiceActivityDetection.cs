@@ -11,8 +11,29 @@ public class VoiceActivityDetection : MonoBehaviour
     //public SoundRecorder soundRecorder;
     public float speakingThreshold = 0.003f;
     //public AudioClip testClip;
+	public GameObject UI;
+	public GameObject indicator;
 
     private bool talkingState = false;
+
+	void Update()
+	{
+		if (Input.GetKeyDown (KeyCode.A))
+		{
+			UI.SetActive (!UI.activeSelf);
+		}
+
+		if (Time.timeSinceLevelLoad > 1)
+		{
+			bool someoneIsTalking = SomeoneIsTalking ();
+			indicator.SetActive (someoneIsTalking);
+			if (someoneIsTalking != talkingState)
+			{
+				talkingState = someoneIsTalking;
+				//ramulatorInterface.SetState("VOCALIZATION", talkingState, new Dictionary<string, object>());
+			}
+		}
+	}
 
 	private void Start()
 	{
@@ -28,6 +49,8 @@ public class VoiceActivityDetection : MonoBehaviour
 				if (!System.IO.Path.GetExtension(file).Equals(".wav"))
 					continue;
 
+				string words_path = System.IO.Path.Combine (session_folder, System.IO.Path.GetFileNameWithoutExtension (file)) + ".words";
+				File.Delete (words_path);
 				//byte[] wav_bytes = System.IO.File.ReadAllBytes (file);
 
 				//float[] wav_data = ConvertByteToFloat (wav_bytes);
@@ -36,70 +59,49 @@ public class VoiceActivityDetection : MonoBehaviour
 				AudioClip testClip = WavUtility.ToAudioClip (file);//AudioClip.Create ("testClip", wav_data.Length, 1, 1, false);
 				//testClip.SetData (wav_data, 0);
 
-				for (int i = 0; i < testClip.samples - 4410 * 10; i += 4410/6)
+				for (int i = 4410 * 5; i < testClip.samples - 4410 * 10; i += 4410/6)
 				{
 					float[] samples = new float[4410 * 5];
-					testClip.GetData (samples, i);
-					double sum = 0;
-					foreach (float sample in samples)
-						sum += Mathf.Abs (sample);
-					double average = sum / samples.Length;
-					if (average > speakingThreshold && !talkingState)
+					testClip.GetData (samples, i - 4410 * 5);
+					bool voiceActivity = DetectVoiceActivity (samples);
+
+					if (voiceActivity && !talkingState)
 					{
 						talkingState = true;
 						string secondsIn = ((float)i / 44100f).ToString ();
-						System.IO.File.AppendAllText (System.IO.Path.Combine(session_folder, System.IO.Path.GetFileNameWithoutExtension (file)) + ".words", secondsIn + " ");
+						System.IO.File.AppendAllText (words_path, secondsIn + " ");
 						Debug.Log ("word start:" + secondsIn);
 					}
-					if (average < speakingThreshold && talkingState)
+					if (!voiceActivity && talkingState)
 					{
 						talkingState = false;
 						string secondsIn = ((float)i / 44100f).ToString ();
-						System.IO.File.AppendAllText (System.IO.Path.Combine(session_folder, System.IO.Path.GetFileNameWithoutExtension (file)) + ".words", secondsIn + "\n");
+						System.IO.File.AppendAllText (words_path, secondsIn + "\n");
 						Debug.Log ("word end:" + secondsIn);
 					}
 				}
 			}
 		}
         Debug.Log("test over");
-	}
-
-	private float[] ConvertByteToFloat(byte[] array) 
-	{
-		float[] floatArr = new float[array.Length / 4];
-		for (int i = 0; i < floatArr.Length; i++) 
-		{
-			if (System.BitConverter.IsLittleEndian) 
-				System.Array.Reverse(array, i * 4, 4);
-			floatArr[i] = System.BitConverter.ToSingle(array, i * 4);
-		}
-		return floatArr;
 	} 
 
+	private bool DetectVoiceActivity (float[] samples)
+	{
+		double sum = 0;
+		foreach (float sample in samples)
+			sum += Mathf.Abs (sample);
+		double average = sum / samples.Length;
 
-//	private void Update()
-//	{
-//        if (Time.timeSinceLevelLoad < 1)
-//            return;
-//
-//        bool someoneIsTalking = SomeoneIsTalking();
-//        if (someoneIsTalking != talkingState)
-//        {
-//            talkingState = someoneIsTalking;
-//            //ramulatorInterface.SetState("VOCALIZATION", talkingState, new Dictionary<string, object>());
-//        }
-//	}
+		return average > speakingThreshold;
 
-//    private bool SomeoneIsTalking()
-//    {
-//        float[] samples = soundRecorder.LastSamples(4410*5);
-//        double sum = 0;
-//        foreach (float sample in samples)
-//            sum += Mathf.Abs(sample);
-//        double average = sum / samples.Length;
-//
-//        return average > speakingThreshold;
-//    }
+	}
+
+    private bool SomeoneIsTalking()
+    {
+		return true;
+        //float[] samples = soundRecorder.LastSamples(4410*5);
+        //return DetectVoiceActivity(samples);
+    }
 }
 
 
@@ -120,9 +122,6 @@ public class VoiceActivityDetection : MonoBehaviour
 
 public class WavUtility
 {
-	// Force save as 16-bit .wav
-	const int BlockSize_16Bit = 2;
-
 	/// <summary>
 	/// Load PCM format *.wav audio file (using Unity's Application data path) and convert to AudioClip.
 	/// </summary>
@@ -285,204 +284,6 @@ public class WavUtility
 	}
 
 	#endregion
-
-	public static byte[] FromAudioClip (AudioClip audioClip)
-	{
-		string file;
-		return FromAudioClip (audioClip, out file, false);
-	}
-
-	public static byte[] FromAudioClip (AudioClip audioClip, out string filepath, bool saveAsFile = true, string dirname = "recordings")
-	{
-		MemoryStream stream = new MemoryStream ();
-
-		const int headerSize = 44;
-
-		// get bit depth
-		UInt16 bitDepth = 16; //BitDepth (audioClip);
-
-		// NB: Only supports 16 bit
-		//Debug.AssertFormat (bitDepth == 16, "Only converting 16 bit is currently supported. The audio clip data is {0} bit.", bitDepth);
-
-		// total file size = 44 bytes for header format and audioClip.samples * factor due to float to Int16 / sbyte conversion
-		int fileSize = audioClip.samples * BlockSize_16Bit + headerSize; // BlockSize (bitDepth)
-
-		// chunk descriptor (riff)
-		WriteFileHeader (ref stream, fileSize);
-		// file header (fmt)
-		WriteFileFormat (ref stream, audioClip.channels, audioClip.frequency, bitDepth);
-		// data chunks (data)
-		WriteFileData (ref stream, audioClip, bitDepth);
-
-		byte[] bytes = stream.ToArray ();
-
-		// Validate total bytes
-		Debug.AssertFormat (bytes.Length == fileSize, "Unexpected AudioClip to wav format byte count: {0} == {1}", bytes.Length, fileSize);
-
-		// Save file to persistant storage location
-		if (saveAsFile) {
-			filepath = string.Format ("{0}/{1}/{2}.{3}", Application.persistentDataPath, dirname, DateTime.UtcNow.ToString ("yyMMdd-HHmmss-fff"), "wav");
-			Directory.CreateDirectory (Path.GetDirectoryName (filepath));
-			File.WriteAllBytes (filepath, bytes);
-			//Debug.Log ("Auto-saved .wav file: " + filepath);
-		} else {
-			filepath = null;
-		}
-
-		stream.Dispose ();
-
-		return bytes;
-	}
-
-	#region write .wav file functions
-
-	private static int WriteFileHeader (ref MemoryStream stream, int fileSize)
-	{
-		int count = 0;
-		int total = 12;
-
-		// riff chunk id
-		byte[] riff = Encoding.ASCII.GetBytes ("RIFF");
-		count += WriteBytesToMemoryStream (ref stream, riff, "ID");
-
-		// riff chunk size
-		int chunkSize = fileSize - 8; // total size - 8 for the other two fields in the header
-		count += WriteBytesToMemoryStream (ref stream, BitConverter.GetBytes (chunkSize), "CHUNK_SIZE");
-
-		byte[] wave = Encoding.ASCII.GetBytes ("WAVE");
-		count += WriteBytesToMemoryStream (ref stream, wave, "FORMAT");
-
-		// Validate header
-		Debug.AssertFormat (count == total, "Unexpected wav descriptor byte count: {0} == {1}", count, total);
-
-		return count;
-	}
-
-	private static int WriteFileFormat (ref MemoryStream stream, int channels, int sampleRate, UInt16 bitDepth)
-	{
-		int count = 0;
-		int total = 24;
-
-		byte[] id = Encoding.ASCII.GetBytes ("fmt ");
-		count += WriteBytesToMemoryStream (ref stream, id, "FMT_ID");
-
-		int subchunk1Size = 16; // 24 - 8
-		count += WriteBytesToMemoryStream (ref stream, BitConverter.GetBytes (subchunk1Size), "SUBCHUNK_SIZE");
-
-		UInt16 audioFormat = 1;
-		count += WriteBytesToMemoryStream (ref stream, BitConverter.GetBytes (audioFormat), "AUDIO_FORMAT");
-
-		UInt16 numChannels = Convert.ToUInt16 (channels);
-		count += WriteBytesToMemoryStream (ref stream, BitConverter.GetBytes (numChannels), "CHANNELS");
-
-		count += WriteBytesToMemoryStream (ref stream, BitConverter.GetBytes (sampleRate), "SAMPLE_RATE");
-
-		int byteRate = sampleRate * channels * BytesPerSample (bitDepth);
-		count += WriteBytesToMemoryStream (ref stream, BitConverter.GetBytes (byteRate), "BYTE_RATE");
-
-		UInt16 blockAlign = Convert.ToUInt16 (channels * BytesPerSample (bitDepth));
-		count += WriteBytesToMemoryStream (ref stream, BitConverter.GetBytes (blockAlign), "BLOCK_ALIGN");
-
-		count += WriteBytesToMemoryStream (ref stream, BitConverter.GetBytes (bitDepth), "BITS_PER_SAMPLE");
-
-		// Validate format
-		Debug.AssertFormat (count == total, "Unexpected wav fmt byte count: {0} == {1}", count, total);
-
-		return count;
-	}
-
-	private static int WriteFileData (ref MemoryStream stream, AudioClip audioClip, UInt16 bitDepth)
-	{
-		int count = 0;
-		int total = 8;
-
-		// Copy float[] data from AudioClip
-		float[] data = new float[audioClip.samples * audioClip.channels];
-		audioClip.GetData (data, 0);
-
-		byte[] bytes = ConvertAudioClipDataToInt16ByteArray (data);
-
-		byte[] id = Encoding.ASCII.GetBytes ("data");
-		count += WriteBytesToMemoryStream (ref stream, id, "DATA_ID");
-
-		int subchunk2Size = Convert.ToInt32 (audioClip.samples * BlockSize_16Bit); // BlockSize (bitDepth)
-		count += WriteBytesToMemoryStream (ref stream, BitConverter.GetBytes (subchunk2Size), "SAMPLES");
-
-		// Validate header
-		Debug.AssertFormat (count == total, "Unexpected wav data id byte count: {0} == {1}", count, total);
-
-		// Write bytes to stream
-		count += WriteBytesToMemoryStream (ref stream, bytes, "DATA");
-
-		// Validate audio data
-		Debug.AssertFormat (bytes.Length == subchunk2Size, "Unexpected AudioClip to wav subchunk2 size: {0} == {1}", bytes.Length, subchunk2Size);
-
-		return count;
-	}
-
-	private static byte[] ConvertAudioClipDataToInt16ByteArray (float[] data)
-	{
-		MemoryStream dataStream = new MemoryStream ();
-
-		int x = sizeof(Int16);
-
-		Int16 maxValue = Int16.MaxValue;
-
-		int i = 0;
-		while (i < data.Length) {
-			dataStream.Write (BitConverter.GetBytes (Convert.ToInt16 (data [i] * maxValue)), 0, x);
-			++i;
-		}
-		byte[] bytes = dataStream.ToArray ();
-
-		// Validate converted bytes
-		Debug.AssertFormat (data.Length * x == bytes.Length, "Unexpected float[] to Int16 to byte[] size: {0} == {1}", data.Length * x, bytes.Length);
-
-		dataStream.Dispose ();
-
-		return bytes;
-	}
-
-	private static int WriteBytesToMemoryStream (ref MemoryStream stream, byte[] bytes, string tag = "")
-	{
-		int count = bytes.Length;
-		stream.Write (bytes, 0, count);
-		//Debug.LogFormat ("WAV:{0} wrote {1} bytes.", tag, count);
-		return count;
-	}
-
-	#endregion
-
-	/// <summary>
-	/// Calculates the bit depth of an AudioClip
-	/// </summary>
-	/// <returns>The bit depth. Should be 8 or 16 or 32 bit.</returns>
-	/// <param name="audioClip">Audio clip.</param>
-	public static UInt16 BitDepth (AudioClip audioClip)
-	{
-		UInt16 bitDepth = Convert.ToUInt16 (audioClip.samples * audioClip.channels * audioClip.length / audioClip.frequency);
-		Debug.AssertFormat (bitDepth == 8 || bitDepth == 16 || bitDepth == 32, "Unexpected AudioClip bit depth: {0}. Expected 8 or 16 or 32 bit.", bitDepth);
-		return bitDepth;
-	}
-
-	private static int BytesPerSample (UInt16 bitDepth)
-	{
-		return bitDepth / 8;
-	}
-
-	private static int BlockSize (UInt16 bitDepth)
-	{
-		switch (bitDepth) {
-		case 32:
-			return sizeof(Int32); // 32-bit -> 4 bytes (Int32)
-		case 16:
-			return sizeof(Int16); // 16-bit -> 2 bytes (Int16)
-		case 8:
-			return sizeof(sbyte); // 8-bit -> 1 byte (sbyte)
-		default:
-			throw new Exception (bitDepth + " bit depth is not supported.");
-		}
-	}
 
 	private static string FormatCode (UInt16 code)
 	{
