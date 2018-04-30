@@ -7,8 +7,8 @@ using UnityEngine;
 
 public class VoiceActivityDetection : MonoBehaviour
 {
-    //public RamulatorInterface ramulatorInterface;
-    //public SoundRecorder soundRecorder;
+    public RamulatorInterface ramulatorInterface;
+    public SoundRecorder soundRecorder;
     public float speakingThreshold = 0.003f;
     //public AudioClip testClip;
 	public GameObject UI;
@@ -18,10 +18,11 @@ public class VoiceActivityDetection : MonoBehaviour
 
 	void Update()
 	{
-		if (Input.GetKeyDown (KeyCode.A))
-		{
-			UI.SetActive (!UI.activeSelf);
-		}
+        if (Input.GetKeyDown(KeyCode.A))
+        {
+            UI.SetActive(!UI.activeSelf);
+            Cursor.visible = !Cursor.visible;
+        }
 
 		if (Time.timeSinceLevelLoad > 1)
 		{
@@ -30,60 +31,60 @@ public class VoiceActivityDetection : MonoBehaviour
 			if (someoneIsTalking != talkingState)
 			{
 				talkingState = someoneIsTalking;
-				//ramulatorInterface.SetState("VOCALIZATION", talkingState, new Dictionary<string, object>());
+				ramulatorInterface.SetState("VOCALIZATION", talkingState, new Dictionary<string, object>());
 			}
 		}
 	}
 
-	private void Start()
-	{
-		string[] session_folders = System.IO.Directory.GetDirectories ("/Users/zduey/Desktop/VAD plot/");
-		Debug.Log (session_folders.Length);
+	//private void Start()
+	//{
+	//	string[] session_folders = System.IO.Directory.GetDirectories ("/Users/zduey/Desktop/VAD plot/");
+	//	Debug.Log (session_folders.Length);
 
-		foreach (string session_folder in session_folders)
-		{
-			Debug.Log ("Getting .wavs from: " + session_folder);
-			string[] files = System.IO.Directory.GetFiles (session_folder);
-			foreach (string file in files)
-			{
-				if (!System.IO.Path.GetExtension(file).Equals(".wav"))
-					continue;
+	//	foreach (string session_folder in session_folders)
+	//	{
+	//		Debug.Log ("Getting .wavs from: " + session_folder);
+	//		string[] files = System.IO.Directory.GetFiles (session_folder);
+	//		foreach (string file in files)
+	//		{
+	//			if (!System.IO.Path.GetExtension(file).Equals(".wav"))
+	//				continue;
 
-				string words_path = System.IO.Path.Combine (session_folder, System.IO.Path.GetFileNameWithoutExtension (file)) + ".words";
-				File.Delete (words_path);
-				//byte[] wav_bytes = System.IO.File.ReadAllBytes (file);
+	//			string words_path = System.IO.Path.Combine (session_folder, System.IO.Path.GetFileNameWithoutExtension (file)) + ".words";
+	//			File.Delete (words_path);
+	//			//byte[] wav_bytes = System.IO.File.ReadAllBytes (file);
 
-				//float[] wav_data = ConvertByteToFloat (wav_bytes);
+	//			//float[] wav_data = ConvertByteToFloat (wav_bytes);
 
-				Debug.Log (file);
-				AudioClip testClip = WavUtility.ToAudioClip (file);//AudioClip.Create ("testClip", wav_data.Length, 1, 1, false);
-				//testClip.SetData (wav_data, 0);
+	//			Debug.Log (file);
+	//			AudioClip testClip = WavUtility.ToAudioClip (file);//AudioClip.Create ("testClip", wav_data.Length, 1, 1, false);
+	//			//testClip.SetData (wav_data, 0);
 
-				for (int i = 4410 * 5; i < testClip.samples - 4410 * 10; i += 4410/6)
-				{
-					float[] samples = new float[4410 * 5];
-					testClip.GetData (samples, i - 4410 * 5);
-					bool voiceActivity = DetectVoiceActivity (samples);
+	//			for (int i = 4410 * 5; i < testClip.samples - 4410 * 10; i += 4410/6)
+	//			{
+	//				float[] samples = new float[4410 * 5];
+	//				testClip.GetData (samples, i - 4410 * 5);
+	//				bool voiceActivity = DetectVoiceActivity (samples);
 
-					if (voiceActivity && !talkingState)
-					{
-						talkingState = true;
-						string secondsIn = ((float)i / 44100f).ToString ();
-						System.IO.File.AppendAllText (words_path, secondsIn + " ");
-						Debug.Log ("word start:" + secondsIn);
-					}
-					if (!voiceActivity && talkingState)
-					{
-						talkingState = false;
-						string secondsIn = ((float)i / 44100f).ToString ();
-						System.IO.File.AppendAllText (words_path, secondsIn + "\n");
-						Debug.Log ("word end:" + secondsIn);
-					}
-				}
-			}
-		}
-        Debug.Log("test over");
-	} 
+	//				if (voiceActivity && !talkingState)
+	//				{
+	//					talkingState = true;
+	//					string secondsIn = ((float)i / 44100f).ToString ();
+	//					System.IO.File.AppendAllText (words_path, secondsIn + " ");
+	//					Debug.Log ("word start:" + secondsIn);
+	//				}
+	//				if (!voiceActivity && talkingState)
+	//				{
+	//					talkingState = false;
+	//					string secondsIn = ((float)i / 44100f).ToString ();
+	//					System.IO.File.AppendAllText (words_path, secondsIn + "\n");
+	//					Debug.Log ("word end:" + secondsIn);
+	//				}
+	//			}
+	//		}
+	//	}
+ //       Debug.Log("test over");
+	//} 
 
 	private bool DetectVoiceActivity (float[] samples)
 	{
@@ -98,9 +99,8 @@ public class VoiceActivityDetection : MonoBehaviour
 
     private bool SomeoneIsTalking()
     {
-		return true;
-        //float[] samples = soundRecorder.LastSamples(4410*5);
-        //return DetectVoiceActivity(samples);
+        float[] samples = soundRecorder.LastSamples(4410*5);
+        return DetectVoiceActivity(samples);
     }
 }
 
