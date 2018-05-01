@@ -19,6 +19,7 @@ public class EditableExperiment : CoroutineExperiment
     public KeyCode pauseKey = KeyCode.P;
     public GameObject pauseIndicator;
     public ScriptedEventReporter scriptedEventReporter;
+    public VoiceActivityDetection VAD;
 
     private bool paused = false;
     private string current_phase_type;
@@ -62,6 +63,8 @@ public class EditableExperiment : CoroutineExperiment
 
         if (currentSettings.useRamulator)
             yield return ramulatorInterface.BeginNewSession(session);
+
+        VAD.DoVAD(false);
 
         //starting from the beginning of the latest uncompleted list, do lists until the experiment is finished or stopped
         int startList = wordsSeen / currentSettings.wordsPerList;
@@ -265,7 +268,7 @@ public class EditableExperiment : CoroutineExperiment
 
     private IEnumerator DoRecall()
     {
-
+        VAD.DoVAD(true);
         highBeep.Play();
         scriptedEventReporter.ReportScriptedEvent("Sound played", new Dictionary<string, object>() { { "sound name", "high beep" }, { "sound duration", highBeep.clip.length.ToString() } });
 
@@ -286,6 +289,7 @@ public class EditableExperiment : CoroutineExperiment
         textDisplayer.ClearText();
         lowBeep.Play();
         scriptedEventReporter.ReportScriptedEvent("Sound played", new Dictionary<string, object>() { { "sound name", "low beep" }, { "sound duration", lowBeep.clip.length.ToString() } });
+        VAD.DoVAD(false);
     }
 
     private void WriteLstFile(string lstFilePath)

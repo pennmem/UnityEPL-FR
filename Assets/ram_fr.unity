@@ -534,6 +534,11 @@ Prefab:
       propertyPath: m_Text
       value: '...'
       objectReference: {fileID: 0}
+    - target: {fileID: 114864122344205036, guid: e6672ad97ff294adba0eb53a61d1502f,
+        type: 2}
+      propertyPath: VAD
+      value: 
+      objectReference: {fileID: 1570558169}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: e6672ad97ff294adba0eb53a61d1502f, type: 2}
   m_IsPrefabParent: 0
@@ -1016,6 +1021,12 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1570558169 stripped
+MonoBehaviour:
+  m_PrefabParentObject: {fileID: 114551300955106232, guid: 1bfd92acf53ae4e64a498dc7d839d06d,
+    type: 2}
+  m_PrefabInternal: {fileID: 2033505779}
+  m_Script: {fileID: 11500000, guid: 5b7bb8ed8cd9f4f65a218b7e82973c31, type: 3}
 --- !u!82 &1839582829 stripped
 AudioSource:
   m_PrefabParentObject: {fileID: 82107155673024968, guid: b9673464465674909afa67c3b460385b,
