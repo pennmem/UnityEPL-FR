@@ -217,7 +217,7 @@ public static class FRExperimentSettings
     {
         ExperimentSettings PS4Settings = GetFR6Settings();
         PS4Settings.wordListGenerator = new FRListGenerator(0, 0, 4, 0, 0, 0, 1, NEW_PS_LIST_COUNT: 22);
-        PS4Settings.experimentName = "PS4_FR";
+        PS4Settings.experimentName = "PS4_FR5";
         PS4Settings.version = "4.1";
         return PS4Settings;
     }
@@ -231,7 +231,7 @@ public static class FRExperimentSettings
     public static ExperimentSettings GetCatPS4Settings()
     {
         ExperimentSettings CatPS4Settings = GetPS4Settings();
-        CatPS4Settings.experimentName = "PS4_CatFR";
+        CatPS4Settings.experimentName = "PS4_CatFR5";
         CatPS4Settings.isCategoryPool = true;
         return CatPS4Settings;
     }
@@ -397,9 +397,9 @@ public static class FRExperimentSettings
                 return GetFR6Settings();
             case "CatFR6":
                 return GetCatFR6Settings();
-            case "PS4_FR":
+            case "PS4_FR5":
                 return GetPS4Settings();
-            case "PS4_CatFR":
+            case "PS4_CatFR5":
                 return GetCatPS4Settings();
             case "PS5_FR":
                 return GetPS5Settings();
@@ -446,9 +446,9 @@ public static class FRExperimentSettings
                 return "ram_fr";
             case "PS5_CatFR":
                 return "ram_fr";
-            case "PS4_FR":
+            case "PS4_FR5":
                 return "ram_fr";
-            case "PS4_CatFR":
+            case "PS4_CatFR5":
                 return "ram_fr";
             case "TICL_FR":
                 return "ram_fr";
