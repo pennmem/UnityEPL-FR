@@ -158,7 +158,7 @@ public class RamulatorInterface : MonoBehaviour
         if (receivedMessage != "" && receivedMessage != null)
         {
             string messageString = receivedMessage.ToString();
-            Debug.Log("heartbeat received: " + messageString);
+            //Debug.Log("heartbeat received: " + messageString);
             ReportMessage(messageString, false);
             unreceivedHeartbeats = 0;
         }
