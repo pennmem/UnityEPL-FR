@@ -9,7 +9,7 @@ public class SoundRecorder : MonoBehaviour
     private bool isRecording = false;
     private string nextOutputPath;
 
-    private const int SECONDS_IN_MEMORY = 40;
+    private const int SECONDS_IN_MEMORY = 600;
     public const int SAMPLE_RATE = 44100;
 
     void OnEnable()
