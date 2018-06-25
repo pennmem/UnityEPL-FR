@@ -5,12 +5,13 @@ using UnityEngine;
 public class SoundRecorder : MonoBehaviour
 {
     private AudioClip recording;
+    private int startSample;
     private float startTime;
     private bool isRecording = false;
     private string nextOutputPath;
 
     private const int SECONDS_IN_MEMORY = 600;
-    public const int SAMPLE_RATE = 44100;
+    private const int SAMPLE_RATE = 44100;
 
     void OnEnable()
     {
@@ -31,6 +32,7 @@ public class SoundRecorder : MonoBehaviour
         }
 
         nextOutputPath = outputFilePath;
+        startSample = Microphone.GetPosition("");
         startTime = Time.unscaledTime;
         isRecording = true;
     }
@@ -49,38 +51,30 @@ public class SoundRecorder : MonoBehaviour
         int outputLength = Mathf.RoundToInt(SAMPLE_RATE * recordingLength);
         AudioClip croppedClip = AudioClip.Create("cropped recording", outputLength, 1, SAMPLE_RATE, false);
 
-        float[] saveData = LastSamples(outputLength);
+        float[] saveData = GetLastSamples(outputLength);
 
         croppedClip.SetData(saveData, 0);
-
         SavWav.Save(nextOutputPath, croppedClip);
     }
 
-    public float[] LastSamples(int sampleCount)
+    public float[] GetLastSamples(int howManySamples)
     {
-
-        float[] lastSamples = new float[sampleCount];
-        int startSample = Microphone.GetPosition("") - sampleCount;
-
-        if (startSample >= 0)
+        float[] lastSamples = new float[howManySamples];
+        if (startSample < recording.samples - howManySamples)
         {
             recording.GetData(lastSamples, startSample);
         }
         else
         {
-            Debug.Log("audio wraparound");
-            startSample = startSample + recording.samples;
             float[] tailData = new float[recording.samples - startSample];
             recording.GetData(tailData, startSample);
-            float[] headData = new float[sampleCount - tailData.Length];
-            if (headData.Length > 0)
-                recording.GetData(headData, 0);
+            float[] headData = new float[howManySamples - tailData.Length];
+            recording.GetData(headData, 0);
             for (int i = 0; i < tailData.Length; i++)
                 lastSamples[i] = tailData[i];
             for (int i = 0; i < headData.Length; i++)
                 lastSamples[tailData.Length + i] = headData[i];
         }
-
         return lastSamples;
     }
 

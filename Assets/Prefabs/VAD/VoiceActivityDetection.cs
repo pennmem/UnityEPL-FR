@@ -114,7 +114,7 @@ public class VoiceActivityDetection : MonoBehaviour
 
     private bool SomeoneIsTalking()
     {
-        float[] samples = soundRecorder.LastSamples(SAMPLES_TO_EVALUATE);
+        float[] samples = soundRecorder.GetLastSamples(SAMPLES_TO_EVALUATE);
         return DetectVoiceActivity(samples);
     }
 }

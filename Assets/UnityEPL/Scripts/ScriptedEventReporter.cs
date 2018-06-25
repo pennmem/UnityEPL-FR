@@ -10,9 +10,12 @@ public class ScriptedEventReporter : DataReporter
     /// </summary>
     /// <param name="type">Name of event.</param>
     /// <param name="dataDict">The data about the event.  String key is description of data, object value is the data to report.</param>
-    public void ReportScriptedEvent(string type, Dictionary<string, object> dataDict)
+    public void ReportScriptedEvent(string type, Dictionary<string, object> dataDict, bool mainThread = true)
     {
-        eventQueue.Enqueue(new DataPoint(type, RealWorldFrameDisplayTime(), dataDict));
+        if (mainThread)
+            eventQueue.Enqueue(new DataPoint(type, RealWorldFrameDisplayTime(), dataDict));
+        else
+            eventQueue.Enqueue(new DataPoint(type, ThreadsafeTime(), dataDict));
     }
 
     /// <summary>
