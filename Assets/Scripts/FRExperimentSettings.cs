@@ -8,29 +8,27 @@ using System.Collections;
 /// </summary>
 public struct ExperimentSettings
 {
-    public WordListGenerator wordListGenerator;
-    public string experimentName;
-    public string version;
-    public int numberOfLists;
-    public int wordsPerList;
-    public int countdownLength;
-    public int microphoneTestLength;
-    public float countdownTick;
-    public float wordPresentationLength;
-    public float minISI;
-    public float maxISI;
-    public float distractionLength;
-    public float answerConfirmationTime;
-    public float recallLength;
-    public float minOrientationStimulusLength;
-    public float maxOrientationStimulusLength;
-    public float minPauseBeforeRecall;
-    public float maxPauseBeforeRecall;
-    public float recallTextDisplayLength;
-    public bool useRamulator;
-    public bool isTwoParter;
-    public bool isCategoryPool;
-    public bool useSessionListSelection;
+    public WordListGenerator wordListGenerator; //how the words for this experiment will be created and organized.  for a full list of parameters and what they do, see the comments for WordListGenerator in WordListGenerator.cs
+    public string experimentName; //the name of the experiment.  this will be displayed to the user and sent to ramulator.
+    public string version; //the version of the experiment.  for logging purposes.
+    public int numberOfLists; //how many lists to display to the participant.
+    public int wordsPerList; //how many words in each list.
+    public int microphoneTestLength; //how long to record for in the microphone test
+    public float wordPresentationLength; //how long each word will be on the screen.  normally 1.6 seconds.
+    public float minISI; //the minimum length to wait in between words.
+    public float maxISI; //the maximum length to wait in between words.  a random value between min and max will be chosen with uniform distribution.
+    public float distractionLength; //how many seconds minimum should the distractor period be.  when this time expires, the distractor period will end after the current problem is submitted.
+    public float answerConfirmationTime; //how long to display feedback to the participant for after they submit a distractor answer.  normally 0, as current experiments do not display visual feedback at all.
+    public float recallLength; //how many second to record vocal recall responses for after the distraction period.
+    public float minOrientationStimulusLength; //minimum amount of time the "+" appears for before words.
+    public float maxOrientationStimulusLength; //maximum amount of time the "+" appears for before words. a random value between min and max will be chosen with uniform distribution.
+    public float minPauseBeforeRecall; //minimum amount of time to wait after the last distractor is entered before recall begins.
+    public float maxPauseBeforeRecall; //maximum amount of time to wait after the last distractor is entered before recall begins. a random value between min and max will be chosen with uniform distribution.
+    public float recallTextDisplayLength; //how long to display "****" for at the beginning of the recall period.
+    public bool useRamulator; //whether or not the task should try to connect to and send messages to ramulator.
+    public bool isTwoParter; //whether or not the experiment should divide the word pool in two and alternative halves between sessions.
+    public bool isCategoryPool; //whether or not the catFR wordpool is used.
+    public bool useSessionListSelection; //whether or not the list to begin from can be chosen in the start screen.
 }
 
 public static class FRExperimentSettings
@@ -89,8 +87,6 @@ public static class FRExperimentSettings
         FR1Settings.isCategoryPool = false;
         FR1Settings.numberOfLists = 13;
         FR1Settings.wordsPerList = 12;
-        FR1Settings.countdownLength = 10;
-        FR1Settings.countdownTick = 1f;
         FR1Settings.wordPresentationLength = 1.6f;
         FR1Settings.minISI = 0.75f;
         FR1Settings.maxISI = 1f;
@@ -151,8 +147,6 @@ public static class FRExperimentSettings
         FR6Settings.isCategoryPool = false;
         FR6Settings.numberOfLists = 26;
         FR6Settings.wordsPerList = 12;
-        FR6Settings.countdownLength = 10;
-        FR6Settings.countdownTick = 1f;
         FR6Settings.wordPresentationLength = 1.6f;
         FR6Settings.minISI = 0.75f;
         FR6Settings.maxISI = 1f;
