@@ -122,7 +122,6 @@ public class EditableExperiment : CoroutineExperiment
 
     private IEnumerator DoCountdown()
     {
-
         countdownVideoPlayer.StartVideo();
         while (countdownVideoPlayer.IsPlaying())
             yield return null;
@@ -136,8 +135,6 @@ public class EditableExperiment : CoroutineExperiment
 
     private IEnumerator DoEncoding()
     {
-
-
         int currentList = wordsSeen / currentSettings.wordsPerList;
         wordsSeen = (ushort)(currentList * currentSettings.wordsPerList);
         Debug.Log("Beginning list index " + currentList.ToString());
@@ -159,7 +156,6 @@ public class EditableExperiment : CoroutineExperiment
             SetRamulatorWordState(false, words[wordsSeen]);
             IncrementWordsSeen();
         }
-
     }
 
     private void SetRamulatorWordState(bool state, IronPython.Runtime.PythonDictionary wordData)
@@ -182,7 +178,6 @@ public class EditableExperiment : CoroutineExperiment
 
     private IEnumerator DoDistractor()
     {
-
         float endTime = Time.time + currentSettings.distractionLength;
 
         string distractor = "";
@@ -254,7 +249,6 @@ public class EditableExperiment : CoroutineExperiment
         }
         textDisplayer.OriginalColor();
         textDisplayer.ClearText();
-
     }
 
     private void ReportDistractorAnswered(bool correct, string problem, string answer)

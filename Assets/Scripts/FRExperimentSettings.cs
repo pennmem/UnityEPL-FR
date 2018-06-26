@@ -35,8 +35,17 @@ public struct ExperimentSettings
 
 public static class FRExperimentSettings
 {
-
-
+    private static ExperimentSettings[] activeExperimentSettings = { GetFR1Settings(),                              // IF YOU WANT TO ADD OR REMOVE AN EXPERIMENT
+                                                                     GetCatFR1Settings (),                          // CREATE A NEW SETTINGS FETCHER IF NEEDED
+                                                                     GetFR6Settings(),                              // AND THEN ADD OR REMOVE THE EXPERIMENT
+                                                                     GetCatFR6Settings(),                           // SETTINGS FROM THIS ARRAY.
+                                                                     GetPS5Settings(),
+                                                                     GetCatPS5Settings(),
+                                                                     GetPS4Settings(),
+                                                                     GetCatPS4Settings(),
+                                                                     GetTICLFRSettings(),
+                                                                     GetTICLCatFRSettings(),
+                                                                     GetTestFR1Settings() };
 
     /// <summary>
     /// Gets the FR 1 settings.
@@ -359,25 +368,12 @@ public static class FRExperimentSettings
     /// <returns>The experiment names as an array of strings.  These array elements will be presented to the user as the available selection of experiments.</returns>
     public static string[] GetExperimentNames()
     {
-        return new string[] {
-                                GetFR1Settings ().experimentName,
-                                GetCatFR1Settings ().experimentName,
-                                GetFR6Settings ().experimentName,
-                                GetCatFR6Settings ().experimentName,
-                                GetPS5Settings().experimentName,
-                                GetCatPS5Settings().experimentName,
-                                GetPS4Settings().experimentName,
-                                GetCatPS4Settings().experimentName,
-                                GetTICLFRSettings().experimentName,
-                                GetTICLCatFRSettings().experimentName,
-                                GetTestFR1Settings().experimentName,
-                                //GetTestCatFR1Settings().experimentName,
-                                //GetTestFR6Settings().experimentName,
-                                //GetTestCatFR6Settings().experimentName,
-                                //GetTestPS5Settings().experimentName,
-                                //"FR1_scalp",
-                                //"SFR",
-                            };
+        string[] experimentNames = new string[activeExperimentSettings.Length];
+        for (int i = 0; i < activeExperimentSettings.Length; i++)
+        {
+            experimentNames[i] = activeExperimentSettings[i].experimentName;
+        }
+        return experimentNames;
     }
 
     /// <summary>
@@ -387,40 +383,10 @@ public static class FRExperimentSettings
     /// <param name="name">Name.</param>
     public static ExperimentSettings GetSettingsByName(string name)
     {
-        switch (name)
+        foreach (ExperimentSettings setting in activeExperimentSettings)
         {
-            case "FR1":
-                return GetFR1Settings();
-            case "CatFR1":
-                return GetCatFR1Settings();
-            case "FR6":
-                return GetFR6Settings();
-            case "CatFR6":
-                return GetCatFR6Settings();
-            case "PS4_FR5":
-                return GetPS4Settings();
-            case "PS4_CatFR5":
-                return GetCatPS4Settings();
-            case "PS5_FR":
-                return GetPS5Settings();
-            case "PS5_CatFR":
-                return GetCatPS5Settings();
-            case "TICL_FR":
-                return GetTICLFRSettings();
-            case "TICL_CatFR":
-                return GetTICLCatFRSettings();
-            case "FR1_test":
-                return GetTestFR1Settings();
-            //case "CatFR1_test":
-            //    return GetTestCatFR1Settings();
-            //case "FR6_test":
-            //    return GetTestFR6Settings();
-            //case "CatFR6_test":
-            //    return GetTestCatFR6Settings();
-            //case "PS5_test":
-                //return GetTestPS5Settings();
-            //case "SFR":
-            //    return GetTestFR1Settings();
+            if (setting.experimentName.Equals(name))
+                return setting;
         }
         throw new UnityException("No settings found with that name.");
     }
@@ -434,39 +400,8 @@ public static class FRExperimentSettings
     {
         switch (name)
         {
-            case "FR1":
+            default:
                 return "ram_fr";
-            case "CatFR1":
-                return "ram_fr";
-            case "FR6":
-                return "ram_fr";
-            case "CatFR6":
-                return "ram_fr";
-            case "PS5_FR":
-                return "ram_fr";
-            case "PS5_CatFR":
-                return "ram_fr";
-            case "PS4_FR5":
-                return "ram_fr";
-            case "PS4_CatFR5":
-                return "ram_fr";
-            case "TICL_FR":
-                return "ram_fr";
-            case "TICL_CatFR":
-                return "ram_fr";
-            case "FR1_test":
-                return "ram_fr";
-            //case "CatFR1_test":
-            //    return "ram_fr";
-            //case "FR6_test":
-            //    return "ram_fr";
-            //case "CatFR6_test":
-            //    return "ram_fr";
-            //case "PS5_test":
-                //return "ram_fr";
-            //case "SFR":
-            //    return "sfr";
         }
-        throw new UnityException("That name was not recognized.");
     }
 }
