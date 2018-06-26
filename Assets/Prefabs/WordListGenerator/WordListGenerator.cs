@@ -290,6 +290,17 @@ public class FRListGenerator : WordListGenerator
 
     private int AMPLITUDE_COUNT;
 
+    /// <summary>
+    /// One of these should be attached to the ExperimentSettings scruct.
+    /// </summary>
+    /// <param name="NEW_STIM_LIST_COUNT">How many lists for which to instruct ramulator to stim on.  These will be interleaved with nonstim lists.</param>
+    /// <param name="NEW_NONSTIM_LIST_COUNT">How many lists for which to instruct ramulator not to stim on.  These will be interleaved with stim lists.</param>
+    /// <param name="NEW_BASELINE_LIST_COUNT">How many baseline lists to run before stim and nonstim lists start.</param>
+    /// <param name="NEW_A_STIM_COUNT">Of stim lists, how many should be at stim site A.  (For many experiments, this is all the stim lists).</param>
+    /// <param name="NEW_B_STIM_COUNT">Of stim lists, how many should be at stim site A. </param>
+    /// <param name="NEW_AB_STIM_COUNT">Of stim lists, how many should be at stim site A and B simultaneously. </param>
+    /// <param name="NEW_AMPLITUDE_COUNT">How many different amplitudes to use.  (For example, 1 for all the same amplitude, two if we want stim lists to be evenly divided between two different amplitudes.  Note the actual amplitude values are not set here.  We don't want to be responsible for that!</param>
+    /// <param name="NEW_PS_LIST_COUNT">How many lists to label as "PS" when communicating with ramulator.  These will come after baseline and before stim/nonstim, but no experiments include both stim/nonstim and PS lists.</param>
     public FRListGenerator(int NEW_STIM_LIST_COUNT, int NEW_NONSTIM_LIST_COUNT, int NEW_BASELINE_LIST_COUNT, int NEW_A_STIM_COUNT, int NEW_B_STIM_COUNT, int NEW_AB_STIM_COUNT, int NEW_AMPLITUDE_COUNT, int NEW_PS_LIST_COUNT = 0)
     {
         STIM_LIST_COUNT = NEW_STIM_LIST_COUNT;
