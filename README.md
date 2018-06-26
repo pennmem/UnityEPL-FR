@@ -8,15 +8,22 @@ To add a new experiment, you will need to modify FRExperimentSettings.cs.
 
 First, create a static method of the FRExperimentSettings that creates and returns a ExperimentSettings struct.  This function should have three parts:
   1. Declare the settings struct:
+```
         ExperimentSettings MyNewSettings = new ExperimentSettings();
+```
      Alternatively, base your settings off an existing experiment.  For example:
+```
         ExperimentSettings MyNewSettings = GetFR1Settings();
+```
   2. Adjust the member variables of the ExperimentSettings object according to your need.
         For a full account of what each of the member variables does, refer to the comments in the ExperimentSettings struct code.
   3. Return the settings struct:
+```
         return MyNewSettings;
+```
         
 Second, add your new settings to the activeExperimentSettings member array of FRExperimentSettings.  For example:
+```
     private static ExperimentSettings[] activeExperimentSettings = { GetFR1Settings(),
                                                                      GetCatFR1Settings (),
                                                                      GetFR6Settings(),
@@ -29,3 +36,4 @@ Second, add your new settings to the activeExperimentSettings member array of FR
                                                                      GetTICLCatFRSettings(),
                                                                      GetTestFR1Settings(),
                                                                      GetMyNewSettings() }; //THIS IS A CALL TO THE METHOD YOU CREATED!
+```
