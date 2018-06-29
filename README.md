@@ -38,3 +38,6 @@ private static ExperimentSettings[] activeExperimentSettings = { GetFR1Settings(
                                                                  GetTestFR1Settings(),
                                                                  GetMyNewSettings() }; //THIS IS A CALL TO THE METHOD YOU CREATED!
 ```
+
+# Prefabs maintained with this project
+RamulatorInterface, VAD, WordAudioPresenter, and WordListGenerator are maintained with this project.  For notes on using these prefabs, please see the notes in /Assets/Prefab/ThePrefab/ .
