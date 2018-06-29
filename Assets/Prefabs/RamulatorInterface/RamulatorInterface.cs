@@ -113,11 +113,11 @@ public class RamulatorInterface : MonoBehaviour
 
     //ramulator expects this when you display words to the subject.
     //for words, stateName is "WORD"
-    public void SetState(string stateName, bool stateToggle, System.Collections.Generic.Dictionary<string, object> sessionData)
+    public void SetState(string stateName, bool stateToggle, System.Collections.Generic.Dictionary<string, object> extraData)
     {
-        sessionData.Add("name", stateName);
-        sessionData.Add("value", stateToggle.ToString());
-        DataPoint sessionDataPoint = new DataPoint("STATE", DataReporter.RealWorldTime(), sessionData);
+        extraData.Add("name", stateName);
+        extraData.Add("value", stateToggle.ToString());
+        DataPoint sessionDataPoint = new DataPoint("STATE", DataReporter.RealWorldTime(), extraData);
         SendMessageToRamulator(sessionDataPoint.ToJSON());
     }
 
