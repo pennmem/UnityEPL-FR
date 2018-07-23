@@ -18,6 +18,9 @@ public class VoiceActivityDetection : MonoBehaviour
 
 	private const int SAMPLES_TO_EVALUATE = 44100 / 10;
 
+    /// <summary>
+    /// Sets the ramulator VOCALIZATION state based on whether or not it detects VAD.  Uses a simple threshhold algorithm.
+    /// </summary>
 	void Update()
 	{
         if (Input.GetKeyDown(KeyCode.A))
@@ -43,6 +46,11 @@ public class VoiceActivityDetection : MonoBehaviour
         }
 	}
 
+
+    /// <summary>
+    /// Turns VAD on and off.
+    /// </summary>
+    /// <param name="doVAD">If set to <c>true</c> do vad.</param>
     public void DoVAD(bool doVAD)
     {
         doEvaluation = doVAD;
