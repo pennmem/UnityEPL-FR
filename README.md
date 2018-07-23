@@ -40,4 +40,4 @@ private static ExperimentSettings[] activeExperimentSettings = { GetFR1Settings(
 ```
 
 # Prefabs maintained with this project
-RamulatorInterface, VAD, WordAudioPresenter, and WordListGenerator are maintained with this project.  For notes on using these prefabs, please see the notes in /Assets/Prefab/ThePrefab/ .
+RamulatorInterface, VAD, and WordListGenerator are maintained with this project.  For notes on using these prefabs, please see the notes in /Assets/Prefab/ThePrefab/ .
