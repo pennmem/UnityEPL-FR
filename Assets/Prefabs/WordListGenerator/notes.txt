@@ -1,0 +1,3 @@
+This is not technically a prefab.  It uses IronPython and the files in the /Resources directory to generate wordlists.  The code in Resources/nopandas is shared with PyEPL, which is why we need IronPython.
+
+Ramulator has a lot of finicky requirements about the way the WORD messages it receives are formatted.  Looking at the code of nopandas and WordListGenerator.cs, you will see that the data dictionary for the messages is built carefully.  Some possible fields include phase_type, sitm_channels, and listno.  This was ported from the wordpool library on GitHub.
