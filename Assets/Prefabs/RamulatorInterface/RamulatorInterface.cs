@@ -132,6 +132,12 @@ public class RamulatorInterface : MonoBehaviour
         SendMessageToRamulator(mathDataPoint.ToJSON());
     }
 
+    public void SendExitMessage()
+    {
+        var data = new Dictionary<string, object>();
+        var msg = new DataPoint("EXIT", DataReporter.RealWorldTime(), data);
+        SendMessageToRamulator(msg.ToJSON());
+    }
 
     private void SendHeartbeat()
     {

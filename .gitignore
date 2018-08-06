@@ -1,3 +1,6 @@
+.DS_Store
+*.app/
+
 /[Ll]ibrary/
 /[Tt]emp/
 /[Oo]bj/

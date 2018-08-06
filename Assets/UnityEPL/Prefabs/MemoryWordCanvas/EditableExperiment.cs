@@ -117,6 +117,7 @@ public class EditableExperiment : CoroutineExperiment
             SetRamulatorState("RETRIEVAL", false, new Dictionary<string, object>() { { "current_trial", i } });
         }
 
+        ramulatorInterface.SendExitMessage();
         textDisplayer.DisplayText("display end message", "Woo!  The experiment is over.");
     }
 
