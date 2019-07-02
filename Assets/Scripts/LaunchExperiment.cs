@@ -9,6 +9,9 @@ using UnityEngine;
 /// </summary>
 public class LaunchExperiment : MonoBehaviour
 {
+    public ExperimentManager manager;
+    private ExperimentSettings settings = new ExperimentSettings(); // replaces UnityEPL settings
+
     public GameObject cantGoPrompt;
     public UnityEngine.UI.InputField participantNameInput;
     public UnityEngine.GameObject launchButton;
@@ -60,10 +63,15 @@ public class LaunchExperiment : MonoBehaviour
 
         int listNumber = ParticipantSelection.nextListNumber;
         IronPython.Runtime.List words = ParticipantSelection.nextWords;
+
+
+        // TODO: replace with settings
         EditableExperiment.ConfigureExperiment((ushort)(listNumber * 12), (ushort)sessionNumber, newWords: words);
         launchButton.SetActive(false);
         loadingButton.SetActive(true);
         yield return null;
+        
+        //manager.expEvtMgr.triggerEvent("launch", settings)
         UnityEngine.SceneManagement.SceneManager.LoadScene(FRExperimentSettings.ExperimentNameToExperimentScene(UnityEPL.GetExperimentName()));
     }
 

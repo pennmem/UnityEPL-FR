@@ -6,11 +6,8 @@ using UnityEngine;
 public class ExperimentManager : MonoBehaviour
 {
 
-    // TO REMOVE
-    public int rnd() {
-        return 4;
-        // certified random by dice roll
-    }
+    // TEMPORARY: global random number generator
+    public static Random rnd = new Random();
 
     //////////
     // Singleton Boilerplate
@@ -38,10 +35,15 @@ public class ExperimentManager : MonoBehaviour
 
 
     // pure C# event handling for experiment
-    public EventManager ExpEvtMgr = new EventManager();
-    public EventArgs EventArts = new EventArgs();
+    public EventManager expEvtMgr = new EventManager();
+    public EventArgs eventArgs = new EventArgs();
 
     // maintain experiment settings
+    public ExperimentSettings expSettings; // TODO
+    public ExperimentBase exp = new Experiment();
+
+    // available object references
+    // TODO 
 
     // Start is called before the first frame update
     void Start()
@@ -50,6 +52,10 @@ public class ExperimentManager : MonoBehaviour
         SceneManager.sceneLoaded += onSceneLoaded;
 
         Debug.Log("Experiment Manager Up");
+
+
+        // Subscribe to events for delegated tasks
+        expEvtMgr.startListener("launch", launchExperiment)
 
 
         // Start experiment Launcher
@@ -66,5 +72,13 @@ public class ExperimentManager : MonoBehaviour
     void onSceneLoaded(Scene scene, LoadSceneMode mode) 
     {
 
+        // text displayer
+        // event reporters
+
+    }
+
+    void launchExperiment() {
+        // launch scene
+        return;
     }
 }
