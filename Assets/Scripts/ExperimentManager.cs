@@ -1,12 +1,16 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
+using UnityEngine.JSONSerializeModule;
+using System.IO;
 using UnityEngine;
 
 public class ExperimentManager : MonoBehaviour
 {
 
     // TEMPORARY: global random number generator
+
+    // FIXME:
     public static Random rnd = new Random();
 
     //////////
@@ -15,6 +19,7 @@ public class ExperimentManager : MonoBehaviour
     // can exist in a scene and that this object
     // is not destroyed when changing scenes
     //////////
+
     private static ExperimentManager _instance;
 
     public static ExperimentManager Instance { get { return _instance; } }
@@ -33,21 +38,40 @@ public class ExperimentManager : MonoBehaviour
 
     //////////
 
-
-    // pure C# event handling for experiment
+    //////////
+    // Non-unity event handling for scripts to 
+    // activate ExperimentManager functions
+    //////////
     public EventManager expEvtMgr = new EventManager();
-    public EventArgs eventArgs = new EventArgs();
 
-    // maintain experiment settings
-    public ExperimentSettings expSettings; // TODO
-    public ExperimentBase exp = new Experiment();
+    //////////
+    // Experiment Settings and Experiment object
+    // that is instantiated once launch is called
+    ////////// 
+    public ExperimentConfig expCfg; // TODO
+    private ExperimentBase exp;
 
-    // available object references
+    //////////
+    // Known experiment GameObjects to
+    // check for and collect when changing
+    // scenes. These are made available to 
+    // other scripts instantiated by
+    // Experiment Manager.
+    //////////
+
     // TODO 
+    // event recorders
+    // experiment Launcher
+    // audio input
+    // text display
+    // launcher panel
 
     // Start is called before the first frame update
     void Start()
     {
+        string json = File.ReadAllText("config.json");
+        expCfg = FromJson(json); 
+
         // Unity interal event handling
         SceneManager.sceneLoaded += onSceneLoaded;
 
@@ -55,10 +79,10 @@ public class ExperimentManager : MonoBehaviour
 
 
         // Subscribe to events for delegated tasks
-        expEvtMgr.startListener("launch", launchExperiment)
+        //expEvtMgr.startListening("launch", launchExperiment);
 
 
-        // Start experiment Launcher
+        // Start experiment Launcher scene
     }
 
     // Update is called once per frame
@@ -67,8 +91,10 @@ public class ExperimentManager : MonoBehaviour
         
     }
 
+    //////////
     // collect references to managed objects
     // and release references to non-active objects
+    //////////
     void onSceneLoaded(Scene scene, LoadSceneMode mode) 
     {
 
@@ -81,7 +107,9 @@ public class ExperimentManager : MonoBehaviour
     }
 
     void launchExperiment() {
-        // launch scene
+        // launch scene with exp, 
+        // instantiate experiment,
+        // call start function
         return;
     }
 }
