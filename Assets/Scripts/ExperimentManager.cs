@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
-using UnityEngine.JSONSerializeModule;
 using System.IO;
 using UnityEngine;
 
@@ -49,7 +48,7 @@ public class ExperimentManager : MonoBehaviour
     // that is instantiated once launch is called
     ////////// 
     public ExperimentConfig expCfg; // TODO
-    private ExperimentBase exp;
+    // TODO: private ExperimentBase exp;
 
     //////////
     // Known experiment GameObjects to
@@ -69,8 +68,8 @@ public class ExperimentManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        string json = File.ReadAllText("config.json");
-        expCfg = FromJson(json); 
+        string json = File.ReadAllText("Assets/Resources/config.json");
+        expCfg = JsonUtility.FromJson<ExperimentConfig>(json); 
 
         // Unity interal event handling
         SceneManager.sceneLoaded += onSceneLoaded;

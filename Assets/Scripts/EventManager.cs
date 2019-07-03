@@ -1,50 +1,34 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 public class EventManager {
 
-    private Dictionary<string, Action<EventArgs>> eventDict;
+    // TODO: define special events (abort, paused)
 
-    // Register a listener to an event
-    public void startListening(string eventName, Action<EventArgs> listener) {
-        Action<EventArgs> thisAction;
-        if(eventDict.TryGetValue(eventName, out thisAction)) {
-            thisAction += listener;
-            eventDict[eventName] = thisAction;
-        }
-        else {
-            thisAction += listener;
-            eventDict.Add(eventName, listener);
+    protected System.Collections.Concurrent.ConcurrentQueue<Action> eventQueue;
+    protected bool abort;
+
+    public void passEvent(Action thisEvent) {
+        if(!abort) {
+            eventQueue.Enqueue(thisEvent);
         }
     }
 
-    // Remove a listener from an event 
-    public void stopListening(string eventName, Action<EventArgs> listener) {
-        Action<EventArgs> thisAction;
-        if(eventDict.TryGetValue(eventName, out thisAction)) {
-            thisAction -= listener;
-            eventDict[eventName] = thisAction;
+    public IEnumerator listen() {
+        abort = false;
+        while(!(abort || eventQueue.IsEmpty)) {
+            Action thisAction;
+            eventQueue.TryDequeue(out thisAction);
+            thisAction?.Invoke();
+            yield return null;
         }
-    }
-
-    // call the actions associated with an event
-    public void triggerEvent(string eventName, EventArgs args) {
-        Action<EventArgs> thisAction;
-        if(eventDict.TryGetValue(eventName, out thisAction)) {
-            thisAction.Invoke(args);
-        }
+        yield break;
     }
 
     public EventManager() {
-        eventDict = new Dictionary<string, Action<EventArgs>>();
+        abort = false;
+        eventQueue = new System.Collections.Concurrent.ConcurrentQueue<Action>();
     }
-}
-
-// Dummy class, would be ideal to make
-// this polymorphic
-public class EventArgs {
-    public EventArgs() { x=10; y=40;}
-    public int x;
-    public int y;
 }

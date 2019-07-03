@@ -29,6 +29,8 @@ public struct ExperimentSettings
     public bool isTwoParter; //whether or not the experiment should divide the word pool in two and alternative halves between sessions.
     public bool isCategoryPool; //whether or not the catFR wordpool is used.
     public bool useSessionListSelection; //whether or not the list to begin from can be chosen in the start screen.
+
+    public bool isTest;
 }
 
 public static class FRExperimentSettings
