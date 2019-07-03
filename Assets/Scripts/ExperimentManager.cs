@@ -74,6 +74,9 @@ public class ExperimentManager : MonoBehaviour
 
         // text displayer
         // event reporters
+        // syncbox
+        // ramulator (stimbox)
+        // audio recorder
 
     }
 

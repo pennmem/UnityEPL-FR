@@ -27,12 +27,14 @@ public class Syncbox : MonoBehaviour
     private Thread syncpulseThread;
 
     public ScriptedEventReporter scriptedEventReporter;
+    public int testField;
 
 	// Use this for initialization
 	void Start ()
     {
         //open usb, log the result string returned
 		Debug.Log(Marshal.PtrToStringAuto (OpenUSB()));
+        Debug.Log(testField);
 
         //start a thread which will send the pulses
         syncpulseThread = new Thread(Pulse);
