@@ -5,37 +5,34 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 public class EventLoop : EventQueue {
-    protected volatile bool abort;
+    protected volatile bool running = false;
     private ManualResetEventSlim wait;
 
     public void Start(){
         // spawn thread
-        abort = false;
+        running = true;
         Thread loop = new Thread(Loop);
         loop.Start();
     }
 
     public void Stop(){
-        abort = true;
+        running = false;
         wait.Set();
     }
 
     protected bool Running() {
-        if(!abort) {
-            return true;
-        }
-        else {
-            Process();
-            return false;
-        }
+        return running;
     }
 
     public void Loop() {
+        wait.Reset();
         while(Running()) {
-            wait.Reset();
-            Process();
-            // Don't block indefinitely
-            wait.Wait(10);
+            bool event_ran = Process();
+            if ( ! event_ran ) {
+                // Don't block indefinitely
+                wait.Wait(200);
+                wait.Reset();
+            }
         }
     }
     public override void Do(EventBase thisEvent) {

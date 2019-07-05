@@ -9,13 +9,15 @@ public class EventQueue {
         eventQueue.Enqueue(thisEvent);
     }
 
-    public void Process() {
+    // Process one event in the queue.
+    // Returns true if an event was available to process.
+    public bool Process() {
         EventBase thisEvent;
-        while(!eventQueue.IsEmpty) {
-            thisEvent = null;
-            eventQueue.TryDequeue(out thisEvent);
-            thisEvent?.Invoke();
+        if (eventQueue.TryDequeue(out thisEvent)) {
+          thisEvent.Invoke();
+          return true;
         }
+        return false;
     }
 
     public EventQueue() {
