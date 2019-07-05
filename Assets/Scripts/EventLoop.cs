@@ -23,17 +23,6 @@ public class EventLoop : EventQueue {
         tokenSource.Cancel();
         wait.Set();
     }
-
-    protected bool Running() {
-        if(!token.IsCancellationRequested) {
-            return true;
-        }
-        else {
-            Process();
-            return false;
-        }
-    }
-
     public void Loop() {
         while(!token.IsCancellationRequested) {
             Process();
