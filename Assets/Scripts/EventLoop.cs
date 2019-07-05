@@ -5,23 +5,27 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 
 public class EventLoop : EventQueue {
-    protected volatile bool abort;
     private ManualResetEventSlim wait;
+    CancellationTokenSource tokenSource;
+    CancellationToken token;
 
     public void Start(){
         // spawn thread
-        abort = false;
         Thread loop = new Thread(Loop);
+        wait = new ManualResetEventSlim();
+        tokenSource = new CancellationTokenSource();
+        token = tokenSource.Token;
+
         loop.Start();
     }
 
     public void Stop(){
-        abort = true;
+        tokenSource.Cancel();
         wait.Set();
     }
 
     protected bool Running() {
-        if(!abort) {
+        if(!token.IsCancellationRequested) {
             return true;
         }
         else {
@@ -31,12 +35,20 @@ public class EventLoop : EventQueue {
     }
 
     public void Loop() {
-        while(Running()) {
-            wait.Reset();
+        while(!token.IsCancellationRequested) {
             Process();
-            // Don't block indefinitely
-            wait.Wait(10);
+
+            wait.Reset();
+            try {
+                wait.Wait(token);
+            } 
+            catch (OperationCanceledException e) {
+                Process();
+            }
         }
+
+        wait.Dispose();
+        tokenSource.Dispose();
     }
     public override void Do(EventBase thisEvent) {
         base.Do(thisEvent);
@@ -44,6 +56,5 @@ public class EventLoop : EventQueue {
     }
 
     public EventLoop() {
-        wait = new ManualResetEventSlim();
     }
 }
