@@ -12,7 +12,7 @@ class DummyExperimentManager {
 
 
 // Stores a word and whether or not it should be stimulated during encoding.
-class WordStim {
+public class WordStim {
   public string word;
   public bool stim;
 
@@ -29,7 +29,7 @@ class WordStim {
 
 // Stores the number of times to repeat a word, and the count of how many
 // words should be repeated that many times.
-class RepCnt {
+public class RepCnt {
   public int rep;
   public int count;
 
@@ -41,7 +41,7 @@ class RepCnt {
 
 // e.g. new RepCounts(3,6).RepCnt(2,3).RepCnt(1,3);
 // Specifies 3 repeats of 6 words, 2 repeats of 3 words, 1 instance of 3 words.
-class RepCounts : List<RepCnt> {
+public class RepCounts : List<RepCnt> {
   public RepCounts() { }
 
   public RepCounts(int rep, int count) {
@@ -52,11 +52,19 @@ class RepCounts : List<RepCnt> {
     Add(new RepCnt(rep, count));
     return this;
   }
+
+  public int TotalWords() {
+    int total = 0;
+    foreach (var r in this) {
+      total += r.rep * r.count;
+    }
+    return total;
+  }
 }
 
 
 // If "i" goes past "limit", an exception is thrown with the stored message.
-class BoundedInt {
+public class BoundedInt {
   private int limit;
   private string message;
   private int i_;
@@ -80,7 +88,7 @@ class BoundedInt {
 
 
 // This class keeps a list of words associated with their stim states.
-class StimWordList : IEnumerable<WordStim> {
+public class StimWordList : IEnumerable<WordStim> {
   protected List<string> words_;
   public IList<string> words {
     get { return words_.AsReadOnly(); }
@@ -296,13 +304,16 @@ class RepWordGenerator {
   public static StimWordList Generate(
       List<RepWordList> repeats,
       RepWordList singles,
+      bool do_stim,
       double top_percent_spaced=0.2) {
 
-    // Open-loop stim assigned here.
-    foreach (var rw in repeats) {
-      AssignRandomStim(rw);
+    if (do_stim) {
+      // Open-loop stim assigned here.
+      foreach (var rw in repeats) {
+        AssignRandomStim(rw);
+      }
+      AssignRandomStim(singles);
     }
-    AssignRandomStim(singles);
 
     StimWordList prepared_words = SpreadWords(repeats, top_percent_spaced);
 
@@ -319,6 +330,7 @@ class RepWordGenerator {
   public static StimWordList Generate(
       RepCounts rep_cnts,
       List<string> input_words,
+      bool do_stim,
       double top_percent_spaced=0.2) {
 
     var shuffled = Shuffle(input_words);
@@ -343,14 +355,15 @@ class RepWordGenerator {
       }
     }
 
-    return Generate(repeats, singles, top_percent_spaced);
+    return Generate(repeats, singles, do_stim, top_percent_spaced);
   }
 }
 
 
 // Usage demonstration.
 class TestingRepWord {
-  public static void Main() {
+  //public static void Main() {
+  public static void Test() {
     // Alternate calling modality.
 //    var repeats1 = new RepWordList(new List<string>
 //        {"cat", "dog", "fish", "bird", "shark", "tiger"}, 3);
@@ -371,8 +384,10 @@ class TestingRepWord {
       "Mercury", "Venus", "Earth", "Mars"};
 
     StimWordList wordlst = RepWordGenerator.Generate(rep_counts,
-        input_word_list);
+        input_word_list, true);
 
     Console.WriteLine(wordlst);
+    Console.WriteLine("Goal {0} words, generated {1} words.",
+        rep_counts.TotalWords(), wordlst.Count);
   }
 }
