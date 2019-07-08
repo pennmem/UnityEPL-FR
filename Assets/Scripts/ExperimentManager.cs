@@ -117,9 +117,10 @@ public class ExperimentManager : MonoBehaviour
         resetReferences();
 
         // text displayer
-        GameObject canvas =  GameObject.Find("Canvas");
+        GameObject canvas =  GameObject.Find("MemoryWordCanvas");
         if(canvas != null) {
             textDisplayer = canvas.GetComponent<TextDisplayer>();
+            Debug.Log("Found TextDisplay");
         }
 
         // input reporters
@@ -129,34 +130,40 @@ public class ExperimentManager : MonoBehaviour
             peripheralInput = inputReporters.GetComponent<PeripheralInputReporter>();
             worldInput = inputReporters.GetComponent<WorldDataReporter>();
             uiInput = inputReporters.GetComponent<UIDataReporter>();
+            Debug.Log("Found InputReporters");
         }
 
         // syncbox
         GameObject sBox = GameObject.Find("Syncbox");
         if(sBox != null) {
             syncBox = sBox.GetComponent<Syncbox>();
+            Debug.Log("Found SyncboxInterface");
         }
 
         // ramulator (stimbox)
         GameObject ramulator = GameObject.Find("RamulatorInterface");
         if(ramulator != null) {
             ramInt = ramulator.GetComponent<RamulatorInterface>();
+            Debug.Log("Found RamulatorInterface");
         }
 
         // audio recorder
         GameObject voice = GameObject.Find("VAD");
         if(voice != null) {
            voiceActity = voice.GetComponent<VoiceActivityDetection>(); 
+           Debug.Log("Found VoiceActivityDetector");
         }
 
         GameObject video = GameObject.Find("VideoPlayer");
         if(video != null) {
             videoControl = video.GetComponent<VideoControl>();
+            Debug.Log("Found VideoPlayer");
         }
 
         GameObject sound = GameObject.Find("SoundRecorder");
         if(sound != null) {
             soundRecorder = sound.GetComponent<SoundRecorder>();
+            Debug.Log("Found SoundRecorder");
         }
     }
 
