@@ -2,15 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using System.IO;
+using System;
 using UnityEngine;
 
 public class ExperimentManager : MonoBehaviour
 {
-
-    // TEMPORARY: global random number generator
-
-    // FIXME:
-    public static Random rnd = new Random();
 
     //////////
     // Singleton Boilerplate
@@ -41,14 +37,17 @@ public class ExperimentManager : MonoBehaviour
     // Non-unity event handling for scripts to 
     // activate ExperimentManager functions
     //////////
-    public EventManager expEvtMgr = new EventManager();
+    // TODO: terrible name
+    public EventQueue mainEvents = new EventQueue();
 
     //////////
     // Experiment Settings and Experiment object
     // that is instantiated once launch is called
     ////////// 
-    public ExperimentConfig expCfg; // TODO
-    // TODO: private ExperimentBase exp;
+    // global random number source
+    public static System.Random rnd = new System.Random();
+    public ExperimentConfig expCfg;
+    private ExperimentBase exp;
 
     //////////
     // Known experiment GameObjects to
@@ -58,8 +57,17 @@ public class ExperimentManager : MonoBehaviour
     // Experiment Manager.
     //////////
 
-    // TODO 
     // event recorders
+    RamulatorInterface ramInt;
+    Syncbox syncBox;
+    VoiceActivityDetection voiceActity;
+    VideoControl videoControl;
+    TextDisplayer textDisplayer; // doesn't currently support multiple  text displays
+    SoundRecorder soundRecorder;
+    ScriptedEventReporter scriptedInput;
+    PeripheralInputReporter peripheralInput;
+    WorldDataReporter worldInput;
+    UIDataReporter uiInput;
     // experiment Launcher
     // audio input
     // text display
@@ -68,47 +76,100 @@ public class ExperimentManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        string json = File.ReadAllText("Assets/Resources/config.json");
-        expCfg = JsonUtility.FromJson<ExperimentConfig>(json); 
+        TextAsset json = Resources.Load<TextAsset>("config");
+        expCfg = JsonUtility.FromJson<ExperimentConfig>(json.text); 
+
+        Debug.Log("Config loaded");
 
         // Unity interal event handling
         SceneManager.sceneLoaded += onSceneLoaded;
 
         Debug.Log("Experiment Manager Up");
 
-
-        // Subscribe to events for delegated tasks
-        //expEvtMgr.startListening("launch", launchExperiment);
-
-
         // Start experiment Launcher scene
+        launchLauncher();
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        mainEvents.Process();
     }
 
     //////////
     // collect references to managed objects
     // and release references to non-active objects
     //////////
+    private void resetReferences() {
+        textDisplayer = null;
+        scriptedInput = null;
+        peripheralInput = null;
+        worldInput = null;
+        uiInput = null;
+        syncBox = null;
+        ramInt = null;
+        soundRecorder = null;
+        videoControl = null;
+    }
+
     void onSceneLoaded(Scene scene, LoadSceneMode mode) 
     {
+        resetReferences();
 
         // text displayer
-        // event reporters
-        // syncbox
-        // ramulator (stimbox)
-        // audio recorder
+        GameObject canvas =  GameObject.Find("Canvas");
+        if(canvas != null) {
+            textDisplayer = canvas.GetComponent<TextDisplayer>();
+        }
 
+        // input reporters
+        GameObject inputReporters = GameObject.Find("InputReporters");
+        if(inputReporters != null) {
+            scriptedInput = inputReporters.GetComponent<ScriptedEventReporter>();   
+            peripheralInput = inputReporters.GetComponent<PeripheralInputReporter>();
+            worldInput = inputReporters.GetComponent<WorldDataReporter>();
+            uiInput = inputReporters.GetComponent<UIDataReporter>();
+        }
+
+        // syncbox
+        GameObject sBox = GameObject.Find("Syncbox");
+        if(sBox != null) {
+            syncBox = sBox.GetComponent<Syncbox>();
+        }
+
+        // ramulator (stimbox)
+        GameObject ramulator = GameObject.Find("RamulatorInterface");
+        if(ramulator != null) {
+            ramInt = ramulator.GetComponent<RamulatorInterface>();
+        }
+
+        // audio recorder
+        GameObject voice = GameObject.Find("VAD");
+        if(voice != null) {
+           voiceActity = voice.GetComponent<VoiceActivityDetection>(); 
+        }
+
+        GameObject video = GameObject.Find("VideoPlayer");
+        if(video != null) {
+            videoControl = video.GetComponent<VideoControl>();
+        }
+
+        GameObject sound = GameObject.Find("SoundRecorder");
+        if(sound != null) {
+            soundRecorder = sound.GetComponent<SoundRecorder>();
+        }
     }
 
     void launchExperiment() {
         // launch scene with exp, 
         // instantiate experiment,
         // call start function
+        // TODO:
+        SceneManager.LoadScene("ram_fr");
         return;
+    }
+
+    void launchLauncher() {
+        SceneManager.LoadScene(expCfg.launcherScene);
     }
 }
