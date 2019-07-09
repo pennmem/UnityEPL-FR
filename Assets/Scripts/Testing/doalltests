@@ -1,0 +1,19 @@
+#!/bin/bash
+
+LOGFILE="log/tests_$(date +%F)"
+
+if [ "$(echo run_*)" == "" ]
+then
+  echo "Run $0 from within the Testing directory."
+  exit -1
+fi
+
+for file in run_*
+do
+  echo "--- $file --- $(date +%F_%H-%M-%S)"
+  ./$file
+done 2>&1 >"$LOGFILE"
+
+echo "Results in $LOGFILE"
+grep -n -H "ERROR" "$LOGFILE"
+

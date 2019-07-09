@@ -359,35 +359,3 @@ class RepWordGenerator {
   }
 }
 
-
-// Usage demonstration.
-class TestingRepWord {
-  //public static void Main() {
-  public static void Test() {
-    // Alternate calling modality.
-//    var repeats1 = new RepWordList(new List<string>
-//        {"cat", "dog", "fish", "bird", "shark", "tiger"}, 3);
-//    var repeats2 = new RepWordList(new List<string>
-//        {"corn", "wheat", "rice"}, 2);
-//    var singles = new RepWordList(new List<string>
-//        {"red", "blue", "green"});
-//
-//
-//    StimWordList wordlst = RepWordGenerator.Generate(
-//        new List<RepWordList>{repeats1, repeats2},
-//        singles);
-
-
-    var rep_counts = new RepCounts(3, 6).RepCnt(2, 3).RepCnt(1, 3);
-    var input_word_list = new List<string> {"cat", "dog", "fish", "bird",
-      "shark", "tiger", "corn", "wheat", "rice", "red", "blue", "green",
-      "Mercury", "Venus", "Earth", "Mars"};
-
-    StimWordList wordlst = RepWordGenerator.Generate(rep_counts,
-        input_word_list, true);
-
-    Console.WriteLine(wordlst);
-    Console.WriteLine("Goal {0} words, generated {1} words.",
-        rep_counts.TotalWords(), wordlst.Count);
-  }
-}

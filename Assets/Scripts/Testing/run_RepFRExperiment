@@ -1,0 +1,8 @@
+#!/bin/bash
+
+TEST="RepWordGenerator"
+INCLUDES="../RepFRExperiment.cs ../ExperimentBase.cs"
+
+mcs Test"$TEST".cs ../"$TEST".cs $INCLUDES &&
+mono Test"$TEST".exe
+

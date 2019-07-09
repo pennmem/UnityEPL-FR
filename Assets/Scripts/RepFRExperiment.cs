@@ -100,24 +100,3 @@ public class RepFRExperiment : ExperimentBase {
   }
 }
 
-
-class TestingRepFR {
-  //public static void Main() {
-  public static void Test() {
-    
-    var input_word_list = new List<string> {"cat", "dog", "fish", "bird",
-      "shark", "tiger", "corn", "wheat", "rice", "red", "blue", "green",
-      "Mercury", "Venus", "Earth", "Mars"};
-    var experiment = new RepFRExperiment(input_word_list);
-    var session = experiment.GenerateSession();
-
-    for (int i=0; i<session.Count; i++) {
-      Console.WriteLine("-----------------------------------");
-      Console.WriteLine("List {0} ({1}) - {2}", i, session[i].encoding_stim,
-          session[i].encoding);
-      Console.WriteLine("List {0} ({1}) - {2}", i, session[i].recall_stim,
-          session[i].recall);
-    }
-  }
-}
-
