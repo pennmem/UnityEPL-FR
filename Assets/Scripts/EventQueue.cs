@@ -48,4 +48,6 @@ public class EventBase {
     public EventBase(Action thisAction) {
         EventAction += thisAction;
     }
+
+    public EventBase() {}
 }
