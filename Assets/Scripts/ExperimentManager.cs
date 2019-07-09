@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Web.Helpers;
 using UnityEngine.SceneManagement;
 using System.IO;
 using System;
@@ -37,7 +38,7 @@ public class ExperimentManager : MonoBehaviour
     // Non-unity event handling for scripts to 
     // activate ExperimentManager functions
     //////////
-    // TODO: terrible name
+    // FIXME: terrible name
     public EventQueue mainEvents = new EventQueue();
 
     //////////
@@ -46,7 +47,7 @@ public class ExperimentManager : MonoBehaviour
     ////////// 
     // global random number source
     public static System.Random rnd = new System.Random();
-    public ExperimentConfig expCfg;
+    public dynamic systemConfig;
     private ExperimentBase exp;
 
     //////////
@@ -58,16 +59,16 @@ public class ExperimentManager : MonoBehaviour
     //////////
 
     // event recorders
-    RamulatorInterface ramInt;
-    Syncbox syncBox;
-    VoiceActivityDetection voiceActity;
-    VideoControl videoControl;
-    TextDisplayer textDisplayer; // doesn't currently support multiple  text displays
-    SoundRecorder soundRecorder;
-    ScriptedEventReporter scriptedInput;
-    PeripheralInputReporter peripheralInput;
-    WorldDataReporter worldInput;
-    UIDataReporter uiInput;
+    public RamulatorInterface ramInt;
+    public Syncbox syncBox;
+    public VoiceActivityDetection voiceActity;
+    public VideoControl videoControl;
+    public TextDisplayer textDisplayer; // doesn't currently support multiple  text displays
+    public SoundRecorder soundRecorder;
+    public ScriptedEventReporter scriptedInput;
+    public PeripheralInputReporter peripheralInput;
+    public WorldDataReporter worldInput;
+    public UIDataReporter uiInput;
     // experiment Launcher
     // audio input
     // text display
@@ -77,7 +78,7 @@ public class ExperimentManager : MonoBehaviour
     void Start()
     {
         TextAsset json = Resources.Load<TextAsset>("config");
-        expCfg = JsonUtility.FromJson<ExperimentConfig>(json.text); 
+        systemConfig = Helpers.Json.Decode(json.text); 
 
         Debug.Log("Config loaded");
 
@@ -167,7 +168,12 @@ public class ExperimentManager : MonoBehaviour
         }
     }
 
-    void launchExperiment() {
+    //////////
+    // Funtions to be called from other
+    // scripts through the messaging system
+    //////////
+
+    public void launchExperiment(string scene) {
         // launch scene with exp, 
         // instantiate experiment,
         // call start function
@@ -176,7 +182,7 @@ public class ExperimentManager : MonoBehaviour
         return;
     }
 
-    void launchLauncher() {
-        SceneManager.LoadScene(expCfg.launcherScene);
+    public void launchLauncher() {
+        SceneManager.LoadScene(systemConfig.launcherScene);
     }
 }

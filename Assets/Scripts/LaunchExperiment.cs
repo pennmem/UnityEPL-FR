@@ -72,7 +72,13 @@ public class LaunchExperiment : MonoBehaviour
         yield return null;
         
         //manager.expEvtMgr.triggerEvent("launch", settings)
-        UnityEngine.SceneManagement.SceneManager.LoadScene(FRExperimentSettings.ExperimentNameToExperimentScene(UnityEPL.GetExperimentName()));
+        if(manager.expCfg.legacyExperiment) {
+            UnityEngine.SceneManagement.SceneManager.LoadScene(FRExperimentSettings.ExperimentNameToExperimentScene(UnityEPL.GetExperimentName()));
+        }
+        else {
+            // TODO:
+            manager.mainEvents.Do(new EventBase<string>(manager.launchExperiment()));
+        }
     }
 
     private bool IsValidParticipantName(string name)

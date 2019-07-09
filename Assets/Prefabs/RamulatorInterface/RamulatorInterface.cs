@@ -8,12 +8,12 @@ using NetMQ;
 
 public class RamulatorInterface : MonoBehaviour
 {
+    public ExperimentManager manager;
+
     //This will be updated with warnings about the status of ramulator connectivity
     public UnityEngine.UI.Text ramulatorWarningText;
     //This will be activated when a warning needs to be displayed
     public GameObject ramulatorWarning;
-    //This will be used to log messages
-    public ScriptedEventReporter scriptedEventReporter;
 
     //how long to wait for ramulator to connect
     const int timeoutDelay = 600;
@@ -183,6 +183,6 @@ public class RamulatorInterface : MonoBehaviour
         Dictionary<string, object> messageDataDict = new Dictionary<string, object>();
         messageDataDict.Add("message", message);
         messageDataDict.Add("sent", sent.ToString());
-        scriptedEventReporter.ReportScriptedEvent("network", messageDataDict);
+        manager.scriptedInput.ReportOutOfThreadScriptedEvent("network", messageDataDict);
     }
 }
