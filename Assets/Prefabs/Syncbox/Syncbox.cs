@@ -6,6 +6,7 @@ using System.Threading;
 
 public class Syncbox : MonoBehaviour
 {
+    public ExperimentManager manager;
 
     //Function from Corey's Syncbox plugin (called "ASimplePlugin")
 	[DllImport ("ASimplePlugin")]
@@ -26,7 +27,6 @@ public class Syncbox : MonoBehaviour
 
     private Thread syncpulseThread;
 
-    public ScriptedEventReporter scriptedEventReporter;
     public int testField;
 
 	// Use this for initialization
@@ -50,9 +50,9 @@ public class Syncbox : MonoBehaviour
 		while (true)
         {
             //pulse
-            scriptedEventReporter.ReportOutOfThreadScriptedEvent("Sync pulse begin", new System.Collections.Generic.Dictionary<string, object>());
+            manager.scriptedInput.ReportOutOfThreadScriptedEvent("Sync pulse begin", new System.Collections.Generic.Dictionary<string, object>());
             SyncPulse();
-            scriptedEventReporter.ReportOutOfThreadScriptedEvent("Sync pulse end", new System.Collections.Generic.Dictionary<string, object>());
+            manager.scriptedInput.ReportOutOfThreadScriptedEvent("Sync pulse end", new System.Collections.Generic.Dictionary<string, object>());
 
             //wait a random time between min and max
             float timeBetweenPulses = (float)(TIME_BETWEEN_PULSES_MIN + (random.NextDouble() * (TIME_BETWEEN_PULSES_MAX - TIME_BETWEEN_PULSES_MIN)));
