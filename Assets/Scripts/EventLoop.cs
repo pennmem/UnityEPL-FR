@@ -7,16 +7,12 @@ using System.Collections.Generic;
 public class EventLoop : EventQueue {
     protected volatile bool running = false;
     private ManualResetEventSlim wait;
-    CancellationTokenSource tokenSource;
-    CancellationToken token;
 
     public void Start(){
         // spawn thread
         running = true;
         Thread loop = new Thread(Loop);
         wait = new ManualResetEventSlim();
-        tokenSource = new CancellationTokenSource();
-        token = tokenSource.Token;
 
         loop.Start();
     }
