@@ -12,6 +12,8 @@ public class EventLoop : EventQueue {
         // spawn thread
         running = true;
         Thread loop = new Thread(Loop);
+        wait = new ManualResetEventSlim();
+
         loop.Start();
     }
 
@@ -34,6 +36,9 @@ public class EventLoop : EventQueue {
                 wait.Reset();
             }
         }
+
+        wait.Dispose();
+        tokenSource.Dispose();
     }
     public override void Do(EventBase thisEvent) {
         base.Do(thisEvent);
@@ -41,6 +46,5 @@ public class EventLoop : EventQueue {
     }
 
     public EventLoop() {
-        wait = new ManualResetEventSlim();
     }
 }
