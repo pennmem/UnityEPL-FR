@@ -36,9 +36,7 @@ public class EventLoop : EventQueue {
                 wait.Reset();
             }
         }
-
         wait.Dispose();
-        tokenSource.Dispose();
     }
     public override void Do(EventBase thisEvent) {
         base.Do(thisEvent);
