@@ -686,18 +686,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   textElement: {fileID: 621434369}
---- !u!114 &621434371 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 114487739435193272, guid: e6672ad97ff294adba0eb53a61d1502f,
-    type: 3}
-  m_PrefabInstance: {fileID: 621434364}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6bf90851f61fb42fa874e4499ad85fc2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1001 &874305714
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1270,7 +1258,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 13
+  m_RootOrder: 12
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!82 &1839582829 stripped
 AudioSource:
@@ -1425,10 +1413,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 1565825855378494, guid: 1bfd92acf53ae4e64a498dc7d839d06d, type: 3}
-      propertyPath: m_Name
-      value: VAD
-      objectReference: {fileID: 0}
     - target: {fileID: 114551300955106232, guid: 1bfd92acf53ae4e64a498dc7d839d06d,
         type: 3}
       propertyPath: ramulatorInterface
@@ -1439,6 +1423,10 @@ PrefabInstance:
       propertyPath: soundRecorder
       value: 
       objectReference: {fileID: 2025745181}
+    - target: {fileID: 1565825855378494, guid: 1bfd92acf53ae4e64a498dc7d839d06d, type: 3}
+      propertyPath: m_Name
+      value: VAD
+      objectReference: {fileID: 0}
     - target: {fileID: 4942450690500780, guid: 1bfd92acf53ae4e64a498dc7d839d06d, type: 3}
       propertyPath: m_LocalPosition.x
       value: 599.0508
@@ -1565,61 +1553,4 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 5
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &2103997975
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 2103997977}
-  - component: {fileID: 2103997976}
-  m_Layer: 0
-  m_Name: ExperimentManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &2103997976
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2103997975}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6d215bd4fc191489fb20630dd04588b2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  soundRecorder: {fileID: 2025745181}
-  textDisplayer: {fileID: 621434371}
-  videoPlayer: {fileID: 234184406}
-  microphoneTestMessage: {fileID: 621434366}
-  audioPlayback: {fileID: 1977761844}
-  highBeep: {fileID: 64686589}
-  lowBeep: {fileID: 1839582829}
-  lowerBeep: {fileID: 1977761843}
-  ramulatorInterface: {fileID: 1222569298}
-  countdownVideoPlayer: {fileID: 462807603}
-  pauseKey: 112
-  pauseIndicator: {fileID: 621434367}
-  scriptedEventReporter: {fileID: 621434365}
-  VAD: {fileID: 1570558169}
---- !u!4 &2103997977
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2103997975}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 79.54874, y: 0, z: 638.1535}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 12
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

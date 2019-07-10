@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using System.IO;
+using Newtonsoft.Json.Linq;
 using UnityEngine;
 
 public class ExperimentManager : MonoBehaviour
@@ -76,7 +77,7 @@ public class ExperimentManager : MonoBehaviour
     void Start()
     {
         TextAsset json = Resources.Load<TextAsset>("config");
-        systemConfig = Helpers.Json.Decode(json.text); 
+        systemConfig = FlexibleConfig.loadFromText(json.text); 
 
         Debug.Log("Config loaded");
 
@@ -166,6 +167,8 @@ public class ExperimentManager : MonoBehaviour
     }
 
     public void launchLauncher() {
+        Debug.Log(systemConfig.launcherScene);
+        Debug.Log(systemConfig.launcherScene.GetType());
         SceneManager.LoadScene(systemConfig.launcherScene);
     }
 }

@@ -10,8 +10,6 @@ using UnityEngine;
 public class LaunchExperiment : MonoBehaviour
 {
     public ExperimentManager manager;
-    private ExperimentSettings settings = new ExperimentSettings(); // replaces UnityEPL settings
-
     public GameObject cantGoPrompt;
     public UnityEngine.UI.InputField participantNameInput;
     public UnityEngine.GameObject launchButton;
@@ -32,7 +30,9 @@ public class LaunchExperiment : MonoBehaviour
 
     public void DoLaunchExperiment()
     {
-        StartCoroutine(LaunchExperimentCoroutine());
+        if(manager.systemConfig.legacyExperiment) {
+            StartCoroutine(LaunchExperimentCoroutine());
+        }
     }
 
     private IEnumerator LaunchExperimentCoroutine()
