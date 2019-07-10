@@ -5,6 +5,7 @@ public class EventQueue {
     protected ConcurrentQueue<EventBase> eventQueue;
 
     public virtual void Do(EventBase thisEvent) {
+        // TODO: check if event belongs to current thread
         eventQueue.Enqueue(thisEvent);
     }
 
@@ -26,26 +27,12 @@ public class EventQueue {
 
 // Wrapper class to allow different delegate signatures
 // in Event Manager
-public class EventBase<T> : EventBase {
-    protected new Action<T> EventAction;
-    protected T args;
-
-    public override void Invoke() {
-        EventAction?.Invoke(args);
-    }
-    public EventBase(Action<T> thisAction, T _args) {
-        EventAction += thisAction;
-        args = _args;
-    }
-}
-
 public class EventBase {
-    protected Action EventAction;
+    protected Action<EventBase> EventAction;
     public virtual void Invoke() {
-        EventAction?.Invoke();
+        EventAction?.Invoke(this);
     }
-
-    public EventBase(Action thisAction) {
+    public EventBase(Action<EventBase> thisAction) {
         EventAction += thisAction;
     }
 
