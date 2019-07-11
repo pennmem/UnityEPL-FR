@@ -1,18 +1,24 @@
 ﻿using System;
-using System.Collections;
 using System.Threading;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
+
+
+// TODO: dispose of all created handles, make resuming either
+// possible or explicitly reset the state of the queue
 
 public class EventLoop : EventQueue {
     protected volatile bool running = false;
     private ManualResetEventSlim wait;
+    private ManualResetEventSlim timerInterrupt;
+
+    private ConcurrentBag<Timer> timers = new ConcurrentBag<Timer>();
 
     public void Start(){
         // spawn thread
         running = true;
         Thread loop = new Thread(Loop);
         wait = new ManualResetEventSlim();
+        timerInterrupt = new ManualResetEventSlim();
 
         loop.Start();
     }
@@ -20,6 +26,7 @@ public class EventLoop : EventQueue {
     public void Stop(){
         running = false;
         wait.Set();
+        timerInterrupt.Set();
     }
 
     protected bool Running() {
@@ -41,6 +48,15 @@ public class EventLoop : EventQueue {
     public override void Do(EventBase thisEvent) {
         base.Do(thisEvent);
         wait.Set();
+    }
+
+    // enqueues repeating event at set intervals. If timer isn't
+    // stopped, stopping processing thread will still stop execution
+    // of events
+    public void DoRepeating(RepeatingEvent thisEvent) {
+        timers.Add(new Timer(delegate(Object obj){ RepeatingEvent evnt = (RepeatingEvent)obj;
+                                                    if(!evnt.flag.IsSet){Do(evnt);} }, 
+                                                    thisEvent, thisEvent.delay, thisEvent.interval));
     }
 
     public EventLoop() {

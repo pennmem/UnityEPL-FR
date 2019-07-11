@@ -4,7 +4,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-public class Syncbox : MonoBehaviour
+public class NonUnitySyncbox : EventLoop 
 {
 
     public ExperimentManager manager;
@@ -30,17 +30,17 @@ public class Syncbox : MonoBehaviour
 
     public int testField;
 
-	// Use this for initialization
-	void Start ()
-    {
-        //open usb, log the result string returned
-		Debug.Log(Marshal.PtrToStringAuto (OpenUSB()));
+    void Init() {
+        Debug.Log(Marshal.PtrToStringAuto (OpenUSB()));
         Debug.Log(testField);
 
-        //start a thread which will send the pulses
+
         syncpulseThread = new Thread(Pulse);
+    }
+
+    void StartPulse() {
         syncpulseThread.Start();
-	}
+    }
 
 	void Pulse ()
     {
@@ -61,12 +61,7 @@ public class Syncbox : MonoBehaviour
 		}
 	}
 
-	void OnApplicationQuit()
-    {
-        //close usb, log the result string returned
-		Debug.Log(Marshal.PtrToStringAuto (CloseUSB()));
-        //stop the pulsing thread
+    void StopPulse() {
         syncpulseThread.Abort();
-	}
-
+    }
 }

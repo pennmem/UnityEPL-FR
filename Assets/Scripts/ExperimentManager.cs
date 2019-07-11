@@ -5,6 +5,11 @@ using System.IO;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
 
+// It is up to objects that are referenced in this class to 
+// have adequate protection levels on all members, as classes
+// with a reference to manager can call functions from or pass events
+// to classes referenced here.
+
 public class ExperimentManager : MonoBehaviour
 {
     //////////
@@ -45,8 +50,9 @@ public class ExperimentManager : MonoBehaviour
     ////////// 
     // global random number source
     public static System.Random rnd = new System.Random();
-    public dynamic systemConfig;
-    private ExperimentBase exp;
+    public dynamic systemConfig = null;
+    public dynamic experimentConfig = null;
+    public ExperimentBase exp;
 
     //////////
     // Known experiment GameObjects to
@@ -56,8 +62,6 @@ public class ExperimentManager : MonoBehaviour
     // Experiment Manager.
     //////////
 
-    // TODO 
-    // event recorders
     public RamulatorInterface ramInt;
     public Syncbox syncBox;
     public VoiceActivityDetection voiceActity;
@@ -69,9 +73,6 @@ public class ExperimentManager : MonoBehaviour
     public WorldDataReporter worldInput;
     public UIDataReporter uiInput;
     // experiment Launcher
-    // audio input
-    // text display
-    // launcher panel
 
     // Start is called before the first frame update
     void Start()
@@ -155,20 +156,29 @@ public class ExperimentManager : MonoBehaviour
     }
 
     //////////
-    // Funtions to be called from other
+    // Functions to be called from other
     // scripts through the messaging system
     //////////
 
-    public void launchExperiment(string scene) {
+    // TODO: deal with error states if conditions not met
+    public void launchExperiment() {
         // launch scene with exp, 
         // instantiate experiment,
         // call start function
+
+        // Check if settings are loaded
+        if(experimentConfig != null) {
+            SceneManager.LoadScene(experimentConfig.experimentScene);
+        }
         return;
     }
 
     public void launchLauncher() {
-        Debug.Log(systemConfig.launcherScene);
-        Debug.Log(systemConfig.launcherScene.GetType());
         SceneManager.LoadScene(systemConfig.launcherScene);
+    }
+
+    public void loadExperimentConfig(string name) {
+        TextAsset json = Resources.Load<TextAsset>(name);
+        experimentConfig = FlexibleConfig.loadFromText(json.text); 
     }
 }

@@ -45,6 +45,7 @@ public class RepFRExperiment : ExperimentBase {
 //    if ( !Running() ) {
 //      break;
 //    }
+    manager.textDisplayer.DisplayText("Debug Message", "RepFR Launched");
   }
 
 
@@ -99,4 +100,3 @@ public class RepFRExperiment : ExperimentBase {
     return session;
   }
 }
-

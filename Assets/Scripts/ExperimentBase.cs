@@ -1,13 +1,27 @@
 using System.Collections;
 
-// TODO inherit from class with event loops.
-public abstract class ExperimentBase {
-//  protected ExperimentManager exp_man;
+public abstract class ExperimentBase : EventLoop {
+    public ExperimentManager manager;
+    public abstract void Run();
 
-//  public ExperimentBase(ExperimentManager set_exp_man) {
-//    exp_man = set_exp_man;
-//  }
+    public string experimentRoot() {
+        return manager.experimentConfig.experimentRoot; 
+    }
 
-  public abstract void Run();
+    public string experimentPath() {
+        string root = experimentRoot();
+        string dir = System.IO.Path.Combine(root, manager.experimentConfig.experimentName);
+        return dir;
+    }
+    public string participantPath(string participant) {
+        string dir = experimentPath();
+        dir = System.IO.Path.Combine(dir, manager.experimentConfig.participant);
+        return dir;
+    }
+
+    public string sessionPath(string participant, int session) {
+        string dir = participantPath(participant);
+        dir = System.IO.Path.Combine(dir, session.ToString() + ".session");
+        return dir;
+    }
 }
-

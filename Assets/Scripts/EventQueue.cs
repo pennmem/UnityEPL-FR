@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Threading;
 using System;
 public class EventQueue {
     protected ConcurrentQueue<EventBase> eventQueue;
@@ -50,4 +51,23 @@ public class EventBase {
     }
 
     public EventBase() {}
+}
+
+public class RepeatingEvent : EventBase {
+
+    public volatile int iterations;
+
+    public int maxIterations;
+    public int delay;
+    public int interval;
+    public ManualResetEventSlim flag;
+
+    public override void Invoke() {
+        if(!(maxIterations < 0) && (iterations >= maxIterations)) {
+            flag.Set();
+            return;
+        }
+        iterations += 1;
+        base.Invoke();
+    }
 }
