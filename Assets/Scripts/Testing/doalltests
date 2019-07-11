@@ -1,19 +1,39 @@
-#!/bin/bash
+#!/usr/bin/env python3
 
-LOGFILE="log/tests_$(date +%F)"
+import datetime
+import os
+import subprocess
+import sys
 
-if [ "$(echo run_*)" == "" ]
-then
-  echo "Run $0 from within the Testing directory."
-  exit -1
-fi
+# Gather current directory files starting with run_ but not ending in .meta
+dirlist = os.listdir('.')
+runlist = [f for f in dirlist if ((f[0:4]=='run_') and (f[-5:]!='.meta'))]
 
-for file in run_*
-do
-  echo "--- $file --- $(date +%F_%H-%M-%S)"
-  ./$file
-done 2>&1 >"$LOGFILE"
+if len(runlist) == 0:
+  sys.exit('Run this from within the Testing directory.')
 
-echo "Results in $LOGFILE"
-grep -n -H "ERROR" "$LOGFILE"
+# Date-stamped log file
+date = datetime.datetime.today().strftime('%Y-%m-%d')
+logfile = 'log/tests_' + date
+
+# Run all tests
+with open(logfile, 'w') as log:
+  for run in runlist:
+    time = datetime.datetime.today().strftime('%Y-%m-%d_%H-%M-%S')
+    log.write('### ' + run + ' ### ' + time + '\n')
+    log.flush()
+    p = subprocess.Popen('./'+run, stdout=log, stderr=log)
+    p.wait()
+
+print('Results in ' + logfile)
+
+# Highlight the log line numbers of tests with an 'ERROR' or 'WARNING' message.
+# Also highlights compilation errors.
+with open(logfile, 'r') as log:
+  linenum = 0
+  for line in log:
+    linenum += 1
+    lc_line = line.upper()
+    if ('ERROR' in lc_line) or ('WARNING' in lc_line):
+      print(str(linenum) + ' : ' + line.strip())
 
