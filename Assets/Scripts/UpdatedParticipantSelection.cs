@@ -18,6 +18,11 @@ public class UpdatedParticipantSelection : MonoBehaviour
     public static int nextListNumber = 0;
     public static IronPython.Runtime.List nextWords = null;
 
+    void Awake() {
+        GameObject mgr = GameObject.Find("ExperimentManager");
+        manager = (ExperimentManager)mgr.GetComponent("ExperimentManager");
+    }
+
     void Start()
     {
         FindParticipants();

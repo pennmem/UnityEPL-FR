@@ -16,6 +16,10 @@ public class UpdatedLaunchExperiment : MonoBehaviour
     public UnityEngine.GameObject greyedLaunchButton;
     public UnityEngine.GameObject loadingButton;
 
+    void Awake() {
+        GameObject mgr = GameObject.Find("ExperimentManager");
+        manager = (ExperimentManager)mgr.GetComponent("ExperimentManager");
+    }
     void Update()
     {
         launchButton.SetActive(IsValidParticipantName(participantNameInput.text));

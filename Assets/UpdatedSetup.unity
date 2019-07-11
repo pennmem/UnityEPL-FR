@@ -3964,7 +3964,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1610158338}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d4e8fe808ba3045739681c0c15b26f6e, type: 3}
+  m_Script: {fileID: 11500000, guid: 4c243d320f848412aaf280ca27e0c6cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   manager: {fileID: 0}
@@ -4370,7 +4370,7 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
+      - m_Target: {fileID: 1727018816}
         m_MethodName: ParticipantSelected
         m_Mode: 1
         m_Arguments:

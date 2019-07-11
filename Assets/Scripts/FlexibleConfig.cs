@@ -13,11 +13,17 @@ public class FlexibleConfig {
         dynamic settings = new ExpandoObject();
 
         foreach(JProperty prop in cfg.Properties()) {
-            Type valueType = prop.Value.GetType();
 
             // convert from JObject types to .NET internal types
             // and add to dynamic settings object
-            ((IDictionary<string, object>)settings).Add(prop.Name, prop.Value.ToObject<object>());
+
+            if(prop.Value is Newtonsoft.Json.Linq.JArray) {
+                ((IDictionary<string, object>)settings).Add(prop.Name, prop.Value.ToObject<string[]>());
+                break;
+            }
+            else {
+                ((IDictionary<string, object>)settings).Add(prop.Name, prop.Value.ToObject<object>());
+            }
         }
 
         return settings;

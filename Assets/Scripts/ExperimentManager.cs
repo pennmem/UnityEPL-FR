@@ -180,5 +180,8 @@ public class ExperimentManager : MonoBehaviour
     public void loadExperimentConfig(string name) {
         TextAsset json = Resources.Load<TextAsset>(name);
         experimentConfig = FlexibleConfig.loadFromText(json.text); 
+
+        // TODO: instantiate experiment
+        exp = new RepFRExperiment();
     }
 }

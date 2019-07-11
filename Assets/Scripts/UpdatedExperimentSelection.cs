@@ -14,6 +14,10 @@ public class UpdatedExperimentSelection : MonoBehaviour
 
     void Awake()
     {
+        
+        GameObject mgr = GameObject.Find("ExperimentManager");
+        manager = (ExperimentManager)mgr.GetComponent("ExperimentManager");
+
         UnityEngine.UI.Dropdown dropdown = GetComponent<UnityEngine.UI.Dropdown>();
 
         string[] experiments = manager.systemConfig.availableExperiments;
@@ -28,8 +32,6 @@ public class UpdatedExperimentSelection : MonoBehaviour
 
         manager.mainEvents.Do(new EventBase<string>(manager.loadExperimentConfig, dropdown.captionText.text));
         
-        Debug.Log("Now using experiment: " + manager.experimentConfig.experimentName);
-
         activatable.SetActive(true);
     }
 }
