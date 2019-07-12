@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -10,7 +11,6 @@ using UnityEngine;
 public class UpdatedExperimentSelection : MonoBehaviour
 {
     public ExperimentManager manager;
-    public GameObject activatable;
 
     void Awake()
     {
@@ -22,6 +22,7 @@ public class UpdatedExperimentSelection : MonoBehaviour
 
         string[] experiments = manager.systemConfig.availableExperiments;
 
+        dropdown.AddOptions(new List<string>(new string[] {"Select Task..."}));
         dropdown.AddOptions(new List<string>(experiments));
         SetExperiment();
     }
@@ -30,8 +31,9 @@ public class UpdatedExperimentSelection : MonoBehaviour
     {
         UnityEngine.UI.Dropdown dropdown = GetComponent<UnityEngine.UI.Dropdown>();
 
-        manager.mainEvents.Do(new EventBase<string>(manager.loadExperimentConfig, dropdown.captionText.text));
-        
-        activatable.SetActive(true);
+        if(dropdown.captionText.text != "Select Task...") {
+            manager.mainEvents.Do(new EventBase<string>(manager.loadExperimentConfig, 
+                dropdown.captionText.text));
+        }
     }
 }

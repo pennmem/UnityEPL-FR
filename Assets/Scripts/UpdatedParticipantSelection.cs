@@ -35,15 +35,17 @@ public class UpdatedParticipantSelection : MonoBehaviour
         dropdown.ClearOptions();
         dropdown.AddOptions(new List<string>() { "Select participant...", "New participant" });
 
-        string participantDirectory = manager.exp.experimentPath();
-        System.IO.Directory.CreateDirectory(participantDirectory);
-        string[] filepaths = System.IO.Directory.GetDirectories(participantDirectory);
-        string[] filenames = new string[filepaths.Length];
+        if(!(manager.experimentConfig == null)) {
+            string participantDirectory = manager.fileManager.experimentPath();
+            System.IO.Directory.CreateDirectory(participantDirectory);
+            string[] filepaths = System.IO.Directory.GetDirectories(participantDirectory);
+            string[] filenames = new string[filepaths.Length];
 
-        for (int i = 0; i < filepaths.Length; i++)
-            filenames[i] = System.IO.Path.GetFileName(filepaths[i]);
+            for (int i = 0; i < filepaths.Length; i++)
+                filenames[i] = System.IO.Path.GetFileName(filepaths[i]);
 
-        dropdown.AddOptions(new List<string>(filenames));
+            dropdown.AddOptions(new List<string>(filenames));
+        }
         dropdown.value = 0;
         dropdown.RefreshShownValue();
 
@@ -71,13 +73,13 @@ public class UpdatedParticipantSelection : MonoBehaviour
         UnityEngine.UI.Dropdown dropdown = GetComponent<UnityEngine.UI.Dropdown>();
         string selectedParticipant = dropdown.captionText.text;
 
-        if (!System.IO.Directory.Exists(manager.exp.participantPath(selectedParticipant)))
+        if (!System.IO.Directory.Exists(manager.fileManager.participantPath(selectedParticipant)))
             throw new UnityException("You tried to load a participant that doesn't exist.");
 
         participantNameInput.text = selectedParticipant;
 
         nextSessionNumber = 0;
-        while (System.IO.File.Exists(manager.exp.sessionPath(selectedParticipant, nextSessionNumber)))
+        while (System.IO.File.Exists(manager.fileManager.sessionPath(selectedParticipant, nextSessionNumber)))
         {
             nextSessionNumber++;
         }
@@ -90,7 +92,7 @@ public class UpdatedParticipantSelection : MonoBehaviour
     {
         UnityEngine.UI.Dropdown dropdown = GetComponent<UnityEngine.UI.Dropdown>();
         string selectedParticipant = dropdown.captionText.text;
-        string sessionFilePath = manager.exp.sessionPath(selectedParticipant, nextSessionNumber);
+        string sessionFilePath = manager.fileManager.sessionPath(selectedParticipant, nextSessionNumber);
         if (System.IO.File.Exists(sessionFilePath))
         {
             // TODO: resuming experiment

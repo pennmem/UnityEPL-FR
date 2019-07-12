@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using System.IO;
@@ -30,9 +31,8 @@ public class ExperimentManager : MonoBehaviour
             throw new System.InvalidOperationException("Cannot create multiple ExperimentManager Objects");
         } else {
             _instance = this;
+            DontDestroyOnLoad(this.gameObject);
         }
-
-        DontDestroyOnLoad(this.gameObject);
     }
 
     //////////
@@ -52,7 +52,9 @@ public class ExperimentManager : MonoBehaviour
     public static System.Random rnd = new System.Random();
     public dynamic systemConfig = null;
     public dynamic experimentConfig = null;
-    public ExperimentBase exp;
+    private ExperimentBase exp;
+
+    public FileManager fileManager;
 
     //////////
     // Known experiment GameObjects to
@@ -72,7 +74,6 @@ public class ExperimentManager : MonoBehaviour
     public PeripheralInputReporter peripheralInput;
     public WorldDataReporter worldInput;
     public UIDataReporter uiInput;
-    // experiment Launcher
 
     // Start is called before the first frame update
     void Start()
@@ -84,6 +85,12 @@ public class ExperimentManager : MonoBehaviour
 
         // Unity interal event handling
         SceneManager.sceneLoaded += onSceneLoaded;
+
+        if(systemConfig.isTest) {
+            fileManager = new TestFileManager(this);
+        } else {
+            fileManager = new FileManager(this);
+        }
 
         Debug.Log("Experiment Manager Up");
 
@@ -121,21 +128,6 @@ public class ExperimentManager : MonoBehaviour
             Debug.Log("Found InputReporters");
         }
 
-        // syncbox
-        GameObject sBox = GameObject.Find("Syncbox");
-        if(sBox != null) {
-            syncBox = sBox.GetComponent<Syncbox>();
-            Debug.Log("Found SyncboxInterface");
-        }
-
-        // ramulator (stimbox)
-        GameObject ramulator = GameObject.Find("RamulatorInterface");
-        if(ramulator != null) {
-            ramInt = ramulator.GetComponent<RamulatorInterface>();
-            Debug.Log("Found RamulatorInterface");
-        }
-
-        // audio recorder
         GameObject voice = GameObject.Find("VAD");
         if(voice != null) {
            voiceActity = voice.GetComponent<VoiceActivityDetection>(); 
@@ -168,6 +160,9 @@ public class ExperimentManager : MonoBehaviour
 
         // Check if settings are loaded
         if(experimentConfig != null) {
+            // TODO: instantiate experiment by name
+            exp = new RepFRExperiment();
+
             SceneManager.LoadScene(experimentConfig.experimentScene);
         }
         return;
@@ -180,8 +175,51 @@ public class ExperimentManager : MonoBehaviour
     public void loadExperimentConfig(string name) {
         TextAsset json = Resources.Load<TextAsset>(name);
         experimentConfig = FlexibleConfig.loadFromText(json.text); 
+    }
+}
 
-        // TODO: instantiate experiment
-        exp = new RepFRExperiment();
+
+//////////
+// Classes to manage the filesystem in
+// which experiment data is stored
+/////////
+
+public class FileManager {
+
+    ExperimentManager manager;
+
+    public FileManager(ExperimentManager _manager) {
+        manager = _manager;
+    }
+
+    public virtual string experimentRoot() {
+        // TODO: use . directory?
+        return manager.experimentConfig.experimentRoot; 
+    }
+
+    public string experimentPath() {
+        string root = experimentRoot();
+        string dir = System.IO.Path.Combine(root, manager.experimentConfig.experimentName);
+        return dir;
+    }
+    public string participantPath(string participant) {
+        string dir = experimentPath();
+        dir = System.IO.Path.Combine(dir, manager.experimentConfig.participant);
+        return dir;
+    }
+
+    public string sessionPath(string participant, int session) {
+        string dir = participantPath(participant);
+        dir = System.IO.Path.Combine(dir, session.ToString() + ".session");
+        return dir;
+    }
+}
+
+public class TestFileManager : FileManager {
+    public TestFileManager(ExperimentManager _manager) : base(_manager) {
+    }
+
+    public override string experimentRoot() {
+        return System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop);
     }
 }

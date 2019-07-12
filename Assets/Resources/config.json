@@ -1,6 +1,5 @@
 {
-    "isTest": false,
-    "legacyExperiment": true,
+    "isTest": true,
     "launcherScene": "UpdatedSetup",
     "availableExperiments": ["RepFR"]
 }

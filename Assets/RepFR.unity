@@ -251,7 +251,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: MemoryWordCanvas
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 114864122344205036, guid: e6672ad97ff294adba0eb53a61d1502f, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: e6672ad97ff294adba0eb53a61d1502f, type: 3}
 --- !u!1 &1668755671
 GameObject:
