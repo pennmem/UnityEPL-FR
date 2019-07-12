@@ -9,6 +9,7 @@ public class TextDisplayer : MonoBehaviour
     /// 
     /// Single string argument is the new text which is being displayed.
     /// </summary>
+    ExperimentManager manager;
     public delegate void TextDisplayed(string text);
     public static TextDisplayed OnText;
 

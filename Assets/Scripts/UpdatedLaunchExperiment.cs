@@ -7,7 +7,7 @@ using UnityEngine;
 /// 
 /// DoLaunchExperiment is responsible for calling EditableExperiment.ConfigureExperiment with the proper parameters.
 /// </summary>
-public class LaunchExperiment : MonoBehaviour
+public class UpdatedLaunchExperiment : MonoBehaviour
 {
     public ExperimentManager manager;
     public GameObject cantGoPrompt;
@@ -16,6 +16,10 @@ public class LaunchExperiment : MonoBehaviour
     public UnityEngine.GameObject greyedLaunchButton;
     public UnityEngine.GameObject loadingButton;
 
+    void Awake() {
+        GameObject mgr = GameObject.Find("ExperimentManager");
+        manager = (ExperimentManager)mgr.GetComponent("ExperimentManager");
+    }
     void Update()
     {
         launchButton.SetActive(IsValidParticipantName(participantNameInput.text));
@@ -30,24 +34,17 @@ public class LaunchExperiment : MonoBehaviour
 
     public void DoLaunchExperiment()
     {
-        if(manager.systemConfig.legacyExperiment) {
-            StartCoroutine(LaunchExperimentCoroutine());
-        }
-    }
-
-    private IEnumerator LaunchExperimentCoroutine()
-    {
-        if (participantNameInput.text.Equals(""))
+       if (participantNameInput.text.Equals(""))
         {
             cantGoPrompt.GetComponent<UnityEngine.UI.Text>().text = "Please enter a participant";
             cantGoPrompt.SetActive(true);
-            yield break;
+            return;
         }
         if (!IsValidParticipantName(participantNameInput.text))
         {
             cantGoPrompt.GetComponent<UnityEngine.UI.Text>().text = "Please enter a valid participant name (ex. R1123E or LTP123)";
             cantGoPrompt.SetActive(true);
-            yield break;
+            return;
         }
 
         int sessionNumber = ParticipantSelection.nextSessionNumber;
@@ -55,24 +52,18 @@ public class LaunchExperiment : MonoBehaviour
         {
             cantGoPrompt.GetComponent<UnityEngine.UI.Text>().text = "That session has already been completed.";
             cantGoPrompt.SetActive(true);
-            yield break;
-        }
+            return;
+        } 
 
-        UnityEPL.AddParticipant(participantNameInput.text);
-        UnityEPL.SetSessionNumber(sessionNumber);
+        manager.experimentConfig.participant = participantNameInput.text;
+        manager.experimentConfig.session = sessionNumber;
 
-        int listNumber = ParticipantSelection.nextListNumber;
-        IronPython.Runtime.List words = ParticipantSelection.nextWords;
+        // TODO: resume experiment logic
 
-
-        // TODO: replace with settings
-        EditableExperiment.ConfigureExperiment((ushort)(listNumber * 12), (ushort)sessionNumber, newWords: words);
         launchButton.SetActive(false);
         loadingButton.SetActive(true);
-        yield return null;
-        
-        //manager.expEvtMgr.triggerEvent("launch", settings)
-        UnityEngine.SceneManagement.SceneManager.LoadScene(FRExperimentSettings.ExperimentNameToExperimentScene(UnityEPL.GetExperimentName()));
+
+        manager.mainEvents.Do(new EventBase(manager.launchExperiment));
     }
 
     private bool IsValidParticipantName(string name)

@@ -41,10 +41,15 @@ public class RepFRExperiment : ExperimentBase {
       new List<string>(Enumerable.Repeat(string.Empty, words_per_list));
   }
 
+  public RepFRExperiment() {
+    // Instantiation Testing Only
+  }
+
   public override void Run() {
 //    if ( !Running() ) {
 //      break;
 //    }
+    manager.textDisplayer.DisplayText("Debug Message", "RepFR Launched");
   }
 
 
@@ -99,4 +104,3 @@ public class RepFRExperiment : ExperimentBase {
     return session;
   }
 }
-

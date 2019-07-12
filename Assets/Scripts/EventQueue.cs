@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Threading;
 using System;
 public class EventQueue {
     protected ConcurrentQueue<EventBase> eventQueue;
@@ -24,21 +25,6 @@ public class EventQueue {
     }
 }
 
-// Wrapper class to allow different delegate signatures
-// in Event Manager
-public class EventBase<T> : EventBase {
-    protected new Action<T> EventAction;
-    protected T args;
-
-    public override void Invoke() {
-        EventAction?.Invoke(args);
-    }
-    public EventBase(Action<T> thisAction, T _args) {
-        EventAction += thisAction;
-        args = _args;
-    }
-}
-
 public class EventBase {
     protected Action EventAction;
     public virtual void Invoke() {
@@ -46,8 +32,91 @@ public class EventBase {
     }
 
     public EventBase(Action thisAction) {
-        EventAction += thisAction;
+        EventAction = thisAction;
     }
 
     public EventBase() {}
+}
+
+// Wrapper class to allow different delegate signatures
+// in Event Manager
+public class EventBase<T> : EventBase {
+    protected new Action<T> EventAction;
+    protected T t;
+
+    public override void Invoke() {
+        EventAction?.Invoke(t);
+    }
+    public EventBase(Action<T> thisAction, T _t) {
+        EventAction += thisAction;
+        t = _t;
+    }
+}
+
+public class EventBase<T, U> : EventBase {
+    protected new Action<T, U> EventAction;
+    protected U u;
+    protected T t;
+
+    public override void Invoke() {
+        EventAction?.Invoke(t, u);
+    }
+    public EventBase(Action<T, U> thisAction, T _t, U _u) {
+        EventAction += thisAction;
+        t = _t;
+        u = _u;
+    }
+}
+
+public class EventBase<T, U, V> : EventBase {
+    protected new Action<T, U, V> EventAction;
+    protected T t;
+    protected U u;
+    protected V v;
+
+    public override void Invoke() {
+        EventAction?.Invoke(t,u,v);
+    }
+    public EventBase(Action<T, U, V> thisAction, T _t, U _u, V _v) {
+        EventAction += thisAction;
+        t = _t;
+        u = _u;
+        v = _v;
+    }
+}
+public class EventBase<T, U, V, W> : EventBase {
+    protected new Action<T, U, V, W> EventAction;
+    protected T t;
+    protected U u;
+    protected V v;
+    protected W w;
+
+    public override void Invoke() {
+        EventAction?.Invoke(t, u, v, w);
+    }
+    public EventBase(Action<T, U, V, W> thisAction, T _t, U _u, V _v, W _w) {
+        EventAction += thisAction;
+        t = _t;
+        u = _u;
+        v = _v;
+        w = _w;
+    }
+}
+public class RepeatingEvent : EventBase {
+
+    public volatile int iterations;
+
+    public int maxIterations;
+    public int delay;
+    public int interval;
+    public ManualResetEventSlim flag;
+
+    public override void Invoke() {
+        if(!(maxIterations < 0) && (iterations >= maxIterations)) {
+            flag.Set();
+            return;
+        }
+        iterations += 1;
+        base.Invoke();
+    }
 }

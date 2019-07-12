@@ -631,7 +631,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1727018816}
+      - m_Target: {fileID: 0}
         m_MethodName: IncreaseListNumber
         m_Mode: 1
         m_Arguments:
@@ -1854,7 +1854,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1727018816}
+      - m_Target: {fileID: 0}
         m_MethodName: DecreaseSessionNumber
         m_Mode: 1
         m_Arguments:
@@ -2919,9 +2919,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 1015384744}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 96724414f1dbc4afaa1374cf0446c600, type: 3}
+  m_Script: {fileID: 11500000, guid: 7d822bfc3548a4cc4a765b8cffdc17a3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  manager: {fileID: 0}
   activatable: {fileID: 304835569}
 --- !u!114 &1015384747
 MonoBehaviour:
@@ -3673,7 +3674,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1727018816}
+      - m_Target: {fileID: 0}
         m_MethodName: DecreaseListNumber
         m_Mode: 1
         m_Arguments:
@@ -3963,7 +3964,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1610158338}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d4e8fe808ba3045739681c0c15b26f6e, type: 3}
+  m_Script: {fileID: 11500000, guid: 4c243d320f848412aaf280ca27e0c6cb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   manager: {fileID: 0}
@@ -4430,7 +4431,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1727018811}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 734aa7f2412724df5b45e6bfd91ffaad, type: 3}
+  m_Script: {fileID: 11500000, guid: 98f07ae7ee7c542abb16abe8ade77d9d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   participantNameInput: {fileID: 635605958}
@@ -5281,7 +5282,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1727018816}
+      - m_Target: {fileID: 0}
         m_MethodName: IncreaseSessionNumber
         m_Mode: 1
         m_Arguments:

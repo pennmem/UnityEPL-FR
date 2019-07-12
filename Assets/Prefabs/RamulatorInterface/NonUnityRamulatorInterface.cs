@@ -6,7 +6,7 @@ using System.Text;
 using UnityEngine;
 using NetMQ;
 
-public class RamulatorInterface : MonoBehaviour
+public class NonUnityRamulatorInterface : EventLoop 
 {
     public ExperimentManager manager;
 
@@ -16,14 +16,47 @@ public class RamulatorInterface : MonoBehaviour
     public GameObject ramulatorWarning;
 
     //how long to wait for ramulator to connect
-    const int timeoutDelay = 600;
-    const int unreceivedHeartbeatsToQuit = 8;
+    int timeoutDelay = 600;
+    int heartbeatThresh = 8;
 
     private int unreceivedHeartbeats = 0;
 
     private NetMQ.Sockets.PairSocket zmqSocket;
-    private const string address = "tcp://*:8889";
+    private string address = "tcp://*:8889";
 
+    public NonUnityRamulatorInterface(dynamic config=null) {
+        if(config != null) {
+            // TODO: validate config
+            address = config.address;
+            timeoutDelay = config.timeoutDelay;
+            heartbeatThresh = config.heartbeatThresh;
+        }
+
+        Start();
+    }
+
+    // Class to wrap built in NetMQ functions in
+    // Event passing structure. Uses a delegate for
+    // NetMQ functions and handles out and return
+    // values using a class so that changes are 
+    // visible in the scope creating the event
+    class ReceivedMessage {
+        public string msg="";
+        public bool success=false;
+        public delegate bool ListenerDelegate(out string str);
+
+        ListenerDelegate Listener;
+
+        public void Listen(ReceivedMessage msgObject) {
+            this.success = Listener(out msg);
+        }
+
+        public ReceivedMessage(ListenerDelegate _Listener) {
+            Listener = new ListenerDelegate(_Listener);
+        }
+    }
+
+    // TODO:
     void OnApplicationQuit()
     {
         if (zmqSocket != null)
@@ -34,58 +67,59 @@ public class RamulatorInterface : MonoBehaviour
     //this coroutine connects to ramulator and communicates how ramulator expects it to
     //in order to start the experiment session.  follow it up with BeginNewTrial and
     //SetState calls
-    public IEnumerator BeginNewSession(int sessionNumber)
+    public void BeginNewSession(int sessionNumber)
     {
         //Connect to ramulator///////////////////////////////////////////////////////////////////
         zmqSocket = new NetMQ.Sockets.PairSocket();
         zmqSocket.Bind(address);
-        //Debug.Log ("socket bound");
+        Debug.Log ("socket bound");
 
-
-        yield return WaitForMessage("CONNECTED", "Ramulated not connected.");
-
+        WaitForMessage("CONNECTED", "Ramulator not connected.");
 
         //SendSessionEvent//////////////////////////////////////////////////////////////////////
         System.Collections.Generic.Dictionary<string, object> sessionData = new Dictionary<string, object>();
-        sessionData.Add("name", UnityEPL.GetExperimentName());
+        sessionData.Add("name", manager.experimentConfig.experimentName);
         sessionData.Add("version", Application.version);
-        sessionData.Add("subject", UnityEPL.GetParticipants()[0]);
+        sessionData.Add("subject", manager.experimentConfig.participant);
         sessionData.Add("session_number", sessionNumber.ToString());
         DataPoint sessionDataPoint = new DataPoint("SESSION", DataReporter.RealWorldTime(), sessionData);
         SendMessageToRamulator(sessionDataPoint.ToJSON());
-        yield return null;
+//        yield return null;
 
 
+        // TODO: not currently supported by event system
         //Begin Heartbeats///////////////////////////////////////////////////////////////////////
-        InvokeRepeating("SendHeartbeat", 0, 1);
+//        InvokeRepeating("SendHeartbeat", 0, 1);
 
 
         //SendReadyEvent////////////////////////////////////////////////////////////////////
         DataPoint ready = new DataPoint("READY", DataReporter.RealWorldTime(), new Dictionary<string, object>());
         SendMessageToRamulator(ready.ToJSON());
-        yield return null;
+//        yield return null;
 
 
-        yield return WaitForMessage("START", "Start signal not received");
+//        yield return WaitForMessage("START", "Start signal not received");
 
 
-        InvokeRepeating("ReceiveHeartbeat", 0, 1);
+//        InvokeRepeating("ReceiveHeartbeat", 0, 1);
 
     }
 
-    private IEnumerator WaitForMessage(string containingString, string errorMessage)
+    private void WaitForMessage(string containingString, string errorMessage)
     {
         ramulatorWarning.SetActive(true);
         ramulatorWarningText.text = "Waiting on Ramulator";
 
-        string receivedMessage = "";
+        ReceivedMessage receivedMessage = new ReceivedMessage(zmqSocket.TryReceiveFrameString); 
         float startTime = Time.time;
-        while (receivedMessage == null || !receivedMessage.Contains(containingString))
+        EventBase<ReceivedMessage> messageEvent = new EventBase<ReceivedMessage>(receivedMessage.Listen, receivedMessage);
+
+        while (!receivedMessage.msg.Contains(containingString))
         {
-            zmqSocket.TryReceiveFrameString(out receivedMessage);
-            if (receivedMessage != "" && receivedMessage != null)
+            Do(messageEvent); // inherited
+            if (receivedMessage.success)
             {
-                string messageString = receivedMessage.ToString();
+                string messageString = receivedMessage.msg; // TODO: needs ToString?
                 Debug.Log("received: " + messageString);
                 ReportMessage(messageString, false);
             }
@@ -95,9 +129,9 @@ public class RamulatorInterface : MonoBehaviour
             {
                 ramulatorWarningText.text = errorMessage;
                 Debug.LogWarning("Timed out waiting for ramulator");
-                yield break;
+                break;
             }
-            yield return null;
+            
         }
         ramulatorWarning.SetActive(false);
     }
@@ -149,7 +183,7 @@ public class RamulatorInterface : MonoBehaviour
     {
         unreceivedHeartbeats = unreceivedHeartbeats + 1;
         Debug.Log("Unreceived heartbeats: " + unreceivedHeartbeats.ToString());
-        if (unreceivedHeartbeats > unreceivedHeartbeatsToQuit)
+        if (unreceivedHeartbeats > heartbeatThresh)
         {
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;

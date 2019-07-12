@@ -1,8 +1,15 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using System.IO;
+using Newtonsoft.Json.Linq;
 using UnityEngine;
+
+// It is up to objects that are referenced in this class to 
+// have adequate protection levels on all members, as classes
+// with a reference to manager can call functions from or pass events
+// to classes referenced here.
 
 public class ExperimentManager : MonoBehaviour
 {
@@ -24,9 +31,8 @@ public class ExperimentManager : MonoBehaviour
             throw new System.InvalidOperationException("Cannot create multiple ExperimentManager Objects");
         } else {
             _instance = this;
+            DontDestroyOnLoad(this.gameObject);
         }
-
-        DontDestroyOnLoad(this.gameObject);
     }
 
     //////////
@@ -44,8 +50,11 @@ public class ExperimentManager : MonoBehaviour
     ////////// 
     // global random number source
     public static System.Random rnd = new System.Random();
-    public dynamic systemConfig;
+    public dynamic systemConfig = null;
+    public dynamic experimentConfig = null;
     private ExperimentBase exp;
+
+    public FileManager fileManager;
 
     //////////
     // Known experiment GameObjects to
@@ -55,8 +64,6 @@ public class ExperimentManager : MonoBehaviour
     // Experiment Manager.
     //////////
 
-    // TODO 
-    // event recorders
     public RamulatorInterface ramInt;
     public Syncbox syncBox;
     public VoiceActivityDetection voiceActity;
@@ -67,21 +74,23 @@ public class ExperimentManager : MonoBehaviour
     public PeripheralInputReporter peripheralInput;
     public WorldDataReporter worldInput;
     public UIDataReporter uiInput;
-    // experiment Launcher
-    // audio input
-    // text display
-    // launcher panel
 
     // Start is called before the first frame update
     void Start()
     {
         TextAsset json = Resources.Load<TextAsset>("config");
-        systemConfig = Helpers.Json.Decode(json.text); 
+        systemConfig = FlexibleConfig.loadFromText(json.text); 
 
         Debug.Log("Config loaded");
 
         // Unity interal event handling
         SceneManager.sceneLoaded += onSceneLoaded;
+
+        if(systemConfig.isTest) {
+            fileManager = new TestFileManager(this);
+        } else {
+            fileManager = new FileManager(this);
+        }
 
         Debug.Log("Experiment Manager Up");
 
@@ -119,21 +128,6 @@ public class ExperimentManager : MonoBehaviour
             Debug.Log("Found InputReporters");
         }
 
-        // syncbox
-        GameObject sBox = GameObject.Find("Syncbox");
-        if(sBox != null) {
-            syncBox = sBox.GetComponent<Syncbox>();
-            Debug.Log("Found SyncboxInterface");
-        }
-
-        // ramulator (stimbox)
-        GameObject ramulator = GameObject.Find("RamulatorInterface");
-        if(ramulator != null) {
-            ramInt = ramulator.GetComponent<RamulatorInterface>();
-            Debug.Log("Found RamulatorInterface");
-        }
-
-        // audio recorder
         GameObject voice = GameObject.Find("VAD");
         if(voice != null) {
            voiceActity = voice.GetComponent<VoiceActivityDetection>(); 
@@ -154,18 +148,78 @@ public class ExperimentManager : MonoBehaviour
     }
 
     //////////
-    // Funtions to be called from other
+    // Functions to be called from other
     // scripts through the messaging system
     //////////
 
-    public void launchExperiment(string scene) {
+    // TODO: deal with error states if conditions not met
+    public void launchExperiment() {
         // launch scene with exp, 
         // instantiate experiment,
         // call start function
+
+        // Check if settings are loaded
+        if(experimentConfig != null) {
+            // TODO: instantiate experiment by name
+            exp = new RepFRExperiment();
+
+            SceneManager.LoadScene(experimentConfig.experimentScene);
+        }
         return;
     }
 
     public void launchLauncher() {
         SceneManager.LoadScene(systemConfig.launcherScene);
+    }
+
+    public void loadExperimentConfig(string name) {
+        TextAsset json = Resources.Load<TextAsset>(name);
+        experimentConfig = FlexibleConfig.loadFromText(json.text); 
+    }
+}
+
+
+//////////
+// Classes to manage the filesystem in
+// which experiment data is stored
+/////////
+
+public class FileManager {
+
+    ExperimentManager manager;
+
+    public FileManager(ExperimentManager _manager) {
+        manager = _manager;
+    }
+
+    public virtual string experimentRoot() {
+        // TODO: use . directory?
+        return manager.experimentConfig.experimentRoot; 
+    }
+
+    public string experimentPath() {
+        string root = experimentRoot();
+        string dir = System.IO.Path.Combine(root, manager.experimentConfig.experimentName);
+        return dir;
+    }
+    public string participantPath(string participant) {
+        string dir = experimentPath();
+        dir = System.IO.Path.Combine(dir, manager.experimentConfig.participant);
+        return dir;
+    }
+
+    public string sessionPath(string participant, int session) {
+        string dir = participantPath(participant);
+        dir = System.IO.Path.Combine(dir, session.ToString() + ".session");
+        return dir;
+    }
+}
+
+public class TestFileManager : FileManager {
+    public TestFileManager(ExperimentManager _manager) : base(_manager) {
+    }
+
+    public override string experimentRoot() {
+        return System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop);
     }
 }
