@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using System.Collections.Concurrent;
 using System.Threading;
+using System.Collections.Concurrent;
 using System;
 public class EventQueue {
     protected ConcurrentQueue<EventBase> eventQueue;
@@ -110,6 +110,13 @@ public class RepeatingEvent : EventBase {
     public int delay;
     public int interval;
     public ManualResetEventSlim flag;
+
+    public RepeatingEvent(Action _action, int _iterations, int _delay, int _interval) : base(_action) {
+        maxIterations = _iterations;
+        delay = _delay;
+        interval = _interval;
+        flag = new ManualResetEventSlim();
+    }
 
     public override void Invoke() {
         if(!(maxIterations < 0) && (iterations >= maxIterations)) {

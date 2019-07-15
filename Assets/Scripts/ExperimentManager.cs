@@ -42,7 +42,6 @@ public class ExperimentManager : MonoBehaviour
     // Non-unity event handling for scripts to 
     // activate ExperimentManager functions
     //////////
-    // FIXME: Organized references
     public EventQueue mainEvents = new EventQueue();
 
     //////////
@@ -51,6 +50,9 @@ public class ExperimentManager : MonoBehaviour
     ////////// 
     // global random number source
     public static System.Random rnd = new System.Random();
+
+    // system configurations, generated on the fly by
+    // FlexibleConfig
     public dynamic systemConfig = null;
     public dynamic experimentConfig = null;
     private ExperimentBase exp;
@@ -65,12 +67,21 @@ public class ExperimentManager : MonoBehaviour
     // Experiment Manager.
     //////////
 
+    //////////
+    // Devices that can be accessed by managed
+    // scripts
+    //////////
     public RamulatorInterface ramInt;
     public Syncbox syncBox;
-    public VoiceActivityDetection voiceActity;
     public VideoControl videoControl;
     public TextDisplayer textDisplayer; // doesn't currently support multiple  text displays
     public SoundRecorder soundRecorder;
+
+    //////////
+    // Input reporters
+    //////////
+    // TODO: refactor into one game object
+    public VoiceActivityDetection voiceActity;
     public ScriptedEventReporter scriptedInput;
     public PeripheralInputReporter peripheralInput;
     public WorldDataReporter worldInput;

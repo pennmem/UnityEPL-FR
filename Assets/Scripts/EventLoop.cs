@@ -11,7 +11,11 @@ public class EventLoop : EventQueue {
     private ManualResetEventSlim wait;
     private ManualResetEventSlim timerInterrupt;
 
+    // Resources for repeating events belonging to this Event Loop.
+    // Event flags should be set and timers disposed at program exit
+    // TODO:
     private ConcurrentBag<Timer> timers = new ConcurrentBag<Timer>();
+    private ConcurrentBag<RepeatingEvent> repeatingEvents = new ConcurrentBag<RepeatingEvent>();
 
     public void Start(){
         // spawn thread
@@ -54,6 +58,7 @@ public class EventLoop : EventQueue {
     // stopped, stopping processing thread will still stop execution
     // of events
     public void DoRepeating(RepeatingEvent thisEvent) {
+        repeatingEvents.Add(thisEvent);
         timers.Add(new Timer(delegate(Object obj){ RepeatingEvent evnt = (RepeatingEvent)obj;
                                                     if(!evnt.flag.IsSet){Do(evnt);} }, 
                                                     thisEvent, thisEvent.delay, thisEvent.interval));
