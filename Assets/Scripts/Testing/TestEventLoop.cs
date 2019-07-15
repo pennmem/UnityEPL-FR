@@ -39,10 +39,15 @@ public class TestingEventLoop {
         loop.DoRepeating(new RepeatingEvent(RepeatingCall, 10, 0, 50));
 
         // Simulating other program work
-        Thread.Sleep(5000);
+        Thread.Sleep(1000);
 
         loop.Stop();
-        loop.Do(new EventBase<Action<string>, string>(CallbackWithArgument, CallbackFunction, "ERROR: Event processed after Stop"));
+        try {
+            loop.Do(new EventBase<Action<string>, string>(CallbackWithArgument, CallbackFunction, "ERROR: Event processed after Stop"));
+        } 
+        catch {
+           Console.WriteLine("SUCCESS: exception thrown when enqueing to stopped loop"); 
+        }
 
 
         if(eventRepeats == 10) {

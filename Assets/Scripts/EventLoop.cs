@@ -9,11 +9,6 @@ using System.Collections.Concurrent;
 public class EventLoop : EventQueue {
     protected volatile bool running = false;
     private ManualResetEventSlim wait;
-    private ManualResetEventSlim timerInterrupt;
-
-    // Resources for repeating events belonging to this Event Loop.
-    // Event flags should be set and timers disposed at program exit
-    // TODO:
     private ConcurrentBag<Timer> timers = new ConcurrentBag<Timer>();
     private ConcurrentBag<RepeatingEvent> repeatingEvents = new ConcurrentBag<RepeatingEvent>();
 
@@ -22,7 +17,6 @@ public class EventLoop : EventQueue {
         running = true;
         Thread loop = new Thread(Loop);
         wait = new ManualResetEventSlim();
-        timerInterrupt = new ManualResetEventSlim();
 
         loop.Start();
     }
@@ -30,7 +24,20 @@ public class EventLoop : EventQueue {
     public void Stop(){
         running = false;
         wait.Set();
-        timerInterrupt.Set();
+        StopTimers();
+    }
+
+    public void StopTimers() {
+        foreach(RepeatingEvent e in repeatingEvents) {
+            e.flag.Set();
+        }
+
+        foreach(Timer t in timers) {
+            t.Dispose();
+        }
+
+        timers = new ConcurrentBag<Timer>();
+        repeatingEvents = new ConcurrentBag<RepeatingEvent>();
     }
 
     protected bool Running() {
@@ -50,18 +57,27 @@ public class EventLoop : EventQueue {
         wait.Dispose();
     }
     public override void Do(EventBase thisEvent) {
-        base.Do(thisEvent);
-        wait.Set();
+        if(Running()) {
+            base.Do(thisEvent);
+            wait.Set();
+        } else {
+            throw new Exception("Can't enqueue an event to a non running Loop");
+        }
     }
 
     // enqueues repeating event at set intervals. If timer isn't
     // stopped, stopping processing thread will still stop execution
     // of events
     public void DoRepeating(RepeatingEvent thisEvent) {
-        repeatingEvents.Add(thisEvent);
-        timers.Add(new Timer(delegate(Object obj){ RepeatingEvent evnt = (RepeatingEvent)obj;
-                                                    if(!evnt.flag.IsSet){Do(evnt);} }, 
-                                                    thisEvent, thisEvent.delay, thisEvent.interval));
+        // timers should only be created if running
+        if(Running()) {
+            repeatingEvents.Add(thisEvent);
+            timers.Add(new Timer(delegate(Object obj){ RepeatingEvent evnt = (RepeatingEvent)obj;
+                                                        if(!evnt.flag.IsSet){Do(evnt);} }, 
+                                                        thisEvent, thisEvent.delay, thisEvent.interval));
+        } else {
+            throw new Exception("Can't enqueue an event to a non running Loop");
+        }
     }
 
     public EventLoop() {
