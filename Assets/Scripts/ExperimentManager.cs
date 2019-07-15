@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEngine.SceneManagement;
 using System.IO;
 using Newtonsoft.Json.Linq;
@@ -41,7 +42,7 @@ public class ExperimentManager : MonoBehaviour
     // Non-unity event handling for scripts to 
     // activate ExperimentManager functions
     //////////
-    // FIXME: terrible name
+    // FIXME: Organized references
     public EventQueue mainEvents = new EventQueue();
 
     //////////
@@ -212,6 +213,15 @@ public class FileManager {
         string dir = participantPath(participant);
         dir = System.IO.Path.Combine(dir, session.ToString() + ".session");
         return dir;
+    }
+
+    public bool isValidParticipant(string code) {
+        if(manager.experimentConfig == null) {
+            return false;
+        }
+        Regex rx = new Regex(@"^" + manager.experimentConfig.prefix +@"\d{1,4}$");
+
+        return rx.IsMatch(code);
     }
 }
 

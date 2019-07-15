@@ -22,16 +22,17 @@ public class UpdatedLaunchExperiment : MonoBehaviour
     }
     void Update()
     {
-        launchButton.SetActive(IsValidParticipantName(participantNameInput.text));
+        launchButton.SetActive(isValidParticipant(participantNameInput.text));
         greyedLaunchButton.SetActive(!launchButton.activeSelf);
 
-        if (IsValidParticipantName(participantNameInput.text))
+        if (isValidParticipant(participantNameInput.text))
         {
             int sessionNumber = ParticipantSelection.nextSessionNumber;
             launchButton.GetComponentInChildren<UnityEngine.UI.Text>().text = "Start session " + sessionNumber.ToString();
         }
     }
 
+    // activated by UI launch button
     public void DoLaunchExperiment()
     {
        if (participantNameInput.text.Equals(""))
@@ -40,7 +41,7 @@ public class UpdatedLaunchExperiment : MonoBehaviour
             cantGoPrompt.SetActive(true);
             return;
         }
-        if (!IsValidParticipantName(participantNameInput.text))
+        if (!isValidParticipant(participantNameInput.text))
         {
             cantGoPrompt.GetComponent<UnityEngine.UI.Text>().text = "Please enter a valid participant name (ex. R1123E or LTP123)";
             cantGoPrompt.SetActive(true);
@@ -66,15 +67,8 @@ public class UpdatedLaunchExperiment : MonoBehaviour
         manager.mainEvents.Do(new EventBase(manager.launchExperiment));
     }
 
-    private bool IsValidParticipantName(string name)
+    private bool isValidParticipant(string name)
     {
-        bool isTest = name.Equals("TEST");
-        if (isTest)
-            return true;
-        if (name.Length != 6)
-            return false;
-        bool isValidRAMName = name[0].Equals('R') && name[1].Equals('1') && char.IsDigit(name[2]) && char.IsDigit(name[3]) && char.IsDigit(name[4]) && char.IsUpper(name[5]);
-        bool isValidSCALPName = char.IsUpper(name[0]) && char.IsUpper(name[1]) && char.IsUpper(name[2]) && char.IsDigit(name[3]) && char.IsDigit(name[4]) && char.IsDigit(name[5]);
-        return isValidRAMName || isValidSCALPName;
+        return manager.fileManager.isValidParticipant(name);
     }
 }

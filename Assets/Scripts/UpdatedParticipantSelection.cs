@@ -18,14 +18,23 @@ public class UpdatedParticipantSelection : MonoBehaviour
     public static int nextListNumber = 0;
     public static IronPython.Runtime.List nextWords = null;
 
+    // assumes that experiment names are unique
+    private string currentExperiment;
+
     void Awake() {
         GameObject mgr = GameObject.Find("ExperimentManager");
         manager = (ExperimentManager)mgr.GetComponent("ExperimentManager");
+
+        FindParticipants();
     }
 
-    void Start()
-    {
-        FindParticipants();
+    void Update() {
+
+        // update participants when new experiments are loaded
+        if((manager.experimentConfig != null) && (currentExperiment != manager.experimentConfig.experimentName)) {
+            currentExperiment = manager.experimentConfig.experimentName;
+            FindParticipants();
+        }
     }
 
     public void FindParticipants()
