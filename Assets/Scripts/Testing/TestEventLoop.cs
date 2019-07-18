@@ -4,7 +4,7 @@ using System.Threading;
 public class TestingEventLoop {
     public static int eventRepeats = 0;
     public static void NoArguments() {
-        Console.WriteLine("SUCCESS: Event Without Arguments");
+                Console.WriteLine("SUCCESS: Event Without Arguments");
     }
 
     public static void Callback(Action callback) {

@@ -1,6 +1,8 @@
 {
     "experimentRoot": "/Users/ckeane1/Desktop",
+    "experimentClass": "RepFRExperiment",
     "experimentName": "RepFR",
     "experimentScene": "RepFR",
-    "prefix": "test"
+    "prefix": "test",
+    "wordpool": "ram_wordpool_en.txt"
 }

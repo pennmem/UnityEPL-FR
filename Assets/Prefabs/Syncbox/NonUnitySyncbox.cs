@@ -27,6 +27,7 @@ public class NonUnitySyncbox : EventLoop
     private const int SECONDS_TO_MILLISECONDS = 1000;
 
     private Thread syncpulseThread;
+    private ManualResetEventSlim flag;
 
     public int testField;
 
@@ -34,12 +35,15 @@ public class NonUnitySyncbox : EventLoop
         Debug.Log(Marshal.PtrToStringAuto (OpenUSB()));
         Debug.Log(testField);
 
+        flag = new ManualResetEventSlim();
 
         syncpulseThread = new Thread(Pulse);
+        syncpulseThread.Start();
+        StopPulse();
     }
 
     void StartPulse() {
-        syncpulseThread.Start();
+        flag.Set();
     }
 
 	void Pulse ()
@@ -47,7 +51,8 @@ public class NonUnitySyncbox : EventLoop
         System.Random random = new System.Random();
 
         //delay before starting pulses
-        Thread.Sleep((int)(PULSE_START_DELAY*SECONDS_TO_MILLISECONDS));
+        flag.Reset();
+        flag.Wait((int)(PULSE_START_DELAY*SECONDS_TO_MILLISECONDS));
 		while (true)
         {
             //pulse
@@ -57,11 +62,12 @@ public class NonUnitySyncbox : EventLoop
 
             //wait a random time between min and max
             float timeBetweenPulses = (float)(TIME_BETWEEN_PULSES_MIN + (random.NextDouble() * (TIME_BETWEEN_PULSES_MAX - TIME_BETWEEN_PULSES_MIN)));
-            Thread.Sleep((int)(timeBetweenPulses * SECONDS_TO_MILLISECONDS));
+            flag.Reset();
+            flag.Wait((int)(timeBetweenPulses * SECONDS_TO_MILLISECONDS));
 		}
 	}
 
     void StopPulse() {
-        syncpulseThread.Abort();
+        flag.Wait(-1);
     }
 }

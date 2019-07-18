@@ -4,9 +4,30 @@ using System.Collections.Concurrent;
 using System;
 public class EventQueue {
     protected ConcurrentQueue<EventBase> eventQueue;
+    protected ConcurrentBag<Timer> timers = new ConcurrentBag<Timer>();
+    protected ConcurrentBag<RepeatingEvent> repeatingEvents = new ConcurrentBag<RepeatingEvent>();
 
     public virtual void Do(EventBase thisEvent) {
         eventQueue.Enqueue(thisEvent);
+    }
+
+    // run event after delay milliseconds, using closures to retain
+    // event and destroy timer
+    public virtual void DoIn(EventBase thisEvent, int delay) {
+        Timer timer = null;
+        timer = new Timer(delegate(object obj){ Do(thisEvent); timer.Dispose();  }, 
+                                                        null, delay, Timeout.Infinite);
+    }
+
+    // enqueues repeating event at set intervals. If timer isn't
+    // stopped, stopping processing thread will still stop execution
+    // of events
+    public virtual void DoRepeating(RepeatingEvent thisEvent) {
+        // timers should only be created if running
+        repeatingEvents.Add(thisEvent);
+        timers.Add(new Timer(delegate(Object obj){ RepeatingEvent evnt = (RepeatingEvent)obj;
+                                                        if(!evnt.flag.IsSet){Do(evnt);} }, 
+                                                        thisEvent, thisEvent.delay, thisEvent.interval));
     }
 
     // Process one event in the queue.
@@ -111,11 +132,16 @@ public class RepeatingEvent : EventBase {
     public int interval;
     public ManualResetEventSlim flag;
 
-    public RepeatingEvent(Action _action, int _iterations, int _delay, int _interval) : base(_action) {
+    public RepeatingEvent(Action _action, int _iterations, int _delay, int _interval, ManualResetEventSlim _flag = null) : base(_action) {
         maxIterations = _iterations;
         delay = _delay;
         interval = _interval;
-        flag = new ManualResetEventSlim();
+        if(_flag == null) {
+            flag = new ManualResetEventSlim();
+        }
+        else {
+            flag = _flag;
+        }
     }
 
     public override void Invoke() {

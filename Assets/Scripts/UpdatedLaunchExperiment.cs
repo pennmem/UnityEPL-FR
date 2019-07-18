@@ -56,8 +56,8 @@ public class UpdatedLaunchExperiment : MonoBehaviour
             return;
         } 
 
-        manager.experimentConfig.participant = participantNameInput.text;
-        manager.experimentConfig.session = sessionNumber;
+        manager.changeSetting("participantCode", participantNameInput.text);
+        manager.changeSetting("session", sessionNumber);
 
         // TODO: resume experiment logic
 

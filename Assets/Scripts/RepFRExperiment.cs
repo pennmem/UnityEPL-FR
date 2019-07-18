@@ -29,8 +29,8 @@ public class RepFRExperiment : ExperimentBase {
   protected RepCounts rep_counts;
   protected int words_per_list;
 
-  public RepFRExperiment(List<string> source_word_list) {
-    source_words = source_word_list;
+  public RepFRExperiment(ExperimentManager _manager) : base(_manager) {
+    //source_words = source_word_list;
 
     // TODO - Get these parameters from the config system.
     // Repetition specification:
@@ -39,10 +39,6 @@ public class RepFRExperiment : ExperimentBase {
 
     blank_words =
       new List<string>(Enumerable.Repeat(string.Empty, words_per_list));
-  }
-
-  public RepFRExperiment() {
-    // Instantiation Testing Only
   }
 
   public override void Run() {

@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using UnityEngine.SceneManagement;
-using System.IO;
-using Newtonsoft.Json.Linq;
+using System.Reflection;
 using UnityEngine;
 
 // It is up to objects that are referenced in this class to 
@@ -80,7 +78,6 @@ public class ExperimentManager : MonoBehaviour
     //////////
     // Input reporters
     //////////
-    // TODO: refactor into one game object
     public VoiceActivityDetection voiceActity;
     public ScriptedEventReporter scriptedInput;
     public PeripheralInputReporter peripheralInput;
@@ -107,7 +104,7 @@ public class ExperimentManager : MonoBehaviour
         Debug.Log("Experiment Manager Up");
 
         // Start experiment Launcher scene
-        launchLauncher();
+        mainEvents.Do(new EventBase(launchLauncher));
     }
 
     // Update is called once per frame
@@ -160,6 +157,45 @@ public class ExperimentManager : MonoBehaviour
     }
 
     //////////
+    // Function that provides a clean interface for accessing
+    // experiment and system settings. Settings in experiment
+    // override those in system. Attempts to read non-existent
+    // settings return null.
+    //////////
+
+    public dynamic getSetting(string setting) {
+        dynamic value;
+        if(experimentConfig != null) {
+            if(((IDictionary<string, object>)experimentConfig).TryGetValue(setting, out value)) {
+                return value;
+            }
+        }
+        else if(systemConfig != null) {
+            if(((IDictionary<string, object>)systemConfig).TryGetValue(setting, out value)) {
+                return value;
+            }
+        }
+        return null;
+    }
+
+    // returns true if value updated, false if new value added
+    public bool changeSetting(string setting, dynamic value) {
+        dynamic existing = getSetting(setting);
+        if(existing == null) {
+            ((IDictionary<string, object>)experimentConfig).Add(setting, value);
+            return false;
+        }
+        else {
+            Type t = existing.TypeOf();
+            if( t != value.typeOf()) {
+                throw new Exception("Cannot change the type of a setting");
+            }
+            ((IDictionary<string, object>)experimentConfig)[setting] = value;
+            return true;
+        }
+    }
+
+    //////////
     // Functions to be called from other
     // scripts through the messaging system
     //////////
@@ -172,10 +208,10 @@ public class ExperimentManager : MonoBehaviour
 
         // Check if settings are loaded
         if(experimentConfig != null) {
-            // TODO: instantiate experiment by name
-            exp = new RepFRExperiment();
+            Type t = Type.GetType((string)getSetting("experimentClass")); 
+            exp = (ExperimentBase)Activator.CreateInstance(t, new object[] {this});
 
-            SceneManager.LoadScene(experimentConfig.experimentScene);
+            SceneManager.LoadScene(getSetting("experimentScene"));
         }
         return;
     }
@@ -188,6 +224,29 @@ public class ExperimentManager : MonoBehaviour
         TextAsset json = Resources.Load<TextAsset>(name);
         experimentConfig = FlexibleConfig.loadFromText(json.text); 
     }
+
+    public void reportData(string type, DataPoint data) {
+
+    }
+
+    public void showText(string tag, string text) {
+        if(textDisplayer == null) {
+            throw new Exception("No text displayer in current scene");
+        }
+        else {
+            textDisplayer.DisplayText(tag, text);
+        }
+    }
+    public void clearText() {
+        if(textDisplayer == null) {
+            throw new Exception("No text displayer in current scene");
+        }
+        else {
+            textDisplayer.ClearText();
+        }
+    }
+
+    // TODO: audio recording, showing video, hardware interface
 }
 
 

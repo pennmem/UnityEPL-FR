@@ -28,12 +28,13 @@ class TestingRepFR {
       }
     }
   }
-
+/* 
   public static void Main() {
     // TODO - Update test to use configuration system.
     var input_word_list = new List<string> {"cat", "dog", "fish", "bird",
       "shark", "tiger", "corn", "wheat", "rice", "red", "blue", "green",
       "Mercury", "Venus", "Earth", "Mars"};
+    // FIXME: 
     var experiment = new RepFRExperiment(input_word_list);
     var session = experiment.GenerateSession();
 
@@ -48,5 +49,5 @@ class TestingRepFR {
       StimCheck(session[i].recall_stim, session[i].recall);
     }
   }
+  */
 }
-

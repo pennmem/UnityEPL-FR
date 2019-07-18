@@ -20,7 +20,7 @@ public class UpdatedExperimentSelection : MonoBehaviour
 
         UnityEngine.UI.Dropdown dropdown = GetComponent<UnityEngine.UI.Dropdown>();
 
-        string[] experiments = manager.systemConfig.availableExperiments;
+        string[] experiments = manager.getSetting("availableExperiments");
 
         dropdown.AddOptions(new List<string>(new string[] {"Select Task..."}));
         dropdown.AddOptions(new List<string>(experiments));

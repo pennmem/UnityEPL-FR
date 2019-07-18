@@ -78,9 +78,9 @@ public class NonUnityRamulatorInterface : EventLoop
 
         //SendSessionEvent//////////////////////////////////////////////////////////////////////
         System.Collections.Generic.Dictionary<string, object> sessionData = new Dictionary<string, object>();
-        sessionData.Add("name", manager.experimentConfig.experimentName);
+        sessionData.Add("name", manager.getSetting("experimentName"));
         sessionData.Add("version", Application.version);
-        sessionData.Add("subject", manager.experimentConfig.participant);
+        sessionData.Add("subject", manager.getSetting("participantCode"));
         sessionData.Add("session_number", sessionNumber.ToString());
         DataPoint sessionDataPoint = new DataPoint("SESSION", DataReporter.RealWorldTime(), sessionData);
         SendMessageToRamulator(sessionDataPoint.ToJSON());

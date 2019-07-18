@@ -2,15 +2,10 @@
 using System.Threading;
 using System.Collections.Concurrent;
 
-
-// TODO: dispose of all created handles, make resuming either
-// possible or explicitly reset the state of the queue
-
 public class EventLoop : EventQueue {
     protected volatile bool running = false;
     private ManualResetEventSlim wait;
-    private ConcurrentBag<Timer> timers = new ConcurrentBag<Timer>();
-    private ConcurrentBag<RepeatingEvent> repeatingEvents = new ConcurrentBag<RepeatingEvent>();
+
 
     public void Start(){
         // spawn thread
@@ -36,8 +31,8 @@ public class EventLoop : EventQueue {
             t.Dispose();
         }
 
-        timers = new ConcurrentBag<Timer>();
-        repeatingEvents = new ConcurrentBag<RepeatingEvent>();
+        base.timers = new ConcurrentBag<Timer>();
+        base.repeatingEvents = new ConcurrentBag<RepeatingEvent>();
     }
 
     protected bool Running() {
@@ -65,16 +60,14 @@ public class EventLoop : EventQueue {
         }
     }
 
+
     // enqueues repeating event at set intervals. If timer isn't
     // stopped, stopping processing thread will still stop execution
     // of events
-    public void DoRepeating(RepeatingEvent thisEvent) {
+    public override void DoRepeating(RepeatingEvent thisEvent) {
         // timers should only be created if running
         if(Running()) {
-            repeatingEvents.Add(thisEvent);
-            timers.Add(new Timer(delegate(Object obj){ RepeatingEvent evnt = (RepeatingEvent)obj;
-                                                        if(!evnt.flag.IsSet){Do(evnt);} }, 
-                                                        thisEvent, thisEvent.delay, thisEvent.interval));
+            base.DoRepeating(thisEvent);
         } else {
             throw new Exception("Can't enqueue an event to a non running Loop");
         }
