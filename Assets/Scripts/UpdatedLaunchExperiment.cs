@@ -9,7 +9,7 @@ using UnityEngine;
 /// </summary>
 public class UpdatedLaunchExperiment : MonoBehaviour
 {
-    public ExperimentManager manager;
+    public InterfaceManager manager;
     public GameObject cantGoPrompt;
     public UnityEngine.UI.InputField participantNameInput;
     public UnityEngine.GameObject launchButton;
@@ -17,8 +17,8 @@ public class UpdatedLaunchExperiment : MonoBehaviour
     public UnityEngine.GameObject loadingButton;
 
     void Awake() {
-        GameObject mgr = GameObject.Find("ExperimentManager");
-        manager = (ExperimentManager)mgr.GetComponent("ExperimentManager");
+        GameObject mgr = GameObject.Find("InterfaceManager");
+        manager = (InterfaceManager)mgr.GetComponent("InterfaceManager");
     }
     void Update()
     {

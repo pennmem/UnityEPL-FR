@@ -1,6 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System;
 using UnityEngine;
+using UnityEngine.Video;
 
 public class VideoControl : MonoBehaviour
 {
@@ -8,6 +8,7 @@ public class VideoControl : MonoBehaviour
     public UnityEngine.KeyCode deactivateKey = UnityEngine.KeyCode.Escape;
     public UnityEngine.Video.VideoPlayer videoPlayer;
     public bool deactivateWhenFinished = true;
+    public Action callback = null;
 
     void Update()
     {
@@ -29,13 +30,33 @@ public class VideoControl : MonoBehaviour
         }
     }
 
-    public void StartVideo()
-    {
+    void OnDisable() {
+        if(callback != null) {
+            callback();
+        }
+        callback = null;
+    }
+
+    public void Start() {
+        videoPlayer.loopPointReached += (vp) => gameObject.SetActive(false);
+    }
+
+    public void StartVideo(string video, Action onDone) {
+        videoPlayer.clip = Resources.Load<VideoClip>(video);
+        callback = onDone;
         gameObject.SetActive(true);
+        videoPlayer.Play();
+    }
+    
+    // legacy support
+    public void StartVideo() {
+        gameObject.SetActive(true);
+        videoPlayer.Play();
     }
 
     public bool IsPlaying()
     {
         return gameObject.activeSelf;
     }
+
 }

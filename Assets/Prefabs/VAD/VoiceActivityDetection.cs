@@ -7,7 +7,7 @@ using UnityEngine;
 
 public class VoiceActivityDetection : MonoBehaviour
 {
-	public ExperimentManager manager;
+	public InterfaceManager manager;
     public SoundRecorder soundRecorder;
     public float speakingThreshold = 0.003f;
 	public GameObject UI;

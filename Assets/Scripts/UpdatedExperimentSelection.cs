@@ -10,13 +10,13 @@ using UnityEngine;
 /// </summary>
 public class UpdatedExperimentSelection : MonoBehaviour
 {
-    public ExperimentManager manager;
+    public InterfaceManager manager;
 
     void Awake()
     {
         
-        GameObject mgr = GameObject.Find("ExperimentManager");
-        manager = (ExperimentManager)mgr.GetComponent("ExperimentManager");
+        GameObject mgr = GameObject.Find("InterfaceManager");
+        manager = (InterfaceManager)mgr.GetComponent("InterfaceManager");
 
         UnityEngine.UI.Dropdown dropdown = GetComponent<UnityEngine.UI.Dropdown>();
 

@@ -8,7 +8,7 @@ using NetMQ;
 
 public class NonUnityRamulatorInterface : EventLoop 
 {
-    public ExperimentManager manager;
+    public InterfaceManager manager;
 
     //This will be updated with warnings about the status of ramulator connectivity
     public UnityEngine.UI.Text ramulatorWarningText;

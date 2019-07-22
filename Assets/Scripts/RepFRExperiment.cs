@@ -2,7 +2,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-
+using System.IO;
+using UnityEngine; // to read resource files packaged with Unity
 
 public class RepFRRun {
   public StimWordList encoding;
@@ -29,25 +30,120 @@ public class RepFRExperiment : ExperimentBase {
   protected RepCounts rep_counts;
   protected int words_per_list;
 
-  public RepFRExperiment(ExperimentManager _manager) : base(_manager) {
+  public RepFRExperiment(InterfaceManager _manager) : base(_manager) {
     //source_words = source_word_list;
 
-    // TODO - Get these parameters from the config system.
+    // TODO: - Get these parameters from the config system. -> most naturally expressed through nested array
     // Repetition specification:
     rep_counts = new RepCounts(3, 6).RepCnt(2, 3).RepCnt(1, 3);
     words_per_list = rep_counts.TotalWords();
 
     blank_words =
       new List<string>(Enumerable.Repeat(string.Empty, words_per_list));
+
+    // Using Unity Asset loading, can be replaced
+    string source_list = manager.fileManager.getWordList();
+    var txt = File.ReadAllLines(source_list);
+    source_words = new List<string>(txt);
+    Debug.Log(source_words);
+
+    // TODO: resuming session
+    if(false) {
+
+    }
+    else {
+      // add all state related data directly to
+      // state class
+      state.currentSession = GenerateSession();
+      state.runIndex = 0;
+      state.mainLoopIndex = 0;
+      state.listIndex = 0;
+      state.wordIndex = 0;
+    }
+
+    stateMachine["Run"] = new List<Action> {DoIntroductionVideo,
+                                            MainLoop,
+                                            Quit};
+    stateMachine["MainLoop"] = new List<Action> {DoCountdownVideo,
+                                                 DoEncoding,
+                                                 DoDistractor};
+                                                 //Recall};
+    
+    Start();
   }
 
-  public override void Run() {
-//    if ( !Running() ) {
-//      break;
-//    }
-    manager.textDisplayer.DisplayText("Debug Message", "RepFR Launched");
+  protected void Quit() {
+    Debug.Log("Quitting");
+    Stop();
+    //no more calls to Run past this point
+  }
+  //////////
+  // Run steps and wrapper functions
+  // for advancing list state
+  //////////
+  
+  protected void DoIntroductionVideo() {
+    bool done = base.IntroductionVideo();
+    if(done) {
+      state.runIndex++;
+      // video enqueues run, this function
+      // must return before next Run call
+      // can be processed
+    }
   }
 
+
+  //////////
+  // Main Loop logic and
+  // wrapper functions to ste
+  //////////
+  protected void MainLoop() {
+    CheckLoop();
+    stateMachine["MainLoop"][state.mainLoopIndex].Invoke();
+  }
+
+  protected void CheckLoop() {
+    if(state.mainLoopIndex == stateMachine["MainLoop"].Count) {
+      state.mainLoopIndex = 0;
+      state.listIndex++;
+    }
+
+    if(state.listIndex  == state.currentSession.Count) {
+      state.runIndex++;
+      this.Do(new EventBase(Run));
+      return;
+    }
+  }
+
+  protected void DoCountdownVideo() {
+    bool done = base.CountdownVideo();
+    if(done) {
+      state.mainLoopIndex++;
+      // video enqueues run, this function
+      // must return before next Run call
+      // can be processed
+    }
+  }
+
+  protected void DoEncoding() {
+    // enforcing types with cast so that the base function can be called properly
+    bool done = base.Encoding((IList<string>)state.currentSession[state.listIndex].encoding.words, (int)state.wordIndex);
+    state.wordIndex++;
+    if(done) {
+      state.wordIndex = 0;
+      state.mainLoopIndex++;
+      this.Do(new EventBase(Run));
+    }
+  }
+
+  protected void DoDistractor() {
+    DoIn(new EventBase(() => state.mainLoopIndex++), (int)manager.getSetting("distractorDuration"));
+    int[] nums = new int[] { UnityEngine.Random.Range(1, 9), UnityEngine.Random.Range(1, 9), UnityEngine.Random.Range(1, 9) };
+    string problem = nums[0].ToString() + " + " + nums[1].ToString() + " + " + nums[2].ToString() + " = ?";
+    manager.mainEvents.Do(new EventBase<string>(manager.showText, problem));
+    // TODO: wait for key
+    DoIn(new EventBase(Run), 100);
+  }
 
   public RepFRRun MakeRun(bool enc_stim, bool rec_stim) {
     var enclist = RepWordGenerator.Generate(rep_counts, source_words, enc_stim);
@@ -57,14 +153,15 @@ public class RepFRExperiment : ExperimentBase {
 
 
   public RepFRSession GenerateSession() {
-    // TODO - Get these parameters from the config system.
+    // Parameters retrieved from experiment config, given default
+    // value if null. TODO:
     // Numbers of list types:
-    int practice_lists = 1;
-    int pre_no_stim_lists = 3;
-    int encoding_only_lists = 4;
-    int retrieval_only_lists = 4;
-    int encoding_and_retrieval_lists = 4;
-    int no_stim_lists = 10;
+    int practice_lists = manager.getSetting("practiceLists") ?? 1;
+    int pre_no_stim_lists = manager.getSetting("preNoStimLists") ?? 3;
+    int encoding_only_lists = manager.getSetting("encodingOnlyLists") ?? 4;
+    int retrieval_only_lists = manager.getSetting("retrievalOnlyLists") ?? 4;
+    int encoding_and_retrieval_lists = manager.getSetting("encodingAndRetrievalLists") ?? 4;
+    int no_stim_lists = manager.getSetting("noStimLists") ?? 10;
     
 
     var session = new RepFRSession();

@@ -9,7 +9,7 @@ using UnityEngine;
 /// </summary>
 public class UpdatedParticipantSelection : MonoBehaviour
 {
-    ExperimentManager manager;
+    InterfaceManager manager;
     public UnityEngine.UI.InputField participantNameInput;
     public UnityEngine.UI.Text sessionNumberText;
     public UnityEngine.UI.Text listNumberText;
@@ -22,17 +22,16 @@ public class UpdatedParticipantSelection : MonoBehaviour
     private string currentExperiment;
 
     void Awake() {
-        GameObject mgr = GameObject.Find("ExperimentManager");
-        manager = (ExperimentManager)mgr.GetComponent("ExperimentManager");
-
-        FindParticipants();
+        GameObject mgr = GameObject.Find("InterfaceManager");
+        manager = (InterfaceManager)mgr.GetComponent("InterfaceManager");
     }
 
     void Update() {
 
         // update participants when new experiments are loaded
-        if((manager.experimentConfig != null) && (currentExperiment != manager.experimentConfig.experimentName)) {
-            currentExperiment = manager.experimentConfig.experimentName;
+        // FIXME: excessive polling of getSetting
+        if((manager.getSetting("experimentName") != null) && (currentExperiment != manager.getSetting("experimentName"))) {
+            currentExperiment = manager.getSetting("experimentName");
             FindParticipants();
         }
     }
@@ -42,19 +41,17 @@ public class UpdatedParticipantSelection : MonoBehaviour
         UnityEngine.UI.Dropdown dropdown = GetComponent<UnityEngine.UI.Dropdown>();
 
         dropdown.ClearOptions();
-        dropdown.AddOptions(new List<string>() { "Select participant...", "New participant" });
+        dropdown.AddOptions(new List<string>() { "Select participant...", "New participant"});
 
-        if(!(manager.experimentConfig == null)) {
-            string participantDirectory = manager.fileManager.experimentPath();
-            System.IO.Directory.CreateDirectory(participantDirectory);
-            string[] filepaths = System.IO.Directory.GetDirectories(participantDirectory);
-            string[] filenames = new string[filepaths.Length];
+        string participantDirectory = manager.fileManager.experimentPath();
+        System.IO.Directory.CreateDirectory(participantDirectory);
+        string[] filepaths = System.IO.Directory.GetDirectories(participantDirectory);
+        string[] filenames = new string[filepaths.Length];
 
-            for (int i = 0; i < filepaths.Length; i++)
-                filenames[i] = System.IO.Path.GetFileName(filepaths[i]);
+        for (int i = 0; i < filepaths.Length; i++)
+            filenames[i] = System.IO.Path.GetFileName(filepaths[i]);
 
-            dropdown.AddOptions(new List<string>(filenames));
-        }
+        dropdown.AddOptions(new List<string>(filenames));
         dropdown.value = 0;
         dropdown.RefreshShownValue();
 

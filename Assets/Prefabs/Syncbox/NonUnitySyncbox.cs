@@ -7,7 +7,7 @@ using System.Threading;
 public class NonUnitySyncbox : EventLoop 
 {
 
-    public ExperimentManager manager;
+    public InterfaceManager manager;
 
     //Function from Corey's Syncbox plugin (called "ASimplePlugin")
 	[DllImport ("ASimplePlugin")]

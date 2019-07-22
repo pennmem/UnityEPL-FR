@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using UnityEngine.SceneManagement;
-using System.Reflection;
 using UnityEngine;
 
 // It is up to objects that are referenced in this class to 
@@ -10,7 +9,7 @@ using UnityEngine;
 // with a reference to manager can call functions from or pass events
 // to classes referenced here.
 
-public class ExperimentManager : MonoBehaviour
+public class InterfaceManager : MonoBehaviour
 {
     //////////
     // Singleton Boilerplate
@@ -19,15 +18,15 @@ public class ExperimentManager : MonoBehaviour
     // is not destroyed when changing scenes
     //////////
 
-    private static ExperimentManager _instance;
+    private static InterfaceManager _instance;
 
-    public static ExperimentManager Instance { get { return _instance; } }
+    public static InterfaceManager Instance { get { return _instance; } }
 
     private void Awake()
     {
         if (_instance != null && _instance != this)
         {
-            throw new System.InvalidOperationException("Cannot create multiple ExperimentManager Objects");
+            throw new System.InvalidOperationException("Cannot create multiple InterfaceManager Objects");
         } else {
             _instance = this;
             DontDestroyOnLoad(this.gameObject);
@@ -38,7 +37,7 @@ public class ExperimentManager : MonoBehaviour
 
     //////////
     // Non-unity event handling for scripts to 
-    // activate ExperimentManager functions
+    // activate InterfaceManager functions
     //////////
     public EventQueue mainEvents = new EventQueue();
 
@@ -95,7 +94,8 @@ public class ExperimentManager : MonoBehaviour
         // Unity interal event handling
         SceneManager.sceneLoaded += onSceneLoaded;
 
-        if(systemConfig.isTest) {
+        if(getSetting("isTest")) {
+            Debug.Log("Test file manager created");
             fileManager = new TestFileManager(this);
         } else {
             fileManager = new FileManager(this);
@@ -111,6 +111,8 @@ public class ExperimentManager : MonoBehaviour
     void Update()
     {
         mainEvents.Process();
+
+        // TODO: use for keyinput
     }
 
     //////////
@@ -146,6 +148,7 @@ public class ExperimentManager : MonoBehaviour
         GameObject video = GameObject.Find("VideoPlayer");
         if(video != null) {
             videoControl = video.GetComponent<VideoControl>();
+            video.SetActive(false);
             Debug.Log("Found VideoPlayer");
         }
 
@@ -212,12 +215,15 @@ public class ExperimentManager : MonoBehaviour
             exp = (ExperimentBase)Activator.CreateInstance(t, new object[] {this});
 
             SceneManager.LoadScene(getSetting("experimentScene"));
+            exp.Do(new EventBase(exp.Run));
         }
-        return;
+        else {
+            throw new Exception("No experiment configuration loaded");
+        }
     }
 
     public void launchLauncher() {
-        SceneManager.LoadScene(systemConfig.launcherScene);
+        SceneManager.LoadScene(getSetting("launcherScene"));
     }
 
     public void loadExperimentConfig(string name) {
@@ -229,11 +235,12 @@ public class ExperimentManager : MonoBehaviour
 
     }
 
-    public void showText(string tag, string text) {
+    public void showText(string text) {
         if(textDisplayer == null) {
             throw new Exception("No text displayer in current scene");
         }
         else {
+            string tag = "TEST";
             textDisplayer.DisplayText(tag, text);
         }
     }
@@ -246,7 +253,22 @@ public class ExperimentManager : MonoBehaviour
         }
     }
 
-    // TODO: audio recording, showing video, hardware interface
+    public void showVideo(string video, Action callback) {
+        if(videoControl == null) {
+            throw new Exception("No video player in this scene");
+        }
+
+        // path to video asset relative to Resources folder
+        string videoPath = getSetting(video);
+
+        if(videoPath == null) {
+            throw new Exception("Video resource not found");
+        }
+
+        videoControl.StartVideo(videoPath, callback);
+    }
+
+    // TODO: audio recording, hardware interface
 }
 
 
@@ -257,25 +279,27 @@ public class ExperimentManager : MonoBehaviour
 
 public class FileManager {
 
-    ExperimentManager manager;
+    InterfaceManager manager;
 
-    public FileManager(ExperimentManager _manager) {
+    public FileManager(InterfaceManager _manager) {
         manager = _manager;
     }
 
     public virtual string experimentRoot() {
         // TODO: use . directory?
-        return manager.experimentConfig.experimentRoot; 
+        return System.IO.Path.GetFullPath(".");
     }
 
     public string experimentPath() {
         string root = experimentRoot();
-        string dir = System.IO.Path.Combine(root, manager.experimentConfig.experimentName);
+        Debug.Log(manager.getSetting("experimentName"));
+        string dir = System.IO.Path.Combine(root, manager.getSetting("experimentName"));
+        Debug.Log(dir);
         return dir;
     }
     public string participantPath(string participant) {
         string dir = experimentPath();
-        dir = System.IO.Path.Combine(dir, manager.experimentConfig.participant);
+        dir = System.IO.Path.Combine(dir, manager.getSetting("participant"));
         return dir;
     }
 
@@ -289,14 +313,21 @@ public class FileManager {
         if(manager.experimentConfig == null) {
             return false;
         }
-        Regex rx = new Regex(@"^" + manager.experimentConfig.prefix +@"\d{1,4}$");
+        Regex rx = new Regex(@"^" + manager.getSetting("prefix") + @"\d{1,4}$");
 
         return rx.IsMatch(code);
     }
+
+    public string getWordList() {
+        string root = experimentRoot();
+        return System.IO.Path.Combine(root, manager.getSetting("wordpool"));
+    }
+
+    // TODO: create session, participant
 }
 
 public class TestFileManager : FileManager {
-    public TestFileManager(ExperimentManager _manager) : base(_manager) {
+    public TestFileManager(InterfaceManager _manager) : base(_manager) {
     }
 
     public override string experimentRoot() {
