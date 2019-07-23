@@ -51,15 +51,25 @@ public abstract class ExperimentBase : EventLoop {
             return true;
         }
         manager.mainEvents.Do(new EventBase<string>(manager.showText, words[index]));
-        Debug.Log(manager.getSetting("stimulusDuration"));
-        manager.mainEvents.DoIn(new EventBase(manager.clearText), (int)manager.getSetting("stimulusDuration"));
-        Debug.Log(manager.getSetting("stimulusInterval"));
-        this.DoIn(new EventBase(Run), (int)manager.getSetting("stimulusInterval"));
+        manager.mainEvents.DoIn(new EventBase(() => {
+                                                        manager.clearText(); 
+                                                        this.DoIn(new EventBase(Run), 
+                                                        (int)manager.getSetting("stimulusInterval"));
+                                                    }), 
+                                                    (int)manager.getSetting("stimulusDuration"));
+        
         return false;
     }
 
     protected bool Distractor() {
-        return true;
+        int[] nums = new int[] { InterfaceManager.rnd.Next(1, 9), InterfaceManager.rnd.Next(1, 9), InterfaceManager.rnd.Next(1, 9) };
+        string problem = nums[0].ToString() + " + " + nums[1].ToString() + " + " + nums[2].ToString() + " = ?";
+        manager.mainEvents.Do(new EventBase<string>(manager.showText, problem));
+        // TODO: wait for key
+        DoIn(new EventBase(Run), 5000);
+
+
+        return false; // Done is controlled by keyhandler
     }
 
     protected bool Recall() {
@@ -77,7 +87,7 @@ public abstract class ExperimentBase : EventLoop {
 
     }
 
-    public void WaitForKey(string prompt, Action<KeyCode> keyHandler) {
+    public void WaitForKey(string prompt, Action keyHandler) {
         // TODO:
         manager.mainEvents.Do(manager.showText(prompt));
         // TODO: keys
@@ -105,13 +115,30 @@ public abstract class ExperimentBase : EventLoop {
     //////////
 
     /*
-    public void AnyKey(KeyCode key) {
+    public void DistractorAnswer() {
+
+    }
+
+    public void AnyKey() {
+
         Run();
     }
 
-    public void QuitOrContinue(KeyCode key) {
+    public void QuitOrContinue() {
+
+        manager.registerKeyHandler(delegate(bool[] keys) {
+            if(keys[0]) {
+                this.Do(new EventBase(Run(););
+                }
+            else if(keys[1]) {
+                this.Quit();
+            }
+            else {
+                this.QuitOrContinue();
+            }
+        } )
         if(key == KeyCode.N) {
-            Application.Quit();
+            Quit();
         }
         else if(key == KeyCode.Y) {
             Run();

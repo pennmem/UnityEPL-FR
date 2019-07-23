@@ -15,8 +15,8 @@ public class EventQueue {
     // event and destroy timer
     public virtual void DoIn(EventBase thisEvent, int delay) {
         Timer timer = null;
-        timer = new Timer(delegate(object obj){ Do(thisEvent); timer.Dispose();  }, 
-                                                        null, delay, Timeout.Infinite);
+        Do(new EventBase( () => timer = new Timer(delegate(object obj){ Do(thisEvent); timer.Dispose();}, 
+                                                        null, delay, Timeout.Infinite)));
     }
 
     // enqueues repeating event at set intervals. If timer isn't

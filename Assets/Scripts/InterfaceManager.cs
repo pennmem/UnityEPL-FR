@@ -40,6 +40,7 @@ public class InterfaceManager : MonoBehaviour
     // activate InterfaceManager functions
     //////////
     public EventQueue mainEvents = new EventQueue();
+    private EventQueue keyEvents = new EventQueue();
 
     //////////
     // Experiment Settings and Experiment object
@@ -113,6 +114,9 @@ public class InterfaceManager : MonoBehaviour
         mainEvents.Process();
 
         // TODO: use for keyinput
+        if(Input.anyKey) {
+            while(keyEvents.Process()) {}
+        }
     }
 
     //////////
@@ -266,6 +270,10 @@ public class InterfaceManager : MonoBehaviour
         }
 
         videoControl.StartVideo(videoPath, callback);
+    }
+
+    public void registerKeyHandler(Action<bool[]> handler, string[] keys) {
+
     }
 
     // TODO: audio recording, hardware interface

@@ -6,7 +6,7 @@
     "wordpool": "ram_wordpool_en.txt",
     "stimulusDuration": 1000,
     "stimulusInterval": 1000,
-    "distractorDuration": 10000,
+    "distractorDuration": 30000,
     "introductionVideo": "FR_instructions_EN",
     "countdownVideo": "countdown"
 }

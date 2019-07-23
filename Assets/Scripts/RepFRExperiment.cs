@@ -66,6 +66,7 @@ public class RepFRExperiment : ExperimentBase {
                                             Quit};
     stateMachine["MainLoop"] = new List<Action> {DoCountdownVideo,
                                                  DoEncoding,
+                                                 DistractorTimeout,
                                                  DoDistractor};
                                                  //Recall};
     
@@ -75,6 +76,11 @@ public class RepFRExperiment : ExperimentBase {
   protected void Quit() {
     Debug.Log("Quitting");
     Stop();
+    #if UNITY_EDITOR
+    UnityEditor.EditorApplication.isPlaying = false;
+    #else
+    Application.Quit();
+    #endif
     //no more calls to Run past this point
   }
   //////////
@@ -136,13 +142,14 @@ public class RepFRExperiment : ExperimentBase {
     }
   }
 
-  protected void DoDistractor() {
+  protected void DistractorTimeout() {
     DoIn(new EventBase(() => state.mainLoopIndex++), (int)manager.getSetting("distractorDuration"));
-    int[] nums = new int[] { UnityEngine.Random.Range(1, 9), UnityEngine.Random.Range(1, 9), UnityEngine.Random.Range(1, 9) };
-    string problem = nums[0].ToString() + " + " + nums[1].ToString() + " + " + nums[2].ToString() + " = ?";
-    manager.mainEvents.Do(new EventBase<string>(manager.showText, problem));
-    // TODO: wait for key
-    DoIn(new EventBase(Run), 100);
+    state.mainLoopIndex++;
+    Do(new EventBase(Run));
+  }
+
+  protected void DoDistractor() {
+    base.Distractor();
   }
 
   public RepFRRun MakeRun(bool enc_stim, bool rec_stim) {
