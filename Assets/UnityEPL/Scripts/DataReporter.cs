@@ -8,12 +8,12 @@ public abstract class DataReporter : MonoBehaviour
     private static System.DateTime realWorldStartTime;
     private static System.Diagnostics.Stopwatch stopwatch;
 
-    private static bool nativePluginRunning = false;
+    protected volatile static bool nativePluginRunning = false;
     private static bool startTimeInitialized = false;
 
     protected System.Collections.Concurrent.ConcurrentQueue<DataPoint> eventQueue = new ConcurrentQueue<DataPoint>();
 
-    private static double OSStartTime;
+    protected static double OSStartTime;
     private static float unityTimeStartTime;
 
     protected bool IsMacOS()
@@ -32,23 +32,8 @@ public abstract class DataReporter : MonoBehaviour
             startTimeInitialized = true;
         }
 
-        if (IsMacOS() && !nativePluginRunning)
-        {
-            OSStartTime = UnityEPL.StartCocoaPlugin();
-            nativePluginRunning = true;
-        }
-
         if (QualitySettings.vSyncCount == 0)
             Debug.LogWarning("vSync is off!  This will cause tearing, which will prevent meaningful reporting of frame-based time data.");
-    }
-
-    void OnDestroy()
-    {
-        if (IsMacOS() && nativePluginRunning)
-        {
-            UnityEPL.StopCocoaPlugin();
-            nativePluginRunning = false;
-        }
     }
 
     /// <summary>

@@ -4,8 +4,34 @@ using System.Threading;
 using UnityEngine;
 
 [AddComponentMenu("UnityEPL/Reporters/Input Reporter")]
-public class PeripheralInputReporter : DataReporter
-{
+public class PeripheralInputReporter : DataReporter {}
+#if UNITY_IPHONE
+	[DllImport ("__Internal")]
+#else
+    [DllImport("UnityEPLNativePlugin")]
+#endif
+    public static extern double StartCocoaPlugin();
+
+    [DllImport("UnityEPLNativePlugin")]
+    public static extern void StopCocoaPlugin();
+
+    [DllImport("UnityEPLNativePlugin")]
+    public static extern int PopKeyKeycode();
+
+    [DllImport("UnityEPLNativePlugin")]
+    public static extern double PopKeyTimestamp();
+
+    [DllImport("UnityEPLNativePlugin")]
+    public static extern int CountKeyEvents();
+
+    [DllImport("UnityEPLNativePlugin")]
+    public static extern int PopMouseButton();
+
+    [DllImport("UnityEPLNativePlugin")]
+    public static extern double PopMouseTimestamp();
+
+    [DllImport("UnityEPLNativePlugin")]
+    public static extern int CountMouseEvents();
 
     public bool reportKeyStrokes = false;
     public bool reportMouseClicks = false;
@@ -15,6 +41,18 @@ public class PeripheralInputReporter : DataReporter
     private Dictionary<int, bool> mouseDownStates = new Dictionary<int, bool>();
 
     private int lastMousePositionReportFrame;
+
+    private InterfaceManager manager;
+
+    void Awake() {
+        GameObject mgr = GameObject.Find("InterfaceManager");
+        manager = (InterfaceManager)mgr.GetComponent("InterfaceManager");
+
+        if(!nativePluginRunning) {
+            OSStartTime = UnityEPL.StartCocoaPlugin();
+            nativePluginRunning = true;
+        }
+    }
 
     void Update()
     {
@@ -29,6 +67,7 @@ public class PeripheralInputReporter : DataReporter
     /// <summary>
     /// Collects the mouse events for MacOS.  For other platforms, mouse events are included in key events.
     /// </summary>
+
     private void CollectMouseEvents()
     {
         if (IsMacOS())
@@ -59,6 +98,7 @@ public class PeripheralInputReporter : DataReporter
     /// 
     /// In MacOS, UnityEPL uses a native plugin to achieve higher accuracy timestamping.
     /// </summary>
+
     private void CollectKeyEvents()
     {
         if (IsMacOS())
@@ -93,13 +133,17 @@ public class PeripheralInputReporter : DataReporter
     private void ReportKey(int keyCode, bool pressed, System.DateTime timestamp)
     {
         Dictionary<string, object> dataDict = new Dictionary<string, object>();
-        dataDict.Add("key code", keyCode);
+        string key;
+        key = KeyLookup.get(keyCode);
+        dataDict.Add("key code", key);
         dataDict.Add("is pressed", pressed);
         string label = "key press/release";
         if (!IsMacOS())
             label = "key/mouse press/release";
         eventQueue.Enqueue(new DataPoint(label, timestamp, dataDict));
-    }
+
+        manager.Do(new EventBase<string, bool>(manager.Key, key, pressed));
+   }
 
     private void CollectMousePosition()
     {
@@ -107,5 +151,12 @@ public class PeripheralInputReporter : DataReporter
         dataDict.Add("position", Input.mousePosition);
         eventQueue.Enqueue(new DataPoint("mouse position", DataReporter.RealWorldTime(), dataDict));
         lastMousePositionReportFrame = Time.frameCount;
+    }
+
+    public void OnDestroy() {
+        if(nativePluginRunning) {
+            UnityEPL.StopCocoaPlugin();
+            nativePluginRunning = false;
+        }
     }
 }

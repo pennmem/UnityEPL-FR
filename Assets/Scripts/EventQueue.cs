@@ -3,7 +3,7 @@ using System.Threading;
 using System.Collections.Concurrent;
 using System;
 public class EventQueue {
-    protected ConcurrentQueue<EventBase> eventQueue;
+    public ConcurrentQueue<EventBase> eventQueue;
     protected ConcurrentBag<Timer> timers = new ConcurrentBag<Timer>();
     protected ConcurrentBag<RepeatingEvent> repeatingEvents = new ConcurrentBag<RepeatingEvent>();
 

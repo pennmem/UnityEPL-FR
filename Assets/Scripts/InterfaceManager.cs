@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using UnityEngine.SceneManagement;
@@ -11,6 +12,8 @@ using UnityEngine;
 
 public class InterfaceManager : MonoBehaviour
 {
+    private static string quitKey = "escape"; // escape to quit
+
     //////////
     // Singleton Boilerplate
     // makes sure that only one Experiment Manager
@@ -27,7 +30,8 @@ public class InterfaceManager : MonoBehaviour
         if (_instance != null && _instance != this)
         {
             throw new System.InvalidOperationException("Cannot create multiple InterfaceManager Objects");
-        } else {
+        } 
+        else {
             _instance = this;
             DontDestroyOnLoad(this.gameObject);
         }
@@ -39,8 +43,10 @@ public class InterfaceManager : MonoBehaviour
     // Non-unity event handling for scripts to 
     // activate InterfaceManager functions
     //////////
-    public EventQueue mainEvents = new EventQueue();
-    private EventQueue keyEvents = new EventQueue();
+    private EventQueue mainEvents = new EventQueue();
+
+    // queue to store key handlers before key event
+    private ConcurrentQueue<Action<string, bool>> onKey;
 
     //////////
     // Experiment Settings and Experiment object
@@ -81,14 +87,16 @@ public class InterfaceManager : MonoBehaviour
     public VoiceActivityDetection voiceActity;
     public ScriptedEventReporter scriptedInput;
     public PeripheralInputReporter peripheralInput;
-    public WorldDataReporter worldInput;
     public UIDataReporter uiInput;
+    private int eventsPerFrame;
 
     // Start is called before the first frame update
     void Start()
     {
         TextAsset json = Resources.Load<TextAsset>("config");
         systemConfig = FlexibleConfig.loadFromText(json.text); 
+
+        onKey = new ConcurrentQueue<Action<string, bool>>();
 
         Debug.Log("Config loaded");
 
@@ -106,16 +114,26 @@ public class InterfaceManager : MonoBehaviour
 
         // Start experiment Launcher scene
         mainEvents.Do(new EventBase(launchLauncher));
+        eventsPerFrame = getSetting("eventsPerFrame") ?? 1;
     }
 
     // Update is called once per frame
     void Update()
     {
-        mainEvents.Process();
+        if(Input.GetKeyDown(quitKey)) {
+            Debug.Log("Should Quit");
+        #if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+        #else
+            Application.Quit();
+        #endif
+            return;
+        }
 
-        // TODO: use for keyinput
-        if(Input.anyKey) {
-            while(keyEvents.Process()) {}
+
+        int i = 0;
+        while(mainEvents.Process() && (i < eventsPerFrame)) {
+            i++;
         }
     }
 
@@ -134,11 +152,10 @@ public class InterfaceManager : MonoBehaviour
         }
 
         // input reporters
-        GameObject inputReporters = GameObject.Find("InputReporters");
+        GameObject inputReporters = GameObject.Find("DataManager");
         if(inputReporters != null) {
             scriptedInput = inputReporters.GetComponent<ScriptedEventReporter>();   
             peripheralInput = inputReporters.GetComponent<PeripheralInputReporter>();
-            worldInput = inputReporters.GetComponent<WorldDataReporter>();
             uiInput = inputReporters.GetComponent<UIDataReporter>();
             Debug.Log("Found InputReporters");
         }
@@ -172,16 +189,21 @@ public class InterfaceManager : MonoBehaviour
 
     public dynamic getSetting(string setting) {
         dynamic value;
+
         if(experimentConfig != null) {
             if(((IDictionary<string, object>)experimentConfig).TryGetValue(setting, out value)) {
-                return value;
+                if(value != null) {
+                    return value;
+                }
             }
         }
-        else if(systemConfig != null) {
+
+        if(systemConfig != null) {
             if(((IDictionary<string, object>)systemConfig).TryGetValue(setting, out value)) {
                 return value;
             }
         }
+
         return null;
     }
 
@@ -217,6 +239,9 @@ public class InterfaceManager : MonoBehaviour
         if(experimentConfig != null) {
             Type t = Type.GetType((string)getSetting("experimentClass")); 
             exp = (ExperimentBase)Activator.CreateInstance(t, new object[] {this});
+
+            Cursor.visible = false;
+            Application.runInBackground = true;
 
             SceneManager.LoadScene(getSetting("experimentScene"));
             exp.Do(new EventBase(exp.Run));
@@ -257,7 +282,7 @@ public class InterfaceManager : MonoBehaviour
         }
     }
 
-    public void showVideo(string video, Action callback) {
+    public void showVideo(string video, bool skippable, Action callback) {
         if(videoControl == null) {
             throw new Exception("No video player in this scene");
         }
@@ -269,14 +294,47 @@ public class InterfaceManager : MonoBehaviour
             throw new Exception("Video resource not found");
         }
 
-        videoControl.StartVideo(videoPath, callback);
-    }
-
-    public void registerKeyHandler(Action<bool[]> handler, string[] keys) {
-
+        videoControl.StartVideo(videoPath, skippable, callback);
     }
 
     // TODO: audio recording, hardware interface
+
+    //////////
+    // Key handling code that receives key inputs from
+    // an external script and modifies program behavior
+    // accordingly
+    //////////
+    
+    public void Key(string key, bool pressed) {
+
+        Debug.Log(key + " " + pressed);
+        Action<string, bool> action;
+        while(onKey.Count != 0) {
+            if(onKey.TryDequeue(out action)) {
+                Do(new EventBase<string, bool>(action, key, pressed));
+            }
+        }
+    }
+
+    public void RegisterKeyHandler(Action<string, bool> handler) {
+        onKey.Enqueue(handler);
+    }
+
+    //////////
+    // Wrappers to make event managerment API consistent
+    //////////
+
+    public void Do(EventBase thisEvent) {
+        mainEvents.Do(thisEvent);
+    }
+
+    public void DoIn(EventBase thisEvent, int delay) {
+        mainEvents.DoIn(thisEvent, delay);
+    }
+
+    public void DoRepeating(RepeatingEvent thisEvent) {
+        mainEvents.DoRepeating(thisEvent);
+    }
 }
 
 
@@ -294,7 +352,6 @@ public class FileManager {
     }
 
     public virtual string experimentRoot() {
-        // TODO: use . directory?
         return System.IO.Path.GetFullPath(".");
     }
 
@@ -318,7 +375,11 @@ public class FileManager {
     }
 
     public bool isValidParticipant(string code) {
-        if(manager.experimentConfig == null) {
+        if(manager.getSetting("isTest")) {
+            return true;
+        }
+
+        if(manager.getSetting("experimentName") == null) {
             return false;
         }
         Regex rx = new Regex(@"^" + manager.getSetting("prefix") + @"\d{1,4}$");

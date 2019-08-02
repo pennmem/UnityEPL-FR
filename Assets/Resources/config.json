@@ -1,5 +1,6 @@
 {
     "isTest": true,
     "launcherScene": "UpdatedSetup",
-    "availableExperiments": ["RepFR"]
+    "availableExperiments": ["RepFR"],
+    "eventsPerFrame": 5
 }

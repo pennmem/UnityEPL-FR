@@ -61,10 +61,17 @@ public class RepFRExperiment : ExperimentBase {
       state.wordIndex = 0;
     }
 
-    stateMachine["Run"] = new List<Action> {DoIntroductionVideo,
+    stateMachine["Run"] = new List<Action> {DoIntroductionPrompt,
+                                            DoIntroductionVideo,
+                                            DoRepeatVideo,
+                                            DoQuitorContinue,
+                                            //DoMicrophoneTest,
+                                            //DoPractice,
+                                            DoConfirmStart,
                                             MainLoop,
                                             Quit};
     stateMachine["MainLoop"] = new List<Action> {DoCountdownVideo,
+                                                 DoOrientation,
                                                  DoEncoding,
                                                  DistractorTimeout,
                                                  DoDistractor};
@@ -73,21 +80,28 @@ public class RepFRExperiment : ExperimentBase {
     Start();
   }
 
-  protected void Quit() {
-    Debug.Log("Quitting");
-    Stop();
-    #if UNITY_EDITOR
-    UnityEditor.EditorApplication.isPlaying = false;
-    #else
-    Application.Quit();
-    #endif
-    //no more calls to Run past this point
+  protected void DoConfirmStart() {
+    // runs experimnt or quits
+    state.runIndex++;
+    ConfirmStart();
   }
-  //////////
-  // Run steps and wrapper functions
-  // for advancing list state
-  //////////
-  
+
+  protected void DoQuitorContinue(){
+    state.runIndex++;
+    QuitPrompt();
+  }
+
+  protected void DoRepeatVideo() {
+    WaitForKey("Press Y to continue to practice list, \n Press N to replay instructional video.", 
+                RepeatOrContinue);
+
+  }
+
+  protected void DoIntroductionPrompt() {
+    state.runIndex++;
+    WaitForKey("Press any key to show instruction video", AnyKey);
+  }
+
   protected void DoIntroductionVideo() {
     bool done = base.IntroductionVideo();
     if(done) {
@@ -98,11 +112,6 @@ public class RepFRExperiment : ExperimentBase {
     }
   }
 
-
-  //////////
-  // Main Loop logic and
-  // wrapper functions to ste
-  //////////
   protected void MainLoop() {
     CheckLoop();
     stateMachine["MainLoop"][state.mainLoopIndex].Invoke();
@@ -131,6 +140,10 @@ public class RepFRExperiment : ExperimentBase {
     }
   }
 
+  protected void DoOrientation() {
+    base.Orientation();
+    state.mainLoopIndex++;
+  }
   protected void DoEncoding() {
     // enforcing types with cast so that the base function can be called properly
     bool done = base.Encoding((IList<string>)state.currentSession[state.listIndex].encoding.words, (int)state.wordIndex);
@@ -142,15 +155,36 @@ public class RepFRExperiment : ExperimentBase {
     }
   }
 
+  protected void DoDistractor() {
+    base.Distractor();
+  }
+
   protected void DistractorTimeout() {
     DoIn(new EventBase(() => state.mainLoopIndex++), (int)manager.getSetting("distractorDuration"));
     state.mainLoopIndex++;
     Do(new EventBase(Run));
   }
 
-  protected void DoDistractor() {
-    base.Distractor();
+
+  //////////
+  // state-specific key handlers
+  //////////
+
+  protected void RepeatOrContinue(string key, bool down) {
+    if(down && key=="N") {
+      state.runIndex--;
+      Do(new EventBase(Run));
+    }
+    else if(down && key=="Y") {
+      state.runIndex++;
+      manager.Do(new EventBase(manager.clearText));
+      Do(new EventBase(Run));
+    }
+    else {
+      manager.RegisterKeyHandler(RepeatOrContinue);
+    }
   }
+
 
   public RepFRRun MakeRun(bool enc_stim, bool rec_stim) {
     var enclist = RepWordGenerator.Generate(rep_counts, source_words, enc_stim);

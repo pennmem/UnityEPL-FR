@@ -32,7 +32,7 @@ public class UpdatedExperimentSelection : MonoBehaviour
         UnityEngine.UI.Dropdown dropdown = GetComponent<UnityEngine.UI.Dropdown>();
 
         if(dropdown.captionText.text != "Select Task...") {
-            manager.mainEvents.Do(new EventBase<string>(manager.loadExperimentConfig, 
+            manager.Do(new EventBase<string>(manager.loadExperimentConfig, 
                 dropdown.captionText.text));
         }
     }

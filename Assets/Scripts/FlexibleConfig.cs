@@ -26,7 +26,6 @@ public class FlexibleConfig {
                 JTokenType jType = JTokenType.None;
 
                 foreach(JToken child in prop.Value.Children()) {
-                    Debug.Log((int)child.Type);
                     if(jType == JTokenType.None) {
                         jType = child.Type;
                     }
@@ -38,13 +37,28 @@ public class FlexibleConfig {
                 Type cType = JTypeConversion((int)jType);
                 if(cType  == typeof(string)) {
                     ((IDictionary<string, object>)settings).Add(prop.Name, prop.Value.ToObject<string[]>());
+                } 
+                else if(cType == typeof(int)) {
+                    ((IDictionary<string, object>)settings).Add(prop.Name, prop.Value.ToObject<int[]>());
                 }
                 else {
                     ((IDictionary<string, object>)settings).Add(prop.Name, prop.Value.ToObject<object[]>());
                 }
             }
             else {
-                ((IDictionary<string, object>)settings).Add(prop.Name, prop.Value.ToObject<object>());
+                Type cType = JTypeConversion((int)prop.Value.Type);
+                if(cType == typeof(string)) {
+                    ((IDictionary<string, object>)settings).Add(prop.Name, prop.Value.ToObject<string>());
+                }
+                else if(cType == typeof(int)) {
+                    ((IDictionary<string, object>)settings).Add(prop.Name, prop.Value.ToObject<int>());
+                }
+                else if(cType == typeof(float)) {
+                    ((IDictionary<string, object>)settings).Add(prop.Name, prop.Value.ToObject<float>());
+                }
+                else if(cType == typeof(bool)) {
+                    ((IDictionary<string, object>)settings).Add(prop.Name, prop.Value.ToObject<bool>());
+                }
             }
         }
 

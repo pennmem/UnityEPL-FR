@@ -40,7 +40,8 @@ public class InputReporter : DataReporter
                 double timestamp = UnityEPL.PopMouseTimestamp();
                 bool downState;
                 mouseDownStates.TryGetValue(mouseButton, out downState);
-                mouseDownStates[mouseButton] = !downState;
+
+                mouseDownStates[mouseButton] = !downState; 
                 ReportMouse(mouseButton, mouseDownStates[mouseButton], OSXTimestampToTimestamp(timestamp));
             }
         }
@@ -70,7 +71,8 @@ public class InputReporter : DataReporter
                 double timestamp = UnityEPL.PopKeyTimestamp();
                 bool downState;
                 keyDownStates.TryGetValue(keyCode, out downState);
-                keyDownStates[keyCode] = !downState;
+
+                keyDownStates[keyCode] = !downState; 
                 ReportKey(keyCode, keyDownStates[keyCode], OSXTimestampToTimestamp(timestamp));
             }
         }
