@@ -57,32 +57,41 @@ public class RepFRExperiment : ExperimentBase {
       state.currentSession = GenerateSession();
       state.runIndex = 0;
       state.mainLoopIndex = 0;
+      state.micTestIndex = 0;
       state.listIndex = 0;
       state.wordIndex = 0;
     }
 
-    stateMachine["Run"] = new List<Action> {DoIntroductionPrompt,
+    stateMachine["Run"] = new List<Action> {
+                                            DoMicrophoneTest,
+                                            DoRepeatMicTest,
+                                            DoIntroductionPrompt,
                                             DoIntroductionVideo,
                                             DoRepeatVideo,
-                                            DoQuitorContinue,
-                                            //DoMicrophoneTest,
-                                            //DoPractice,
-                                            DoConfirmStart,
                                             MainLoop,
                                             Quit};
+
     stateMachine["MainLoop"] = new List<Action> {DoCountdownVideo,
                                                  DoOrientation,
                                                  DoEncoding,
                                                  DistractorTimeout,
-                                                 DoDistractor};
-                                                 //Recall};
+                                                 DoDistractor,
+                                                 DoRecallPrompt,
+                                                 DoRecall};
+
+    stateMachine["MicrophoneTest"] = new List<Action> {DoMicTestPrompt,
+                                                       DoRecordTest,
+                                                       DoPlaybackTest};
     
     Start();
   }
 
+  //////////
+  // Text prompts and associated key handlers
+  //////////
   protected void DoConfirmStart() {
     // runs experimnt or quits
-    state.runIndex++;
+    state.mainLoopIndex++;
     ConfirmStart();
   }
 
@@ -91,26 +100,48 @@ public class RepFRExperiment : ExperimentBase {
     QuitPrompt();
   }
 
-  protected void DoRepeatVideo() {
-    WaitForKey("Press Y to continue to practice list, \n Press N to replay instructional video.", 
-                RepeatOrContinue);
+  protected void DoMicTestPrompt() {
+    state.micTestIndex++;
+    MicTestPrompt();
+  }
 
+  protected void DoRepeatVideo() {
+    WaitForKey("repeat introduction video", "Press Y to continue to practice list, \n Press N to replay instructional video.", 
+                RepeatOrContinue);
+  }
+
+  protected void DoRepeatMicTest() {
+    WaitForKey("repeat mic test", "Did you hear the recording? \n(Y=Continue / N=Try Again / C=Cancel).", 
+                RepeatOrContinue);
   }
 
   protected void DoIntroductionPrompt() {
     state.runIndex++;
-    WaitForKey("Press any key to show instruction video", AnyKey);
+    WaitForKey("show instruction video", "Press any key to show instruction video", AnyKey);
   }
 
-  protected void DoIntroductionVideo() {
-    bool done = base.IntroductionVideo();
-    if(done) {
-      state.runIndex++;
-      // video enqueues run, this function
-      // must return before next Run call
-      // can be processed
-    }
+  protected void DoRecallPrompt() {
+    state.mainLoopIndex++;
+    base.RecallPrompt();
   }
+
+  //////////
+  // Video Presentation functions
+  //////////
+
+  protected void DoIntroductionVideo() {
+    state.runIndex++;
+    base.IntroductionVideo();
+  }
+
+  protected void DoCountdownVideo() {
+    state.mainLoopIndex++;
+    base.CountdownVideo();
+  }
+
+  //////////
+  // Top level functions for state machine loops
+  //////////
 
   protected void MainLoop() {
     CheckLoop();
@@ -123,6 +154,12 @@ public class RepFRExperiment : ExperimentBase {
       state.listIndex++;
     }
 
+    // First list is practice, prompt when it is done
+    if(state.listIndex == 1 && state.mainLoopIndex == 0) {
+      Do(new EventBase(DoConfirmStart));
+      return;
+    }
+
     if(state.listIndex  == state.currentSession.Count) {
       state.runIndex++;
       this.Do(new EventBase(Run));
@@ -130,19 +167,25 @@ public class RepFRExperiment : ExperimentBase {
     }
   }
 
-  protected void DoCountdownVideo() {
-    bool done = base.CountdownVideo();
-    if(done) {
-      state.mainLoopIndex++;
-      // video enqueues run, this function
-      // must return before next Run call
-      // can be processed
+  protected void DoMicrophoneTest() {
+    if(state.micTestIndex == stateMachine["MicrophoneTest"].Count()) {
+      state.runIndex++;
+      state.micTestIndex = 0;
+      Do(new EventBase(Run));
+      return;
+    } 
+    else {
+      stateMachine["MicrophoneTest"][state.micTestIndex].Invoke();
     }
   }
 
+  //////////
+  // Experiment presentation stages
+  //////////
+
   protected void DoOrientation() {
-    base.Orientation();
     state.mainLoopIndex++;
+    base.Orientation();
   }
   protected void DoEncoding() {
     // enforcing types with cast so that the base function can be called properly
@@ -165,6 +208,30 @@ public class RepFRExperiment : ExperimentBase {
     Do(new EventBase(Run));
   }
 
+  protected void DoRecall() {
+    state.mainLoopIndex++;
+    string path = System.IO.Path.Combine(manager.fileManager.sessionPath(), state.listIndex.ToString());
+    Recall(path);
+  }
+
+  //////////
+  // Microphone testing states
+  //////////
+
+  protected void DoRecordTest() {
+    state.micTestIndex++;
+    string file =  System.IO.Path.Combine(manager.fileManager.sessionPath(), "microphone_test_" 
+                    /*+ DataReporter.RealWorldTime().ToString("yyyy-MM-dd_HH_mm_ss")*/ + ".wav");
+
+    state.recordTestPath = file;
+    RecordTest(file);
+  }
+
+  protected void DoPlaybackTest() {
+    state.micTestIndex++;
+    string file = state.recordTestPath;
+    PlaybackTest(file);
+  }
 
   //////////
   // state-specific key handlers

@@ -9,5 +9,8 @@
     "distractorDuration": 20000,
     "introductionVideo": "FR_instructions_EN",
     "countdownVideo": "countdown",
-    "orientationDuration": [1000, 1400]
+    "orientationDuration": [1000, 1400],
+    "micTestDuration": 5000,
+    "recallPromptDuration": 1000,
+    "recallDuration": 5000
 }

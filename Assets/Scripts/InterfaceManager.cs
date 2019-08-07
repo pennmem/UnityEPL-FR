@@ -79,7 +79,12 @@ public class InterfaceManager : MonoBehaviour
     public Syncbox syncBox;
     public VideoControl videoControl;
     public TextDisplayer textDisplayer; // doesn't currently support multiple  text displays
-    public SoundRecorder soundRecorder;
+    public SoundRecorder recorder;
+
+    public AudioSource highBeep;
+    public AudioSource lowBeep;
+    public AudioSource lowerBeep;
+    public AudioSource playback;
 
     //////////
     // Input reporters
@@ -121,13 +126,7 @@ public class InterfaceManager : MonoBehaviour
     void Update()
     {
         if(Input.GetKeyDown(quitKey)) {
-            Debug.Log("Should Quit");
-        #if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
-        #else
-            Application.Quit();
-        #endif
-            return;
+            Quit();
         }
 
 
@@ -173,10 +172,18 @@ public class InterfaceManager : MonoBehaviour
             Debug.Log("Found VideoPlayer");
         }
 
-        GameObject sound = GameObject.Find("SoundRecorder");
+        GameObject sound = GameObject.Find("Sounds");
         if(sound != null) {
-            soundRecorder = sound.GetComponent<SoundRecorder>();
-            Debug.Log("Found SoundRecorder");
+            lowBeep = sound.transform.Find("LowBeep").gameObject.GetComponent<AudioSource>();
+            lowerBeep =  sound.transform.Find("LowerBeep").gameObject.GetComponent<AudioSource>();
+            highBeep =  sound.transform.Find("HighBeep").gameObject.GetComponent<AudioSource>();
+            playback =  sound.transform.Find("Playback").gameObject.GetComponent<AudioSource>();
+            Debug.Log("Found Sounds");
+        }
+
+        GameObject soundRecorder = GameObject.Find("SoundRecorder");
+        if(soundRecorder != null) {
+            recorder = soundRecorder.GetComponent<SoundRecorder>();
         }
     }
 
@@ -251,6 +258,16 @@ public class InterfaceManager : MonoBehaviour
         }
     }
 
+    public void Quit() {
+        Debug.Log("Quitting");
+    #if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+    #else
+        Application.Quit();
+    #endif
+    //no more calls to Run past this point
+    }
+
     public void launchLauncher() {
         SceneManager.LoadScene(getSetting("launcherScene"));
     }
@@ -260,16 +277,23 @@ public class InterfaceManager : MonoBehaviour
         experimentConfig = FlexibleConfig.loadFromText(json.text); 
     }
 
-    public void reportData(string type, DataPoint data) {
-
-    }
-
-    public void showText(string text) {
+    public void showText(string tag, string text, string color) {
         if(textDisplayer == null) {
             throw new Exception("No text displayer in current scene");
         }
         else {
-            string tag = "TEST";
+            Color myColor = Color.clear;
+            ColorUtility.TryParseHtmlString(color, out myColor); 
+
+            textDisplayer.ChangeColor(myColor);
+            textDisplayer.DisplayText(tag, text);
+        }
+    }
+    public void showText(string tag, string text) {
+        if(textDisplayer == null) {
+            throw new Exception("No text displayer in current scene");
+        }
+        else {
             textDisplayer.DisplayText(tag, text);
         }
     }
@@ -278,6 +302,7 @@ public class InterfaceManager : MonoBehaviour
             throw new Exception("No text displayer in current scene");
         }
         else {
+            textDisplayer.OriginalColor();
             textDisplayer.ClearText();
         }
     }
@@ -306,8 +331,6 @@ public class InterfaceManager : MonoBehaviour
     //////////
     
     public void Key(string key, bool pressed) {
-
-        Debug.Log(key + " " + pressed);
         Action<string, bool> action;
         while(onKey.Count != 0) {
             if(onKey.TryDequeue(out action)) {
@@ -364,12 +387,34 @@ public class FileManager {
     }
     public string participantPath(string participant) {
         string dir = experimentPath();
-        dir = System.IO.Path.Combine(dir, manager.getSetting("participant"));
+        dir = System.IO.Path.Combine(dir, participant);
         return dir;
     }
 
+    public string participantPath() {
+        string dir = experimentPath();
+        string participant = manager.getSetting("participantCode");
+
+        if(participant == null) {
+            throw new Exception("No participant selected");
+        }
+
+        dir = System.IO.Path.Combine(dir, participant);
+        return dir;
+    }
+    
     public string sessionPath(string participant, int session) {
         string dir = participantPath(participant);
+        dir = System.IO.Path.Combine(dir, session.ToString() + ".session");
+        return dir;
+    }
+
+    public string sessionPath() {
+        string session = manager.getSetting("session").ToString();
+        if(session == null) {
+            throw new Exception("No session selected");
+        }
+        string dir = participantPath();
         dir = System.IO.Path.Combine(dir, session.ToString() + ".session");
         return dir;
     }
@@ -393,6 +438,8 @@ public class FileManager {
     }
 
     // TODO: create session, participant
+
+    // TODO: recording path
 }
 
 public class TestFileManager : FileManager {

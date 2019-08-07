@@ -77,7 +77,9 @@ static Dictionary<int, string> OSXKeyCodes = new Dictionary<int, string> {
 {18, "1"},
 {83, "1"},
 {29, "0"},
-{82, "0"}
+{82, "0"},
+{36, "Return"},
+{76, "Enter"}
 };
 
 public static string get(int code, bool isOSX=true) {

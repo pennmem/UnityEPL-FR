@@ -4,6 +4,34 @@ using System.Runtime.InteropServices;
 
 public static class UnityEPL
 {
+    #if UNITY_IPHONE
+	[DllImport ("__Internal")]
+#else
+    [DllImport("UnityEPLNativePlugin")]
+#endif
+    public static extern double StartCocoaPlugin();
+
+    [DllImport("UnityEPLNativePlugin")]
+    public static extern void StopCocoaPlugin();
+
+    [DllImport("UnityEPLNativePlugin")]
+    public static extern int PopKeyKeycode();
+
+    [DllImport("UnityEPLNativePlugin")]
+    public static extern double PopKeyTimestamp();
+
+    [DllImport("UnityEPLNativePlugin")]
+    public static extern int CountKeyEvents();
+
+    [DllImport("UnityEPLNativePlugin")]
+    public static extern int PopMouseButton();
+
+    [DllImport("UnityEPLNativePlugin")]
+    public static extern double PopMouseTimestamp();
+
+    [DllImport("UnityEPLNativePlugin")]
+    public static extern int CountMouseEvents();
+
     private static string[] participants = null;
     private static string experiment = null;
     private static string dataPath = null;

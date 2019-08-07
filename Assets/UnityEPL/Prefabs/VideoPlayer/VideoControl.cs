@@ -35,6 +35,11 @@ public class VideoControl : MonoBehaviour
     }
 
     void OnDisable() {
+        // clear player
+        RenderTexture.active = videoPlayer.targetTexture;
+        GL.Clear(true, true, Color.black);
+        RenderTexture.active = null;;
+
         if(callback != null) {
             callback();
         }

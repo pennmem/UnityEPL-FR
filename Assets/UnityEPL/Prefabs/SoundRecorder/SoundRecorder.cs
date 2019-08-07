@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.Networking;
 using UnityEngine;
 
 public class SoundRecorder : MonoBehaviour
@@ -16,6 +17,7 @@ public class SoundRecorder : MonoBehaviour
     void OnEnable()
     {
         recording = Microphone.Start("", true, SECONDS_IN_MEMORY, SAMPLE_RATE);
+        
     }
 
     void OnDisable()
@@ -81,12 +83,12 @@ public class SoundRecorder : MonoBehaviour
     public AudioClip AudioClipFromDatapath(string datapath)
     {
         string url = "file:///" + datapath;
-        WWW audioFile = new WWW(url);
-        while (!audioFile.isDone)
-        {
-
+        UnityWebRequest audioFile = UnityWebRequestMultimedia.GetAudioClip(url, AudioType.WAV);
+        audioFile.SendWebRequest();
+        while(!audioFile.isDone) {
+            // block
         }
-        return audioFile.GetAudioClip();
+        return DownloadHandlerAudioClip.GetContent(audioFile);
     }
 
     void OnApplicationQuit()

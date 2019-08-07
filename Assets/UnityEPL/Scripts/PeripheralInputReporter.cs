@@ -1,10 +1,12 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
+using System.Runtime.InteropServices;
 using UnityEngine;
 
 [AddComponentMenu("UnityEPL/Reporters/Input Reporter")]
-public class PeripheralInputReporter : DataReporter {}
+public class PeripheralInputReporter : DataReporter {
 #if UNITY_IPHONE
 	[DllImport ("__Internal")]
 #else
@@ -49,7 +51,7 @@ public class PeripheralInputReporter : DataReporter {}
         manager = (InterfaceManager)mgr.GetComponent("InterfaceManager");
 
         if(!nativePluginRunning) {
-            OSStartTime = UnityEPL.StartCocoaPlugin();
+            OSStartTime = StartCocoaPlugin();
             nativePluginRunning = true;
         }
     }
@@ -72,11 +74,11 @@ public class PeripheralInputReporter : DataReporter {}
     {
         if (IsMacOS())
         {
-            int eventCount = UnityEPL.CountMouseEvents();
+            int eventCount = CountMouseEvents();
             if (eventCount >= 1)
             {
-                int mouseButton = UnityEPL.PopMouseButton();
-                double timestamp = UnityEPL.PopMouseTimestamp();
+                int mouseButton = PopMouseButton();
+                double timestamp = PopMouseTimestamp();
                 bool downState;
                 mouseDownStates.TryGetValue(mouseButton, out downState);
                 mouseDownStates[mouseButton] = !downState;
@@ -103,11 +105,11 @@ public class PeripheralInputReporter : DataReporter {}
     {
         if (IsMacOS())
         {
-            int eventCount = UnityEPL.CountKeyEvents();
+            int eventCount = CountKeyEvents();
             if (eventCount >= 1)
             {
-                int keyCode = UnityEPL.PopKeyKeycode();
-                double timestamp = UnityEPL.PopKeyTimestamp();
+                int keyCode = PopKeyKeycode();
+                double timestamp = PopKeyTimestamp();
                 bool downState;
                 keyDownStates.TryGetValue(keyCode, out downState);
                 keyDownStates[keyCode] = !downState;
@@ -155,7 +157,8 @@ public class PeripheralInputReporter : DataReporter {}
 
     public void OnDestroy() {
         if(nativePluginRunning) {
-            UnityEPL.StopCocoaPlugin();
+            Debug.Log("stopping plugin");
+            StopCocoaPlugin();
             nativePluginRunning = false;
         }
     }
