@@ -1,9 +1,10 @@
-﻿using System.Collections;
+﻿using System.IO;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// This is attacked to the participant selection dropdown.  It is responsible for loading the information about the selected participant.
+/// This is attached to the participant selection dropdown.  It is responsible for loading the information about the selected participant.
 /// 
 /// It also allows users to edit the loaded information with Increase/Decrease Session/List number buttons.
 /// </summary>
@@ -16,10 +17,10 @@ public class UpdatedParticipantSelection : MonoBehaviour
 
     public static int nextSessionNumber = 0;
     public static int nextListNumber = 0;
-    public static IronPython.Runtime.List nextWords = null;
 
-    // assumes that experiment names are unique
-    private string currentExperiment;
+    private bool experimentUpdated = false;
+    // ^ updtaed by GUI event when experiment is
+    // selected from dropdown menu
 
     void Awake() {
         GameObject mgr = GameObject.Find("InterfaceManager");
@@ -29,11 +30,14 @@ public class UpdatedParticipantSelection : MonoBehaviour
     void Update() {
 
         // update participants when new experiments are loaded
-        // FIXME: excessive polling of getSetting
-        if((manager.getSetting("experimentName") != null) && (currentExperiment != manager.getSetting("experimentName"))) {
-            currentExperiment = manager.getSetting("experimentName");
+        if(experimentUpdated && ((string)manager.GetSetting("experimentName") != null)) {
+            experimentUpdated = false;
             FindParticipants();
         }
+    }
+
+    public void ExperimentUpdated() {
+        experimentUpdated = true;
     }
 
     public void FindParticipants()
@@ -43,21 +47,22 @@ public class UpdatedParticipantSelection : MonoBehaviour
         dropdown.ClearOptions();
         dropdown.AddOptions(new List<string>() { "Select participant...", "New participant"});
 
-        string participantDirectory = manager.fileManager.experimentPath();
-        System.IO.Directory.CreateDirectory(participantDirectory);
-        string[] filepaths = System.IO.Directory.GetDirectories(participantDirectory);
-        string[] filenames = new string[filepaths.Length];
+        string participantDirectory = manager.fileManager.ExperimentPath();
+        if(Directory.Exists(participantDirectory)) {
+            string[] filepaths = System.IO.Directory.GetDirectories(participantDirectory);
+            List<string> filenames = new List<string>(); 
 
-        for (int i = 0; i < filepaths.Length; i++)
-            filenames[i] = System.IO.Path.GetFileName(filepaths[i]);
+            for (int i = 0; i < filepaths.Length; i++)
+                if(manager.fileManager.isValidParticipant(System.IO.Path.GetFileName(filepaths[i])))
+                    filenames.Add(System.IO.Path.GetFileName(filepaths[i]));
 
-        dropdown.AddOptions(new List<string>(filenames));
+            dropdown.AddOptions(filenames);
+        }
         dropdown.value = 0;
         dropdown.RefreshShownValue();
 
         nextSessionNumber = 0;
         nextListNumber = 0;
-        nextWords = null;
         UpdateTexts();
     }
 
@@ -79,27 +84,23 @@ public class UpdatedParticipantSelection : MonoBehaviour
         UnityEngine.UI.Dropdown dropdown = GetComponent<UnityEngine.UI.Dropdown>();
         string selectedParticipant = dropdown.captionText.text;
 
-        if (!System.IO.Directory.Exists(manager.fileManager.participantPath(selectedParticipant)))
+        if (!System.IO.Directory.Exists(manager.fileManager.ParticipantPath(selectedParticipant)))
             throw new UnityException("You tried to load a participant that doesn't exist.");
 
         participantNameInput.text = selectedParticipant;
 
-        nextSessionNumber = 0;
-        while (System.IO.File.Exists(manager.fileManager.sessionPath(selectedParticipant, nextSessionNumber)))
-        {
-            nextSessionNumber++;
-        }
+        nextSessionNumber = manager.fileManager.CurrentSession(selectedParticipant);
 
-        LoadSession(); 
+        UpdateTexts();
+        //LoadSession(); 
     }
 
-    // TODO: this logic belongs to experiment
     public void LoadSession()
     {
         UnityEngine.UI.Dropdown dropdown = GetComponent<UnityEngine.UI.Dropdown>();
         string selectedParticipant = dropdown.captionText.text;
-        string sessionFilePath = manager.fileManager.sessionPath(selectedParticipant, nextSessionNumber);
-        if (System.IO.File.Exists(sessionFilePath))
+        string sessionFilePath = manager.fileManager.SessionPath(selectedParticipant, nextSessionNumber);
+        if (System.IO.Directory.Exists(sessionFilePath))
         {
             // TODO: resuming experiment
             Debug.Log("Session already started"); 
@@ -107,7 +108,6 @@ public class UpdatedParticipantSelection : MonoBehaviour
         else //start from the beginning if it doesn't exist yet
         {
             nextListNumber = 0;
-            nextWords = null;
         }
         UpdateTexts();
     }
@@ -121,7 +121,8 @@ public class UpdatedParticipantSelection : MonoBehaviour
 
     public void IncreaseListNumber()
     {
-        if (nextListNumber < FRExperimentSettings.GetSettingsByName(UnityEPL.GetExperimentName()).numberOfLists - 1)
+        
+        if (nextListNumber < (int)manager.GetSetting("numLists"))
             nextListNumber++;
         UpdateTexts();
     }
@@ -135,13 +136,13 @@ public class UpdatedParticipantSelection : MonoBehaviour
 
     public void IncreaseSessionNumber()
     {
-        nextSessionNumber++;
+        if(nextSessionNumber < (int)manager.GetSetting("numSessions"))
+            nextSessionNumber++;
         LoadSession();
     }
 
     public void UpdateTexts()
     {
-        listNumberText.text = nextListNumber.ToString();
         sessionNumberText.text = nextSessionNumber.ToString();
     }
 }

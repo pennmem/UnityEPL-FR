@@ -20,7 +20,7 @@ public class UpdatedExperimentSelection : MonoBehaviour
 
         UnityEngine.UI.Dropdown dropdown = GetComponent<UnityEngine.UI.Dropdown>();
 
-        string[] experiments = manager.getSetting("availableExperiments");
+        string[] experiments = manager.GetSetting("availableExperiments").ToObject<string[]>();
 
         dropdown.AddOptions(new List<string>(new string[] {"Select Task..."}));
         dropdown.AddOptions(new List<string>(experiments));
@@ -32,7 +32,7 @@ public class UpdatedExperimentSelection : MonoBehaviour
         UnityEngine.UI.Dropdown dropdown = GetComponent<UnityEngine.UI.Dropdown>();
 
         if(dropdown.captionText.text != "Select Task...") {
-            manager.Do(new EventBase<string>(manager.loadExperimentConfig, 
+            manager.Do(new EventBase<string>(manager.LoadExperimentConfig, 
                 dropdown.captionText.text));
         }
     }

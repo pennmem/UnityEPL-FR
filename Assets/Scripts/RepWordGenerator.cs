@@ -73,7 +73,6 @@ public class BoundedInt {
 
   private void Assert(int i) {
     if (i >= limit) {
-      // TODO Should this be "UnityException"?
       throw new IndexOutOfRangeException(message);
     }
   }
@@ -81,7 +80,9 @@ public class BoundedInt {
 
 
 // This class keeps a list of words associated with their stim states.
-public class StimWordList : IEnumerable<WordStim> {
+public class StimWordList : ICollection<WordStim> {
+
+  public bool IsReadOnly { get { return false; } }
   protected List<string> words_;
   public IList<string> words {
     get { return words_.AsReadOnly(); }
@@ -149,6 +150,24 @@ public class StimWordList : IEnumerable<WordStim> {
   }
   IEnumerator System.Collections.IEnumerable.GetEnumerator() {
     return GetEnumerator();
+  }
+
+  // needed to allow writing to collection
+  // when loading session in progress
+  public void Clear() {
+    throw new NotSupportedException("method included only for compatibility");
+  }
+
+  public bool Contains(WordStim item) {
+    throw new NotSupportedException("method included only for compatibility");
+  }
+
+  public void CopyTo(WordStim[] array, int arrayIndex) {
+    throw new NotSupportedException("method included only for compatibility");
+  }
+
+  public bool Remove(WordStim item) {
+    throw new NotSupportedException("method included only for compatibility");
   }
 
   // Read-only indexed access.

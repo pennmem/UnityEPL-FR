@@ -8,6 +8,7 @@ public class Syncbox : MonoBehaviour
 {
 
     public InterfaceManager manager;
+    public ScriptedEventReporter reporter;
 
     //Function from Corey's Syncbox plugin (called "ASimplePlugin")
 	[DllImport ("ASimplePlugin")]
@@ -51,9 +52,9 @@ public class Syncbox : MonoBehaviour
 		while (true)
         {
             //pulse
-            manager.scriptedInput.ReportOutOfThreadScriptedEvent("Sync pulse begin", new System.Collections.Generic.Dictionary<string, object>());
+            reporter.ReportOutOfThreadScriptedEvent("Sync pulse begin", new System.Collections.Generic.Dictionary<string, object>());
             SyncPulse();
-            manager.scriptedInput.ReportOutOfThreadScriptedEvent("Sync pulse end", new System.Collections.Generic.Dictionary<string, object>());
+            reporter.ReportOutOfThreadScriptedEvent("Sync pulse end", new System.Collections.Generic.Dictionary<string, object>());
 
             //wait a random time between min and max
             float timeBetweenPulses = (float)(TIME_BETWEEN_PULSES_MIN + (random.NextDouble() * (TIME_BETWEEN_PULSES_MAX - TIME_BETWEEN_PULSES_MIN)));

@@ -2,6 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Converters;
 using System.IO;
 using UnityEngine; // to read resource files packaged with Unity
 
@@ -27,55 +30,84 @@ public class RepFRSession : List<RepFRRun> {
 public class RepFRExperiment : ExperimentBase {
   protected List<string> source_words;
   protected List<string> blank_words;
-  protected RepCounts rep_counts;
+  protected RepCounts rep_counts = null;
   protected int words_per_list;
 
-  public RepFRExperiment(InterfaceManager _manager) : base(_manager) {
-    //source_words = source_word_list;
+  protected RepFRSession currentSession;
 
-    // TODO: - Get these parameters from the config system. -> most naturally expressed through nested array
+  public RepFRExperiment(InterfaceManager _manager) : base(_manager) {
     // Repetition specification:
-    rep_counts = new RepCounts(3, 6).RepCnt(2, 3).RepCnt(1, 3);
+    int[] repeats = manager.GetSetting("wordRepeats").ToObject<int[]>();
+    int[] counts = manager.GetSetting("wordCounts").ToObject<int[]>();
+
+    if(repeats.Length != counts.Length) {
+      throw new Exception("Word Repeats and Counts not aligned");
+    }
+
+    for(int i=0; i < repeats.Length; i++) {
+      if(rep_counts == null) {
+        rep_counts = new RepCounts(repeats[i], counts[i]);
+      }
+      else {
+        rep_counts = rep_counts.RepCnt(repeats[i], counts[i]);
+      }
+    }
     words_per_list = rep_counts.TotalWords();
 
     blank_words =
       new List<string>(Enumerable.Repeat(string.Empty, words_per_list));
 
-    // Using Unity Asset loading, can be replaced
-    string source_list = manager.fileManager.getWordList();
-    var txt = File.ReadAllLines(source_list);
-    source_words = new List<string>(txt);
-    Debug.Log(source_words);
 
-    // TODO: resuming session
-    if(false) {
-
+    string source_list = manager.fileManager.GetWordList();
+    source_words = new List<string>();
+    //skip line for csv header
+    foreach(var line in File.ReadLines(source_list).Skip(1))
+    {
+      source_words.Add(line);
     }
+
+    // load state if previously existing
+    dynamic loadedState = LoadState((string)manager.GetSetting("participantCode"), (int)manager.GetSetting("session"));
+    if(loadedState != null) {
+      state = loadedState;
+      currentSession = LoadRepFRSession((string)manager.GetSetting("participantCode"), (int)manager.GetSetting("session"));
+      if(state.isComplete) {
+        // FIXME: WARN and return to LAUNCHER 
+      }
+
+      // TODO: is this right?
+      if(state.wordIndex > 0) {
+        state.listIndex++;
+      }
+    }
+    // generate new session if untouched
     else {
-      // add all state related data directly to
-      // state class
-      state.currentSession = GenerateSession();
-      state.runIndex = 0;
-      state.mainLoopIndex = 0;
-      state.micTestIndex = 0;
+      currentSession = GenerateSession();
       state.listIndex = 0;
-      state.wordIndex = 0;
     }
 
-    stateMachine["Run"] = new List<Action> {
-                                            DoMicrophoneTest,
+    // always resume at the beginning
+    state.wordIndex = 0;
+    state.runIndex = 0;
+    state.mainLoopIndex = 0;
+    state.micTestIndex = 0;
+
+    stateMachine["Run"] = new List<Action> {DoMicrophoneTest,
                                             DoRepeatMicTest,
                                             DoIntroductionPrompt,
                                             DoIntroductionVideo,
                                             DoRepeatVideo,
+                                            DoQuitorContinue,
                                             MainLoop,
                                             Quit};
 
-    stateMachine["MainLoop"] = new List<Action> {DoCountdownVideo,
+    stateMachine["MainLoop"] = new List<Action> {DoNextListPrompt,
+                                                 DoCountdownVideo,
                                                  DoOrientation,
                                                  DoEncoding,
                                                  DistractorTimeout,
                                                  DoDistractor,
+                                                 DoPauseBeforeRecall,
                                                  DoRecallPrompt,
                                                  DoRecall};
 
@@ -86,12 +118,22 @@ public class RepFRExperiment : ExperimentBase {
     Start();
   }
 
+
+  //////////
+  // Wait Functions
+  //////////
+
+  protected void DoPauseBeforeRecall() {
+    int[] limits = manager.GetSetting("recallDelay").ToObject<int[]>();
+    int interval = InterfaceManager.rnd.Next(limits[0], limits[1]);
+    state.mainLoopIndex++;
+    WaitForTime(interval);
+  }
+
   //////////
   // Text prompts and associated key handlers
   //////////
   protected void DoConfirmStart() {
-    // runs experimnt or quits
-    state.mainLoopIndex++;
     ConfirmStart();
   }
 
@@ -125,6 +167,16 @@ public class RepFRExperiment : ExperimentBase {
     base.RecallPrompt();
   }
 
+  protected void DoNextListPrompt() {
+    state.mainLoopIndex++; 
+    if(state.listIndex == 0) {
+      WaitForKey("pause before list", "Press any key for practice trial.", AnyKey);
+    }
+    else {
+      WaitForKey("pause before list", "Press any key for trial " + (string)state.listIndex.ToString() + ".", AnyKey);
+    }
+  }
+
   //////////
   // Video Presentation functions
   //////////
@@ -144,27 +196,30 @@ public class RepFRExperiment : ExperimentBase {
   //////////
 
   protected void MainLoop() {
-    CheckLoop();
-    stateMachine["MainLoop"][state.mainLoopIndex].Invoke();
+    bool loop = CheckLoop();
+    if(loop) {
+      stateMachine["MainLoop"][state.mainLoopIndex].Invoke();
+    }
   }
 
-  protected void CheckLoop() {
+  protected bool CheckLoop() {
     if(state.mainLoopIndex == stateMachine["MainLoop"].Count) {
+      if(state.listIndex == 0) {
+        Do(new EventBase(DoConfirmStart));
+      }
       state.mainLoopIndex = 0;
       state.listIndex++;
+
+      return false;
     }
 
-    // First list is practice, prompt when it is done
-    if(state.listIndex == 1 && state.mainLoopIndex == 0) {
-      Do(new EventBase(DoConfirmStart));
-      return;
-    }
-
-    if(state.listIndex  == state.currentSession.Count) {
+    if(state.listIndex  == currentSession.Count) {
       state.runIndex++;
       this.Do(new EventBase(Run));
-      return;
+      return false;
     }
+
+    return true;
   }
 
   protected void DoMicrophoneTest() {
@@ -189,7 +244,7 @@ public class RepFRExperiment : ExperimentBase {
   }
   protected void DoEncoding() {
     // enforcing types with cast so that the base function can be called properly
-    bool done = base.Encoding((IList<string>)state.currentSession[state.listIndex].encoding.words, (int)state.wordIndex);
+    bool done = base.Encoding((IList<string>)currentSession[state.listIndex].encoding.words, (int)state.wordIndex);
     state.wordIndex++;
     if(done) {
       state.wordIndex = 0;
@@ -203,14 +258,14 @@ public class RepFRExperiment : ExperimentBase {
   }
 
   protected void DistractorTimeout() {
-    DoIn(new EventBase(() => state.mainLoopIndex++), (int)manager.getSetting("distractorDuration"));
+    DoIn(new EventBase(() => state.mainLoopIndex++), (int)manager.GetSetting("distractorDuration"));
     state.mainLoopIndex++;
     Do(new EventBase(Run));
   }
 
   protected void DoRecall() {
     state.mainLoopIndex++;
-    string path = System.IO.Path.Combine(manager.fileManager.sessionPath(), state.listIndex.ToString());
+    string path = System.IO.Path.Combine(manager.fileManager.SessionPath(), state.listIndex.ToString());
     Recall(path);
   }
 
@@ -220,7 +275,8 @@ public class RepFRExperiment : ExperimentBase {
 
   protected void DoRecordTest() {
     state.micTestIndex++;
-    string file =  System.IO.Path.Combine(manager.fileManager.sessionPath(), "microphone_test_" 
+    // TODO: timestamp
+    string file =  System.IO.Path.Combine(manager.fileManager.SessionPath(), "microphone_test_" 
                     /*+ DataReporter.RealWorldTime().ToString("yyyy-MM-dd_HH_mm_ss")*/ + ".wav");
 
     state.recordTestPath = file;
@@ -244,7 +300,7 @@ public class RepFRExperiment : ExperimentBase {
     }
     else if(down && key=="Y") {
       state.runIndex++;
-      manager.Do(new EventBase(manager.clearText));
+      manager.Do(new EventBase(manager.ClearText));
       Do(new EventBase(Run));
     }
     else {
@@ -252,6 +308,38 @@ public class RepFRExperiment : ExperimentBase {
     }
   }
 
+  //////////
+  // Experiment specific saving and loading logic
+  //////////
+
+  public override void SaveState() {
+    base.SaveState();
+    SaveRepFRSession();
+  }
+
+  public void SaveRepFRSession() {
+    string filename = System.IO.Path.Combine(manager.fileManager.SessionPath(), "session_words.json");
+    JsonSerializer serializer = new JsonSerializer();
+
+    using (StreamWriter sw = new StreamWriter(filename))
+      using (JsonWriter writer = new JsonTextWriter(sw))
+      {
+        serializer.Serialize(writer, currentSession);
+      }
+  }
+  public RepFRSession LoadRepFRSession(string participant, int session) {
+    if(System.IO.File.Exists(System.IO.Path.Combine(manager.fileManager.SessionPath(participant, session), "session_words.json"))) {
+      string json = System.IO.File.ReadAllText(System.IO.Path.Combine(manager.fileManager.SessionPath(participant, session), "session_words.json"));
+      return JsonConvert.DeserializeObject<RepFRSession>(json);
+    }
+    else{
+      return null;
+    }
+  }
+
+  //////////
+  // Word/Stim list generation
+  //////////
 
   public RepFRRun MakeRun(bool enc_stim, bool rec_stim) {
     var enclist = RepWordGenerator.Generate(rep_counts, source_words, enc_stim);
@@ -262,14 +350,14 @@ public class RepFRExperiment : ExperimentBase {
 
   public RepFRSession GenerateSession() {
     // Parameters retrieved from experiment config, given default
-    // value if null. TODO:
+    // value if null.
     // Numbers of list types:
-    int practice_lists = manager.getSetting("practiceLists") ?? 1;
-    int pre_no_stim_lists = manager.getSetting("preNoStimLists") ?? 3;
-    int encoding_only_lists = manager.getSetting("encodingOnlyLists") ?? 4;
-    int retrieval_only_lists = manager.getSetting("retrievalOnlyLists") ?? 4;
-    int encoding_and_retrieval_lists = manager.getSetting("encodingAndRetrievalLists") ?? 4;
-    int no_stim_lists = manager.getSetting("noStimLists") ?? 10;
+    int practice_lists = (int)(manager.GetSetting("practiceLists") ?? 1);
+    int pre_no_stim_lists = (int)(manager.GetSetting("preNoStimLists") ?? 3);
+    int encoding_only_lists = (int)(manager.GetSetting("encodingOnlyLists") ?? 4);
+    int retrieval_only_lists = (int)(manager.GetSetting("retrievalOnlyLists") ?? 4);
+    int encoding_and_retrieval_lists = (int)(manager.GetSetting("encodingAndRetrievalLists") ?? 4);
+    int no_stim_lists = (int)(manager.GetSetting("noStimLists") ?? 10);
     
 
     var session = new RepFRSession();

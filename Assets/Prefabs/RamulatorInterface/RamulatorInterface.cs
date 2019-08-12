@@ -15,6 +15,8 @@ public class RamulatorInterface : MonoBehaviour
     //This will be activated when a warning needs to be displayed
     public GameObject ramulatorWarning;
 
+    public ScriptedEventReporter reporter;
+
     //how long to wait for ramulator to connect
     const int timeoutDelay = 600;
     const int unreceivedHeartbeatsToQuit = 8;
@@ -183,6 +185,6 @@ public class RamulatorInterface : MonoBehaviour
         Dictionary<string, object> messageDataDict = new Dictionary<string, object>();
         messageDataDict.Add("message", message);
         messageDataDict.Add("sent", sent.ToString());
-        manager.scriptedInput.ReportScriptedEvent("network", messageDataDict);
+        reporter.ReportScriptedEvent("network", messageDataDict);
     }
 }

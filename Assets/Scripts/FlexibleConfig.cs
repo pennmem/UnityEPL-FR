@@ -1,16 +1,34 @@
 
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Converters;
 using System;
+using System.IO;
 using System.Dynamic;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class FlexibleConfig {
-    // laod all key value pairs from a 
-    // non hierarchical JSON file into 
-    // a dynamically created object
-    public static dynamic loadFromText(string json) {
+    public static dynamic LoadFromText(string json) {
         JObject cfg = JObject.Parse(json);
+        return cfg;
+    }
+
+    public static void WriteToText(dynamic data, string filename) {
+    JsonSerializer serializer = new JsonSerializer();
+
+    using (StreamWriter sw = new StreamWriter(filename))
+      using (JsonWriter writer = new JsonTextWriter(sw))
+      {
+        serializer.Serialize(writer, data);
+      }
+    }
+
+    public static dynamic CastToStatic(JObject cfg) {
+        // casts a JObject consisting of simple types (int, bool, string,
+        // float, and single dimensional arrays) to a C# expando object, obviating
+        // the need for casts to work in C# native types
+
         dynamic settings = new ExpandoObject();
 
         foreach(JProperty prop in cfg.Properties()) {
@@ -41,8 +59,11 @@ public class FlexibleConfig {
                 else if(cType == typeof(int)) {
                     ((IDictionary<string, object>)settings).Add(prop.Name, prop.Value.ToObject<int[]>());
                 }
-                else {
-                    ((IDictionary<string, object>)settings).Add(prop.Name, prop.Value.ToObject<object[]>());
+                else if(cType == typeof(float)) {
+                    ((IDictionary<string, object>)settings).Add(prop.Name, prop.Value.ToObject<float[]>());
+                }
+                else if(cType == typeof(bool)) {
+                    ((IDictionary<string, object>)settings).Add(prop.Name, prop.Value.ToObject<bool[]>());
                 }
             }
             else {
@@ -79,4 +100,5 @@ public class FlexibleConfig {
                 throw new Exception("Unsupported Type");
         }
     }
+    
 }   

@@ -27,7 +27,7 @@ public class UpdatedLaunchExperiment : MonoBehaviour
 
         if (isValidParticipant(participantNameInput.text))
         {
-            int sessionNumber = ParticipantSelection.nextSessionNumber;
+            int sessionNumber = UpdatedParticipantSelection.nextSessionNumber;
             launchButton.GetComponentInChildren<UnityEngine.UI.Text>().text = "Start session " + sessionNumber.ToString();
         }
     }
@@ -48,23 +48,15 @@ public class UpdatedLaunchExperiment : MonoBehaviour
             return;
         }
 
-        int sessionNumber = ParticipantSelection.nextSessionNumber;
-        if (EditableExperiment.SessionComplete(sessionNumber, participantNameInput.text))
-        {
-            cantGoPrompt.GetComponent<UnityEngine.UI.Text>().text = "That session has already been completed.";
-            cantGoPrompt.SetActive(true);
-            return;
-        } 
+        int sessionNumber = UpdatedParticipantSelection.nextSessionNumber;
 
-        manager.changeSetting("participantCode", participantNameInput.text);
-        manager.changeSetting("session", sessionNumber);
-
-        // TODO: resume experiment logic
+        manager.ChangeSetting("participantCode", participantNameInput.text);
+        manager.ChangeSetting("session", sessionNumber);
 
         launchButton.SetActive(false);
         loadingButton.SetActive(true);
 
-        manager.Do(new EventBase(manager.launchExperiment));
+        manager.Do(new EventBase(manager.LaunchExperiment));
     }
 
     private bool isValidParticipant(string name)

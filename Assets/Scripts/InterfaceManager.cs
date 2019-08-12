@@ -1,8 +1,10 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using UnityEngine.SceneManagement;
+using Newtonsoft.Json.Linq;
 using UnityEngine;
 
 // It is up to objects that are referenced in this class to 
@@ -13,7 +15,7 @@ using UnityEngine;
 public class InterfaceManager : MonoBehaviour
 {
     private static string quitKey = "escape"; // escape to quit
-
+    const string SYSTEM_CONFIG = "config.json";
     //////////
     // Singleton Boilerplate
     // makes sure that only one Experiment Manager
@@ -57,8 +59,8 @@ public class InterfaceManager : MonoBehaviour
 
     // system configurations, generated on the fly by
     // FlexibleConfig
-    public dynamic systemConfig = null;
-    public dynamic experimentConfig = null;
+    public JObject systemConfig = null;
+    public JObject experimentConfig = null;
     private ExperimentBase exp;
 
     public FileManager fileManager;
@@ -98,28 +100,36 @@ public class InterfaceManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        TextAsset json = Resources.Load<TextAsset>("config");
-        systemConfig = FlexibleConfig.loadFromText(json.text); 
 
         onKey = new ConcurrentQueue<Action<string, bool>>();
-
-        Debug.Log("Config loaded");
 
         // Unity interal event handling
         SceneManager.sceneLoaded += onSceneLoaded;
 
-        if(getSetting("isTest")) {
-            Debug.Log("Test file manager created");
-            fileManager = new TestFileManager(this);
-        } else {
-            fileManager = new FileManager(this);
+        fileManager = new FileManager(this);
+
+        string text = System.IO.File.ReadAllText(System.IO.Path.Combine(fileManager.ConfigPath(), SYSTEM_CONFIG));
+        systemConfig = FlexibleConfig.LoadFromText(text);
+
+        string configPath = fileManager.ConfigPath();
+        string[] configs = Directory.GetFiles(configPath, "*.json");
+        if(configs.Length < 2) {
+            throw new Exception("Missing configuration file");
         }
 
-        Debug.Log("Experiment Manager Up");
+        JArray exps = new JArray();
+
+        for(int i=0, j=0; i<configs.Length; i++) {
+            Debug.Log(configs[i]);
+            if(!configs[i].Contains(SYSTEM_CONFIG))
+                exps.Add(Path.GetFileNameWithoutExtension(configs[i]));
+                j++;
+        }
+        ChangeSetting("availableExperiments", exps);
 
         // Start experiment Launcher scene
-        mainEvents.Do(new EventBase(launchLauncher));
-        eventsPerFrame = getSetting("eventsPerFrame") ?? 1;
+        mainEvents.Do(new EventBase(LaunchLauncher));
+        eventsPerFrame = (int)(GetSetting("eventsPerFrame") ?? 1);
     }
 
     // Update is called once per frame
@@ -128,7 +138,6 @@ public class InterfaceManager : MonoBehaviour
         if(Input.GetKeyDown(quitKey)) {
             Quit();
         }
-
 
         int i = 0;
         while(mainEvents.Process() && (i < eventsPerFrame)) {
@@ -142,11 +151,15 @@ public class InterfaceManager : MonoBehaviour
     //////////
     void onSceneLoaded(Scene scene, LoadSceneMode mode) 
     {
+        if((bool)GetSetting("isLegacyExperiment") == true) {
+            return;
+        }
 
         // text displayer
         GameObject canvas =  GameObject.Find("MemoryWordCanvas");
         if(canvas != null) {
             textDisplayer = canvas.GetComponent<TextDisplayer>();
+            // TODO: title field
             Debug.Log("Found TextDisplay");
         }
 
@@ -194,11 +207,11 @@ public class InterfaceManager : MonoBehaviour
     // settings return null.
     //////////
 
-    public dynamic getSetting(string setting) {
-        dynamic value;
+    public dynamic GetSetting(string setting) {
+        JToken value = null;
 
         if(experimentConfig != null) {
-            if(((IDictionary<string, object>)experimentConfig).TryGetValue(setting, out value)) {
+            if(experimentConfig.TryGetValue(setting, out value)) {
                 if(value != null) {
                     return value;
                 }
@@ -206,7 +219,7 @@ public class InterfaceManager : MonoBehaviour
         }
 
         if(systemConfig != null) {
-            if(((IDictionary<string, object>)systemConfig).TryGetValue(setting, out value)) {
+            if(systemConfig.TryGetValue(setting, out value)) {
                 return value;
             }
         }
@@ -215,18 +228,27 @@ public class InterfaceManager : MonoBehaviour
     }
 
     // returns true if value updated, false if new value added
-    public bool changeSetting(string setting, dynamic value) {
-        dynamic existing = getSetting(setting);
+    public bool ChangeSetting(string setting, dynamic value) {
+        JToken existing = GetSetting(setting);
         if(existing == null) {
-            ((IDictionary<string, object>)experimentConfig).Add(setting, value);
+
+            // even if setting belongs to systemConfig, experimentConfig setting overrides
+            if(experimentConfig == null) {
+                (systemConfig).Add(setting, value);
+            }
+            else {
+                (experimentConfig).Add(setting, value);
+            }
             return false;
         }
         else {
-            Type t = existing.TypeOf();
-            if( t != value.typeOf()) {
-                throw new Exception("Cannot change the type of a setting");
+            // even if setting belongs to systemConfig, experimentConfig setting overrides
+            if(experimentConfig == null) {
+                (systemConfig)[setting] = value;
             }
-            ((IDictionary<string, object>)experimentConfig)[setting] = value;
+            else {
+                (experimentConfig)[setting] = value;
+            }
             return true;
         }
     }
@@ -237,20 +259,26 @@ public class InterfaceManager : MonoBehaviour
     //////////
 
     // TODO: deal with error states if conditions not met
-    public void launchExperiment() {
+    public void LaunchExperiment() {
         // launch scene with exp, 
         // instantiate experiment,
         // call start function
 
         // Check if settings are loaded
         if(experimentConfig != null) {
-            Type t = Type.GetType((string)getSetting("experimentClass")); 
+            Type t = Type.GetType((string)GetSetting("experimentClass")); 
             exp = (ExperimentBase)Activator.CreateInstance(t, new object[] {this});
 
             Cursor.visible = false;
             Application.runInBackground = true;
+            // Make the game run as fast as possible
+            QualitySettings.vSyncCount = 1;
+            Application.targetFrameRate = 300;
 
-            SceneManager.LoadScene(getSetting("experimentScene"));
+            // create path for current participant/session
+            fileManager.CreateSession();
+
+            SceneManager.LoadScene((string)GetSetting("experimentScene"));
             exp.Do(new EventBase(exp.Run));
         }
         else {
@@ -268,16 +296,17 @@ public class InterfaceManager : MonoBehaviour
     //no more calls to Run past this point
     }
 
-    public void launchLauncher() {
-        SceneManager.LoadScene(getSetting("launcherScene"));
+    public void LaunchLauncher() {
+        Debug.Log("Launching: " + (string)GetSetting("launcherScene"));
+        SceneManager.LoadScene((string)GetSetting("launcherScene"));
     }
 
-    public void loadExperimentConfig(string name) {
-        TextAsset json = Resources.Load<TextAsset>(name);
-        experimentConfig = FlexibleConfig.loadFromText(json.text); 
+    public void LoadExperimentConfig(string name) {
+        string text = System.IO.File.ReadAllText(System.IO.Path.Combine(fileManager.ConfigPath(), name + ".json"));
+        experimentConfig = FlexibleConfig.LoadFromText(text); 
     }
 
-    public void showText(string tag, string text, string color) {
+    public void ShowText(string tag, string text, string color) {
         if(textDisplayer == null) {
             throw new Exception("No text displayer in current scene");
         }
@@ -289,7 +318,7 @@ public class InterfaceManager : MonoBehaviour
             textDisplayer.DisplayText(tag, text);
         }
     }
-    public void showText(string tag, string text) {
+    public void ShowText(string tag, string text) {
         if(textDisplayer == null) {
             throw new Exception("No text displayer in current scene");
         }
@@ -297,7 +326,7 @@ public class InterfaceManager : MonoBehaviour
             textDisplayer.DisplayText(tag, text);
         }
     }
-    public void clearText() {
+    public void ClearText() {
         if(textDisplayer == null) {
             throw new Exception("No text displayer in current scene");
         }
@@ -307,13 +336,13 @@ public class InterfaceManager : MonoBehaviour
         }
     }
 
-    public void showVideo(string video, bool skippable, Action callback) {
+    public void ShowVideo(string video, bool skippable, Action callback) {
         if(videoControl == null) {
             throw new Exception("No video player in this scene");
         }
 
         // path to video asset relative to Resources folder
-        string videoPath = getSetting(video);
+        string videoPath = (string)GetSetting(video);
 
         if(videoPath == null) {
             throw new Exception("Video resource not found");
@@ -321,8 +350,6 @@ public class InterfaceManager : MonoBehaviour
 
         videoControl.StartVideo(videoPath, skippable, callback);
     }
-
-    // TODO: audio recording, hardware interface
 
     //////////
     // Key handling code that receives key inputs from
@@ -344,7 +371,7 @@ public class InterfaceManager : MonoBehaviour
     }
 
     //////////
-    // Wrappers to make event managerment API consistent
+    // Wrappers to make event management API consistent
     //////////
 
     public void Do(EventBase thisEvent) {
@@ -374,26 +401,29 @@ public class FileManager {
         manager = _manager;
     }
 
-    public virtual string experimentRoot() {
-        return System.IO.Path.GetFullPath(".");
+    public virtual string ExperimentRoot() {
+
+        #if UNITY_EDITOR
+            return System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop);
+        #else
+            return System.IO.Path.GetFullPath(".");
+        #endif
     }
 
-    public string experimentPath() {
-        string root = experimentRoot();
-        Debug.Log(manager.getSetting("experimentName"));
-        string dir = System.IO.Path.Combine(root, manager.getSetting("experimentName"));
-        Debug.Log(dir);
+    public string ExperimentPath() {
+        string root = ExperimentRoot();
+        string dir = System.IO.Path.Combine(root, (string)manager.GetSetting("experimentName"));
         return dir;
     }
-    public string participantPath(string participant) {
-        string dir = experimentPath();
+    public string ParticipantPath(string participant) {
+        string dir = ExperimentPath();
         dir = System.IO.Path.Combine(dir, participant);
         return dir;
     }
 
-    public string participantPath() {
-        string dir = experimentPath();
-        string participant = manager.getSetting("participantCode");
+    public string ParticipantPath() {
+        string dir = ExperimentPath();
+        string participant = (string)manager.GetSetting("participantCode");
 
         if(participant == null) {
             throw new Exception("No participant selected");
@@ -403,50 +433,62 @@ public class FileManager {
         return dir;
     }
     
-    public string sessionPath(string participant, int session) {
-        string dir = participantPath(participant);
-        dir = System.IO.Path.Combine(dir, session.ToString() + ".session");
+    public string SessionPath(string participant, int session) {
+        string dir = ParticipantPath(participant);
+        dir = System.IO.Path.Combine(dir, session.ToString());
         return dir;
     }
 
-    public string sessionPath() {
-        string session = manager.getSetting("session").ToString();
+    public string SessionPath() {
+        string session = (string)manager.GetSetting("session").ToString();
         if(session == null) {
             throw new Exception("No session selected");
         }
-        string dir = participantPath();
-        dir = System.IO.Path.Combine(dir, session.ToString() + ".session");
+        string dir = ParticipantPath();
+        dir = System.IO.Path.Combine(dir, session.ToString());
         return dir;
     }
 
     public bool isValidParticipant(string code) {
-        if(manager.getSetting("isTest")) {
+        if((bool)manager.GetSetting("isTest")) {
             return true;
         }
 
-        if(manager.getSetting("experimentName") == null) {
+        if((string)manager.GetSetting("experimentName") == null) {
             return false;
         }
-        Regex rx = new Regex(@"^" + manager.getSetting("prefix") + @"\d{1,4}$");
+        Regex rx = new Regex(@"^" + (string)manager.GetSetting("prefix") + @"\d{1,4}$");
 
         return rx.IsMatch(code);
     }
 
-    public string getWordList() {
-        string root = experimentRoot();
-        return System.IO.Path.Combine(root, manager.getSetting("wordpool"));
+    public string GetWordList() {
+        string root = ExperimentRoot();
+        return System.IO.Path.Combine(root, (string)manager.GetSetting("wordpool"));
     }
 
-    // TODO: create session, participant
-
-    // TODO: recording path
-}
-
-public class TestFileManager : FileManager {
-    public TestFileManager(InterfaceManager _manager) : base(_manager) {
+    public void CreateSession() {
+        Directory.CreateDirectory(SessionPath());
     }
 
-    public override string experimentRoot() {
-        return System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop);
+    public void CreateParticipant() {
+        Directory.CreateDirectory(ParticipantPath());
+    }
+    public void CreateExperiment() {
+        Directory.CreateDirectory(ExperimentPath());
+    }
+
+    public string ConfigPath() {
+        string root = ExperimentRoot();
+        return System.IO.Path.Combine(root, "configs");
+    }
+
+    public int CurrentSession(string participant) {
+        int nextSessionNumber = 0;
+        while (System.IO.Directory.Exists(manager.fileManager.SessionPath(participant, nextSessionNumber)))
+        {
+            nextSessionNumber++;
+        }
+        return nextSessionNumber;
     }
 }
