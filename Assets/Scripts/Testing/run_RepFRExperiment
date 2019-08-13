@@ -3,6 +3,8 @@
 TEST="RepFRExperiment"
 INCLUDES="../RepWordGenerator.cs ../ExperimentBase.cs"
 
-mcs Test"$TEST".cs ../"$TEST".cs $INCLUDES &&
+echo "Warning, testing manually extracted subsetTestRepFRExperiment.cs"
+mcs TestRepFRExperiment.cs subsetTestRepFRExperiment.cs stubsRepWordGenerator.cs ../RepWordGenerator.cs
+#mcs Test"$TEST".cs ../"$TEST".cs $INCLUDES &&
 mono Test"$TEST".exe
 
