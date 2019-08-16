@@ -8,6 +8,7 @@ using UnityEngine;
 
 public abstract class ExperimentBase : EventLoop {
     public InterfaceManager manager;
+    public GameObject microphoneTestMessage; // set in editor
 
     // dictionary containing lists of actions indexed
     // by the name of the function incrementing through
@@ -23,6 +24,13 @@ public abstract class ExperimentBase : EventLoop {
 
         state.isComplete = false;
         state.runIndex = 0;
+
+        if(manager.GetSetting("session") >= manager.GetSetting("numSessions")) {
+            // Queue Dos to manager since loop is never started
+            manager.Do(new EventBase<string, string>(manager.ShowText, "experiment complete warning", "Requested Session is not part of protocol"));
+            manager.DoIn(new EventBase(manager.LaunchLauncher), 2500);
+            return;
+        }
     }
 
     // executes state machine current function
@@ -73,6 +81,7 @@ public abstract class ExperimentBase : EventLoop {
 
         DoIn(new EventBase(() => {
                                 manager.Do(new EventBase(manager.ClearText));
+                                manager.Do(new EventBase(manager.ClearTitle));
                                 this.Do(new EventBase(Run));
                             }), (int)manager.GetSetting("micTestDuration"));
     }
@@ -137,8 +146,6 @@ public abstract class ExperimentBase : EventLoop {
     }
 
     protected void RecallPrompt() {
-
-        // TODO: VAD
         manager.Do(new EventBase(manager.highBeep.Play));
         manager.Do(new EventBase<string, string>(manager.ShowText, "recall stars", "*******"));
         DoIn(new EventBase(() => {
@@ -167,6 +174,7 @@ public abstract class ExperimentBase : EventLoop {
     }
 
     public void MicTestPrompt() {
+        manager.Do(new EventBase<string, string>(manager.ShowTitle, "microphone test title", "Microphone Test"));
         WaitForKey("start recording", "Press any key to record a sound after the beep.", AnyKey);
     }
 
@@ -184,9 +192,9 @@ public abstract class ExperimentBase : EventLoop {
     protected virtual void Quit() {
         if(state.listIndex == (int)manager.GetSetting("numLists")){
             state.isComplete = true;
+            manager.Do(new EventBase<string, string>(manager.ShowText, "session end", "Yay! Session Complete."));
         }
         Stop();
-        manager.Do(new EventBase<string, string>(manager.ShowText, "session end", "Yay! Session Complete."));
         manager.Do(new EventBase(manager.Quit));
     }
 
@@ -228,12 +236,15 @@ public abstract class ExperimentBase : EventLoop {
                 int result;
                 if(int.TryParse(state.distractorAnswer, out result) && result == Sum(state.distractorProblem)) {
                     manager.Do(new EventBase(manager.lowBeep.Play));
+                    ReportDistractorAnswered(true, state.distractorProblem, state.distractorAnswer);
                 } 
                 else {
                     manager.Do(new EventBase(manager.lowerBeep.Play));
+                    ReportDistractorAnswered(false, state.distractorProblem, state.distractorAnswer);
                 }
                 Do(new EventBase(Run));
                 manager.Do(new EventBase(manager.ClearText));
+                manager.scriptedInput.ReportScriptedEvent();
                 state.distractorProblem = "";
                 state.distractorAnswer = "";
                 return;
@@ -278,6 +289,21 @@ public abstract class ExperimentBase : EventLoop {
     //////////
     // Saving and loading state logic
     //////////
+
+    private void ReportBeepPlayed(string beep, string duration) {
+        Dictionary<string, object> dataDict = new Dictionary<string, object>() { { "sound name", beep }, { "sound duration", duration } };
+        manager.scriptedInput.ReportScriptedEvent("Sound Played", dataDict);
+    }
+
+    private void ReportDistractorAnswered(bool correct, string problem, string answer)
+    {
+        Dictionary<string, object> dataDict = new Dictionary<string, object>();
+        dataDict.Add("correctness", correct.ToString());
+        dataDict.Add("problem", problem);
+        dataDict.Add("answer", answer);
+        manager.scriptedInput.ReportScriptedEvent("distractor answered", dataDict);
+    }
+    
     public virtual void SaveState() {
         string path = System.IO.Path.Combine(manager.fileManager.SessionPath(), "experiment_state.json");
         FlexibleConfig.WriteToText(state, path);

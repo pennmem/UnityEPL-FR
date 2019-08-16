@@ -63,7 +63,6 @@ public class LaunchExperiment : MonoBehaviour
         IronPython.Runtime.List words = ParticipantSelection.nextWords;
 
 
-        // TODO: replace with settings
         EditableExperiment.ConfigureExperiment((ushort)(listNumber * 12), (ushort)sessionNumber, newWords: words);
         launchButton.SetActive(false);
         loadingButton.SetActive(true);

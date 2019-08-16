@@ -159,7 +159,6 @@ public class InterfaceManager : MonoBehaviour
         GameObject canvas =  GameObject.Find("MemoryWordCanvas");
         if(canvas != null) {
             textDisplayer = canvas.GetComponent<TextDisplayer>();
-            // TODO: title field
             Debug.Log("Found TextDisplay");
         }
 
@@ -333,6 +332,24 @@ public class InterfaceManager : MonoBehaviour
         else {
             textDisplayer.OriginalColor();
             textDisplayer.ClearText();
+        }
+    }
+    
+    public void ShowTitle(string tag, string text) {
+        if(textDisplayer == null) {
+            throw new Exception("No text displayer in current scene");
+        }
+        else {
+            textDisplayer.DisplayTitle(tag, text);
+        }
+    }
+    public void ClearTitle() {
+        if(textDisplayer == null) {
+            throw new Exception("No text displayer in current scene");
+        }
+        else {
+            textDisplayer.OriginalColor();
+            textDisplayer.ClearTitle();
         }
     }
 

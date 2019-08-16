@@ -21,15 +21,16 @@ public class TextDisplayer : MonoBehaviour
     /// <summary>
     /// These text elements will all be updated when this monobehaviors public methods are used.
     /// </summary>
-    public UnityEngine.UI.Text[] textElements;
+    public UnityEngine.UI.Text textElement;
+    public UnityEngine.UI.Text titleElement;
 
     private Color[] originalColors;
 
     void Start()
     {
-        originalColors = new Color[textElements.Length];
-        for (int i = 0; i < textElements.Length; i++)
-            originalColors[i] = textElements[i].color;
+        originalColors = new Color[2];
+        originalColors[0] = textElement.color;
+        originalColors[1] = titleElement.color;
     }
 
     /// <summary>
@@ -37,8 +38,8 @@ public class TextDisplayer : MonoBehaviour
     /// </summary>
     public void OriginalColor()
     {
-        for (int i = 0; i < textElements.Length; i++)
-            textElements[i].color = originalColors[i];
+        textElement.color = originalColors[0];
+        titleElement.color = originalColors[1];
         if (wordEventReporter != null)
             wordEventReporter.ReportScriptedEvent("restore original text color", new Dictionary<string, object>());
     }
@@ -54,12 +55,26 @@ public class TextDisplayer : MonoBehaviour
     {
         if (OnText != null)
             OnText(text);
-        foreach (UnityEngine.UI.Text textElement in textElements)
-        {
-            textElement.text = text;
-        }
+
+        textElement.text = text;
         Dictionary<string, object> dataDict = new Dictionary<string, object>();
         dataDict.Add("displayed text", text);
+        if (wordEventReporter != null)
+            wordEventReporter.ReportScriptedEvent(description, dataDict);
+    }
+
+    public void DisplayTitle(string description, string text)
+    {
+        if (OnText != null)
+            OnText(text);
+
+        if(titleElement == null) {
+            return;
+        }
+
+        titleElement.text = text;
+        Dictionary<string, object> dataDict = new Dictionary<string, object>();
+        dataDict.Add("displayed title", text);
         if (wordEventReporter != null)
             wordEventReporter.ReportScriptedEvent(description, dataDict);
     }
@@ -69,12 +84,20 @@ public class TextDisplayer : MonoBehaviour
     /// </summary>
     public void ClearText()
     {
-        foreach (UnityEngine.UI.Text textElement in textElements)
-        {
-            textElement.text = "";
+        if(titleElement == null) {
+            return;
         }
+
+        textElement.text = "";
         if (wordEventReporter != null)
             wordEventReporter.ReportScriptedEvent("text display cleared", new Dictionary<string, object>());
+    }
+
+    public void ClearTitle()
+    {
+        titleElement.text = "";
+        if (wordEventReporter != null)
+            wordEventReporter.ReportScriptedEvent("title display cleared", new Dictionary<string, object>());
     }
 
     /// <summary>
@@ -83,10 +106,7 @@ public class TextDisplayer : MonoBehaviour
     /// <param name="newColor">New color.</param>
     public void ChangeColor(Color newColor)
     {
-        foreach (UnityEngine.UI.Text textElement in textElements)
-        {
-            textElement.color = newColor;
-        }
+        textElement.color = newColor;
         Dictionary<string, object> dataDict = new Dictionary<string, object>();
         dataDict.Add("new color", newColor.ToString());
         if (wordEventReporter != null)
@@ -98,8 +118,8 @@ public class TextDisplayer : MonoBehaviour
     /// </summary>
     public string CurrentText()
     {
-        if (textElements.Length == 0)
+        if (textElement == null)
             throw new UnityException("There aren't any text elements assigned to this TextDisplayer.");
-        return textElements[0].text;
+        return textElement.text;
     }
 }

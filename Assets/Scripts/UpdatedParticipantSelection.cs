@@ -102,7 +102,6 @@ public class UpdatedParticipantSelection : MonoBehaviour
         string sessionFilePath = manager.fileManager.SessionPath(selectedParticipant, nextSessionNumber);
         if (System.IO.Directory.Exists(sessionFilePath))
         {
-            // TODO: resuming experiment
             Debug.Log("Session already started"); 
         }
         else //start from the beginning if it doesn't exist yet

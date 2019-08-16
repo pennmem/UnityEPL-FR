@@ -66,29 +66,35 @@ public class RepFRExperiment : ExperimentBase {
       source_words.Add(line);
     }
 
+
+      
+
     // load state if previously existing
     dynamic loadedState = LoadState((string)manager.GetSetting("participantCode"), (int)manager.GetSetting("session"));
     if(loadedState != null) {
       state = loadedState;
       currentSession = LoadRepFRSession((string)manager.GetSetting("participantCode"), (int)manager.GetSetting("session"));
       if(state.isComplete) {
-        // FIXME: WARN and return to LAUNCHER 
+        // Queue Dos to manager since loop is never started
+        manager.Do(new EventBase<string, string>(manager.ShowText, "session complete warning", "Session Already Complete"));
+        manager.DoIn(new EventBase(manager.LaunchLauncher), 2500);
+        return;
       }
 
-      // TODO: is this right?
       if(state.wordIndex > 0) {
         state.listIndex++;
       }
+
+      state.runIndex = 5; // start trom QuitorContinue
     }
     // generate new session if untouched
     else {
       currentSession = GenerateSession();
       state.listIndex = 0;
+      state.runIndex = 0;
     }
 
-    // always resume at the beginning
     state.wordIndex = 0;
-    state.runIndex = 0;
     state.mainLoopIndex = 0;
     state.micTestIndex = 0;
 
@@ -117,7 +123,6 @@ public class RepFRExperiment : ExperimentBase {
     
     Start();
   }
-
 
   //////////
   // Wait Functions
@@ -153,7 +158,7 @@ public class RepFRExperiment : ExperimentBase {
   }
 
   protected void DoRepeatMicTest() {
-    WaitForKey("repeat mic test", "Did you hear the recording? \n(Y=Continue / N=Try Again / C=Cancel).", 
+    WaitForKey("repeat mic test", "Did you hear the recording? \n(Y=Continue / N=Try Again).", 
                 RepeatOrContinue);
   }
 
@@ -275,9 +280,8 @@ public class RepFRExperiment : ExperimentBase {
 
   protected void DoRecordTest() {
     state.micTestIndex++;
-    // TODO: timestamp
     string file =  System.IO.Path.Combine(manager.fileManager.SessionPath(), "microphone_test_" 
-                    /*+ DataReporter.RealWorldTime().ToString("yyyy-MM-dd_HH_mm_ss")*/ + ".wav");
+                    + manager.scriptedInput.RealWorldTime().ToString("yyyy-MM-dd_HH_mm_ss") + ".wav");
 
     state.recordTestPath = file;
     RecordTest(file);
@@ -313,6 +317,7 @@ public class RepFRExperiment : ExperimentBase {
   //////////
 
   public override void SaveState() {
+    Debug.Log("saving from override method");
     base.SaveState();
     SaveRepFRSession();
   }

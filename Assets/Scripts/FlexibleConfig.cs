@@ -32,7 +32,6 @@ public class FlexibleConfig {
         dynamic settings = new ExpandoObject();
 
         foreach(JProperty prop in cfg.Properties()) {
-
             // convert from JObject types to .NET internal types
             // and add to dynamic settings object
             // if JSON contains arrays, we need to peek at the
