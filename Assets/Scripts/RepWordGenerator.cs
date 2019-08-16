@@ -207,6 +207,7 @@ class RepWordList : StimWordList {
 
 // Generates well-spaced RepFR wordlists with open-loop stimulation assigned.
 class RepWordGenerator {
+  // TODO - This should be moved to a more general location for reuse.
   // Fisher-Yates shuffle
   public static List<T> Shuffle<T>(IList<T> list) {
     var shuf = new List<T>(list);

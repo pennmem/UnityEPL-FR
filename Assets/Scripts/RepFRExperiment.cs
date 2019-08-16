@@ -23,6 +23,28 @@ public class RepFRRun {
   }
 }
 
+// Provides random subsets of a word pool without replacement.
+// TODO - This should be moved to a more general location for reuse.
+public class RandomSubset {
+  protected List<String> shuffled;
+  protected int index;
+
+  public RandomSubset(List<String> source_words) {
+    shuffled = RepWordGenerator.Shuffle(source_words);
+    index = 0;
+  }
+
+  public List<String> Get(int amount) {
+    if ((shuffled.Count - index) < amount) {
+      throw new IndexOutOfRangeException("Word list too small for session");
+    }
+    int index_now = index;
+    index += amount;
+
+    return shuffled.GetRange(index_now, amount);
+  }
+}
+
 public class RepFRSession : List<RepFRRun> {
 }
 
@@ -346,8 +368,10 @@ public class RepFRExperiment : ExperimentBase {
   // Word/Stim list generation
   //////////
 
-  public RepFRRun MakeRun(bool enc_stim, bool rec_stim) {
-    var enclist = RepWordGenerator.Generate(rep_counts, source_words, enc_stim);
+  public RepFRRun MakeRun(RandomSubset subset_gen, bool enc_stim,
+      bool rec_stim) {
+    var enclist = RepWordGenerator.Generate(rep_counts,
+        subset_gen.Get(words_per_list), enc_stim);
     var reclist = RepWordGenerator.Generate(rep_counts, blank_words, rec_stim);
     return new RepFRRun(enclist, reclist, enc_stim, rec_stim);
   }
@@ -364,33 +388,35 @@ public class RepFRExperiment : ExperimentBase {
     int encoding_and_retrieval_lists = (int)(manager.GetSetting("encodingAndRetrievalLists") ?? 4);
     int no_stim_lists = (int)(manager.GetSetting("noStimLists") ?? 10);
     
+    subset_gen = RandomSubset(source_words);
+
 
     var session = new RepFRSession();
 
     for (int i=0; i<practice_lists; i++) {
-      session.Add(MakeRun(false, false));
+      session.Add(MakeRun(subset_gen, false, false));
     }
           
     for (int i=0; i<pre_no_stim_lists; i++) {
-      session.Add(MakeRun(false, false));
+      session.Add(MakeRun(subset_gen, false, false));
     }
 
     var randomized_list = new RepFRSession();
 
     for (int i=0; i<encoding_only_lists; i++) {
-      randomized_list.Add(MakeRun(true, false));
+      randomized_list.Add(MakeRun(subset_gen, true, false));
     }
 
     for (int i=0; i<retrieval_only_lists; i++) {
-      randomized_list.Add(MakeRun(false, true));
+      randomized_list.Add(MakeRun(subset_gen, false, true));
     }
 
     for (int i=0; i<encoding_and_retrieval_lists; i++) {
-      randomized_list.Add(MakeRun(true, true));
+      randomized_list.Add(MakeRun(subset_gen, true, true));
     }
 
     for (int i=0; i<no_stim_lists; i++) {
-      randomized_list.Add(MakeRun(false, false));
+      randomized_list.Add(MakeRun(subset_gen, false, false));
     }
 
     session.AddRange(RepWordGenerator.Shuffle(randomized_list));
