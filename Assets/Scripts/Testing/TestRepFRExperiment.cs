@@ -1,6 +1,10 @@
 using System;
 using System.Collections.Generic;
 
+
+//#define TESTING
+
+#if TESTING
 class TestingRepFR {
   public static void StimCheck(bool stim_state, StimWordList wordlst) {
     int stim_count = 0;
@@ -156,3 +160,4 @@ class TestingRepFR {
     }
   }
 }
+#endif

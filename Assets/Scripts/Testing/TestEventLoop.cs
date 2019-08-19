@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 
+#if TESTING
 public class TestingEventLoop {
     public static int eventRepeats = 0;
     public static void NoArguments() {
@@ -57,3 +58,4 @@ public class TestingEventLoop {
         }
     }
 }
+#endif

@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 
+#if TESTING
+
 public class RepFRRun {
   public StimWordList encoding;
   public StimWordList recall;
@@ -125,3 +127,5 @@ public class RepFRExperiment {
     return session;
   }
 }
+
+#endif
