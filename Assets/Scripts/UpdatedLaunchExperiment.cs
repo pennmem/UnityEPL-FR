@@ -32,10 +32,20 @@ public class UpdatedLaunchExperiment : MonoBehaviour
         }
     }
 
+    public void DoSyncBoxTest() {
+        manager.Do(new EventBase(manager.TestSyncbox));
+    }
+
     // activated by UI launch button
     public void DoLaunchExperiment()
     {
-       if (participantNameInput.text.Equals(""))
+        if(manager.syncBox.IsRunning()) {
+            cantGoPrompt.GetComponent<UnityEngine.UI.Text>().text = "Can't start while Syncbox Test is running";
+            cantGoPrompt.SetActive(true);
+            return;
+        }   
+
+        if (participantNameInput.text.Equals(""))
         {
             cantGoPrompt.GetComponent<UnityEngine.UI.Text>().text = "Please enter a participant";
             cantGoPrompt.SetActive(true);

@@ -414,6 +414,14 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1026652532645128, guid: 941b5dccbc0da4585a324a844ffff8a8, type: 3}
+      propertyPath: m_Name
+      value: VideoPlayer
+      objectReference: {fileID: 0}
+    - target: {fileID: 1026652532645128, guid: 941b5dccbc0da4585a324a844ffff8a8, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 114009831355908404, guid: 941b5dccbc0da4585a324a844ffff8a8,
         type: 3}
       propertyPath: deactivateKey
@@ -427,14 +435,6 @@ PrefabInstance:
     - target: {fileID: 114009831355908404, guid: 941b5dccbc0da4585a324a844ffff8a8,
         type: 3}
       propertyPath: m_Enabled
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 1026652532645128, guid: 941b5dccbc0da4585a324a844ffff8a8, type: 3}
-      propertyPath: m_Name
-      value: VideoPlayer
-      objectReference: {fileID: 0}
-    - target: {fileID: 1026652532645128, guid: 941b5dccbc0da4585a324a844ffff8a8, type: 3}
-      propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4193480935844490, guid: 941b5dccbc0da4585a324a844ffff8a8, type: 3}
@@ -677,6 +677,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1809667599}
   - component: {fileID: 1809667598}
+  - component: {fileID: 1809667596}
+  - component: {fileID: 1809667595}
   m_Layer: 0
   m_Name: DataManager
   m_TagString: Untagged
@@ -684,6 +686,36 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &1809667595
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1809667593}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f1fb0087ddd042c4a4c87494ec56ce7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  reportersToHandle:
+  - {fileID: 1809667596}
+  - {fileID: 1809667598}
+  outputFormat: 0
+  writeAutomatically: 1
+  framesPerWrite: 30
+--- !u!114 &1809667596
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1809667593}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f180c8d2d8e804d2ca402600895da790, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &1809667598
 MonoBehaviour:
   m_ObjectHideFlags: 0

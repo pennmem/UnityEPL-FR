@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[AddComponentMenu("UnityEPL/Handlers/Write to Disk Handler")]
+[AddComponentMenu("UnityEPL/Handlers/Updated Write to Disk Handler")]
 public class UpdatedWriteToDiskHandler : DataHandler
 {
     //more output formats may be added in the future

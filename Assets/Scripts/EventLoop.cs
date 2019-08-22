@@ -35,7 +35,7 @@ public class EventLoop : EventQueue {
         base.repeatingEvents = new ConcurrentBag<RepeatingEvent>();
     }
 
-    protected bool Running() {
+    public bool Running() {
         return running;
     }
 

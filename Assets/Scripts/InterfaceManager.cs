@@ -78,7 +78,7 @@ public class InterfaceManager : MonoBehaviour
     // scripts
     //////////
     public RamulatorInterface ramInt;
-    public Syncbox syncBox;
+    public NonUnitySyncbox syncBox;
     public VideoControl videoControl;
     public TextDisplayer textDisplayer; // doesn't currently support multiple  text displays
     public SoundRecorder recorder;
@@ -100,17 +100,20 @@ public class InterfaceManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-
-        onKey = new ConcurrentQueue<Action<string, bool>>();
-
         // Unity interal event handling
         SceneManager.sceneLoaded += onSceneLoaded;
 
-        fileManager = new FileManager(this);
 
+        // create objects not tied to unity
+        fileManager = new FileManager(this);
+        syncBox = new NonUnitySyncbox();
+        onKey = new ConcurrentQueue<Action<string, bool>>();
+
+        // load system configuration file
         string text = System.IO.File.ReadAllText(System.IO.Path.Combine(fileManager.ConfigPath(), SYSTEM_CONFIG));
         systemConfig = FlexibleConfig.LoadFromText(text);
 
+        // Get all configuration files
         string configPath = fileManager.ConfigPath();
         string[] configs = Directory.GetFiles(configPath, "*.json");
         if(configs.Length < 2) {
@@ -126,6 +129,14 @@ public class InterfaceManager : MonoBehaviour
                 j++;
         }
         ChangeSetting("availableExperiments", exps);
+
+        // Initialize hardware
+            // Stim hardward interface 
+
+        // Syncbox interface
+        if(!(bool)GetSetting("isTest")) {
+            syncBox.Init();
+        }
 
         // Start experiment Launcher scene
         mainEvents.Do(new EventBase(LaunchLauncher));
@@ -196,6 +207,12 @@ public class InterfaceManager : MonoBehaviour
         GameObject soundRecorder = GameObject.Find("SoundRecorder");
         if(soundRecorder != null) {
             recorder = soundRecorder.GetComponent<SoundRecorder>();
+        }
+    }
+
+    void OnDisable() {
+        if(syncBox.Running()) {
+            syncBox.Do(new EventBase(syncBox.StopPulse));
         }
     }
 
@@ -271,11 +288,16 @@ public class InterfaceManager : MonoBehaviour
             Cursor.visible = false;
             Application.runInBackground = true;
             // Make the game run as fast as possible
-            QualitySettings.vSyncCount = 1;
-            Application.targetFrameRate = 300;
+            QualitySettings.vSyncCount = (int)GetSetting("vSync");
+            Application.targetFrameRate = (int)GetSetting("frameRate");
 
             // create path for current participant/session
             fileManager.CreateSession();
+
+            // Start syncbox
+            if(!(bool)GetSetting("isTest")) {
+                syncBox.Do(new EventBase(syncBox.StartPulse));
+            }
 
             SceneManager.LoadScene((string)GetSetting("experimentScene"));
             exp.Do(new EventBase(exp.Run));
@@ -283,6 +305,11 @@ public class InterfaceManager : MonoBehaviour
         else {
             throw new Exception("No experiment configuration loaded");
         }
+    }
+
+    public void TestSyncbox() {
+        syncBox.Do(new EventBase(syncBox.StartPulse));
+        DoIn(new EventBase(syncBox.StopPulse), GetSetting("syncBoxTestLength"));
     }
 
     public void Quit() {

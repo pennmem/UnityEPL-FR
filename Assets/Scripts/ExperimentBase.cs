@@ -25,7 +25,7 @@ public abstract class ExperimentBase : EventLoop {
         state.isComplete = false;
         state.runIndex = 0;
 
-        if(manager.GetSetting("session") >= manager.GetSetting("numSessions")) {
+        if((int)manager.GetSetting("session") >= (int)manager.GetSetting("numSessions")) {
             // Queue Dos to manager since loop is never started
             manager.Do(new EventBase<string, string>(manager.ShowText, "experiment complete warning", "Requested Session is not part of protocol"));
             manager.DoIn(new EventBase(manager.LaunchLauncher), 2500);
@@ -240,11 +240,12 @@ public abstract class ExperimentBase : EventLoop {
                 } 
                 else {
                     manager.Do(new EventBase(manager.lowerBeep.Play));
-                    ReportDistractorAnswered(false, state.distractorProblem, state.distractorAnswer);
+                    ReportDistractorAnswered(false, state.distractorProblem[0].ToString() + " + " 
+                        + state.distractorProblem[1].ToString() + " + " 
+                        + state.distractorProblem[2].ToString() + " = ", state.distractorAnswer);
                 }
                 Do(new EventBase(Run));
                 manager.Do(new EventBase(manager.ClearText));
-                manager.scriptedInput.ReportScriptedEvent();
                 state.distractorProblem = "";
                 state.distractorAnswer = "";
                 return;

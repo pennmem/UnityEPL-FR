@@ -23,28 +23,6 @@ public class RepFRRun {
   }
 }
 
-// Provides random subsets of a word pool without replacement.
-// TODO - This should be moved to a more general location for reuse.
-public class RandomSubset {
-  protected List<String> shuffled;
-  protected int index;
-
-  public RandomSubset(List<String> source_words) {
-    shuffled = RepWordGenerator.Shuffle(source_words);
-    index = 0;
-  }
-
-  public List<String> Get(int amount) {
-    if ((shuffled.Count - index) < amount) {
-      throw new IndexOutOfRangeException("Word list too small for session");
-    }
-    int index_now = index;
-    index += amount;
-
-    return shuffled.GetRange(index_now, amount);
-  }
-}
-
 public class RepFRSession : List<RepFRRun> {
 }
 
@@ -54,6 +32,7 @@ public class RepFRExperiment : ExperimentBase {
   protected List<string> blank_words;
   protected RepCounts rep_counts = null;
   protected int words_per_list;
+  protected int unique_words_per_list;
 
   protected RepFRSession currentSession;
 
@@ -75,6 +54,7 @@ public class RepFRExperiment : ExperimentBase {
       }
     }
     words_per_list = rep_counts.TotalWords();
+    unique_words_per_list = rep_counts.UniqueWords();
 
     blank_words =
       new List<string>(Enumerable.Repeat(string.Empty, words_per_list));
@@ -87,9 +67,6 @@ public class RepFRExperiment : ExperimentBase {
     {
       source_words.Add(line);
     }
-
-
-      
 
     // load state if previously existing
     dynamic loadedState = LoadState((string)manager.GetSetting("participantCode"), (int)manager.GetSetting("session"));
@@ -108,6 +85,7 @@ public class RepFRExperiment : ExperimentBase {
       }
 
       state.runIndex = 5; // start trom QuitorContinue
+
     }
     // generate new session if untouched
     else {
@@ -143,7 +121,20 @@ public class RepFRExperiment : ExperimentBase {
                                                        DoRecordTest,
                                                        DoPlaybackTest};
     
+    
+   
+
     Start();
+  }
+
+  // TODO:
+  protected void LogExperimentInfo() {
+    //write versions to logfile
+    Dictionary<string, object> versionsData = new Dictionary<string, object>();
+    versionsData.Add("Application Version", Application.version);
+    versionsData.Add("Experiment version", (string)manager.GetSetting("experimentName"));
+    versionsData.Add("Logfile version", "1");
+    manager.scriptedInput.ReportOutOfThreadScriptedEvent("versions", versionsData);
   }
 
   //////////
@@ -303,7 +294,7 @@ public class RepFRExperiment : ExperimentBase {
   protected void DoRecordTest() {
     state.micTestIndex++;
     string file =  System.IO.Path.Combine(manager.fileManager.SessionPath(), "microphone_test_" 
-                    + manager.scriptedInput.RealWorldTime().ToString("yyyy-MM-dd_HH_mm_ss") + ".wav");
+                    + DataReporter.ThreadsafeTime().ToString("yyyy-MM-dd_HH_mm_ss") + ".wav");
 
     state.recordTestPath = file;
     RecordTest(file);
@@ -371,7 +362,7 @@ public class RepFRExperiment : ExperimentBase {
   public RepFRRun MakeRun(RandomSubset subset_gen, bool enc_stim,
       bool rec_stim) {
     var enclist = RepWordGenerator.Generate(rep_counts,
-        subset_gen.Get(words_per_list), enc_stim);
+        subset_gen.Get(unique_words_per_list), enc_stim);
     var reclist = RepWordGenerator.Generate(rep_counts, blank_words, rec_stim);
     return new RepFRRun(enclist, reclist, enc_stim, rec_stim);
   }
@@ -388,7 +379,7 @@ public class RepFRExperiment : ExperimentBase {
     int encoding_and_retrieval_lists = (int)(manager.GetSetting("encodingAndRetrievalLists") ?? 4);
     int no_stim_lists = (int)(manager.GetSetting("noStimLists") ?? 10);
     
-    subset_gen = RandomSubset(source_words);
+    RandomSubset subset_gen = new RandomSubset(source_words);
 
 
     var session = new RepFRSession();

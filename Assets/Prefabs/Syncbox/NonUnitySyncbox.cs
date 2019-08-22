@@ -21,39 +21,34 @@ public class NonUnitySyncbox : EventLoop
 	[DllImport ("ASimplePlugin")]
 	private static extern float SyncPulse();
 
-    private const float PULSE_START_DELAY = 1f;
-    private const float TIME_BETWEEN_PULSES_MIN = 0.8f;
-    private const float TIME_BETWEEN_PULSES_MAX = 1.2f;
-    private const int SECONDS_TO_MILLISECONDS = 1000;
+    private const int PULSE_START_DELAY = 1000;
+    private const int TIME_BETWEEN_PULSES_MIN = 800;
+    private const int TIME_BETWEEN_PULSES_MAX = 1200;
 
-    private Thread syncpulseThread;
-    private ManualResetEventSlim flag;
+    private volatile bool stopped = true;
 
     public int testField;
 
-    void Init() {
+    public void Init() {
         Debug.Log(Marshal.PtrToStringAuto (OpenUSB()));
         Debug.Log(testField);
 
-        flag = new ManualResetEventSlim();
-
-        syncpulseThread = new Thread(Pulse);
-        syncpulseThread.Start();
         StopPulse();
+        Start();
     }
 
-    void StartPulse() {
-        flag.Set();
+    public bool IsRunning() {
+        return !stopped;
     }
 
-	void Pulse ()
+    public void StartPulse() {
+        stopped = false;
+        DoIn(new EventBase(Pulse), PULSE_START_DELAY);
+    }
+
+	private void Pulse ()
     {
-        System.Random random = new System.Random();
-
-        //delay before starting pulses
-        flag.Reset();
-        flag.Wait((int)(PULSE_START_DELAY*SECONDS_TO_MILLISECONDS));
-		while (true)
+		if(!stopped)
         {
             //pulse
             manager.scriptedInput.ReportOutOfThreadScriptedEvent("Sync pulse begin", new System.Collections.Generic.Dictionary<string, object>());
@@ -61,13 +56,12 @@ public class NonUnitySyncbox : EventLoop
             manager.scriptedInput.ReportOutOfThreadScriptedEvent("Sync pulse end", new System.Collections.Generic.Dictionary<string, object>());
 
             //wait a random time between min and max
-            float timeBetweenPulses = (float)(TIME_BETWEEN_PULSES_MIN + (random.NextDouble() * (TIME_BETWEEN_PULSES_MAX - TIME_BETWEEN_PULSES_MIN)));
-            flag.Reset();
-            flag.Wait((int)(timeBetweenPulses * SECONDS_TO_MILLISECONDS));
+            int timeBetweenPulses = (int)(TIME_BETWEEN_PULSES_MIN + (InterfaceManager.rnd.NextDouble() * (TIME_BETWEEN_PULSES_MAX - TIME_BETWEEN_PULSES_MIN)));
+            DoIn(new EventBase(Pulse), timeBetweenPulses);
 		}
 	}
 
-    void StopPulse() {
-        flag.Wait(-1);
+    public void StopPulse() {
+        stopped = true;
     }
 }

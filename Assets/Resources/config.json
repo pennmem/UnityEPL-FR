@@ -1,7 +1,9 @@
 {
     "isTest": true,
+    "isLegacyExperiment": false,
     "launcherScene": "UpdatedSetup",
     "eventsPerFrame": 5,
     "frameRate": 300,
-    "vSync": 1
+    "vSync": 1,
+    "syncBoxTestLength": 5000
 }

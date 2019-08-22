@@ -53,6 +53,14 @@ public class RepCounts : List<RepCnt> {
     }
     return total;
   }
+
+  public int UniqueWords() {
+    int total = 0;
+    foreach (var r in this) {
+      total += r.count;
+    }
+    return total;
+  }
 }
 
 
@@ -62,8 +70,8 @@ public class BoundedInt {
   private string message;
   private int i_;
   public int i {
-    get { return i_; }
-    set { Assert(value); i_ = value; }
+    get { Assert(i_); return i_; }
+    set { i_ = value; }
   }
 
   public BoundedInt(int limit_, string message_) {
@@ -78,6 +86,27 @@ public class BoundedInt {
   }
 }
 
+
+// Provides random subsets of a word pool without replacement.
+public class RandomSubset {
+  protected List<String> shuffled;
+  protected int index;
+
+  public RandomSubset(List<String> source_words) {
+    shuffled = RepWordGenerator.Shuffle(source_words);
+    index = 0;
+  }
+
+  public List<String> Get(int amount) {
+    if ((shuffled.Count - index) < amount) {
+      throw new IndexOutOfRangeException("Word list too small for session");
+    }
+    int index_now = index;
+    index += amount;
+
+    return shuffled.GetRange(index_now, amount);
+  }
+}
 
 // This class keeps a list of words associated with their stim states.
 public class StimWordList : ICollection<WordStim> {
