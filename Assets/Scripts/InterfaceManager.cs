@@ -97,6 +97,8 @@ public class InterfaceManager : MonoBehaviour
     public UIDataReporter uiInput;
     private int eventsPerFrame;
 
+    private bool process = true;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -163,6 +165,8 @@ public class InterfaceManager : MonoBehaviour
     void onSceneLoaded(Scene scene, LoadSceneMode mode) 
     {
         if((bool)GetSetting("isLegacyExperiment") == true) {
+            Debug.Log("Legacy Experiment");
+            process = true; // re enable processing of events
             return;
         }
 
@@ -207,7 +211,10 @@ public class InterfaceManager : MonoBehaviour
         GameObject soundRecorder = GameObject.Find("SoundRecorder");
         if(soundRecorder != null) {
             recorder = soundRecorder.GetComponent<SoundRecorder>();
+            Debug.Log("Found Sound Recorder");
         }
+
+        process = true; // re enable processing of events
     }
 
     void OnDisable() {
@@ -282,6 +289,9 @@ public class InterfaceManager : MonoBehaviour
 
         // Check if settings are loaded
         if(experimentConfig != null) {
+            process = false; // disable event processing during scene transition
+            SceneManager.LoadScene((string)GetSetting("experimentScene"));
+
             Type t = Type.GetType((string)GetSetting("experimentClass")); 
             exp = (ExperimentBase)Activator.CreateInstance(t, new object[] {this});
 
@@ -299,7 +309,6 @@ public class InterfaceManager : MonoBehaviour
                 syncBox.Do(new EventBase(syncBox.StartPulse));
             }
 
-            SceneManager.LoadScene((string)GetSetting("experimentScene"));
             exp.Do(new EventBase(exp.Run));
         }
         else {
@@ -323,6 +332,7 @@ public class InterfaceManager : MonoBehaviour
     }
 
     public void LaunchLauncher() {
+        process = false; // disable event processing during scene transition
         Debug.Log("Launching: " + (string)GetSetting("launcherScene"));
         SceneManager.LoadScene((string)GetSetting("launcherScene"));
     }
@@ -450,7 +460,8 @@ public class FileManager {
         #if UNITY_EDITOR
             return System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop);
         #else
-            return System.IO.Path.GetFullPath(".");
+            return System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop);
+            //return System.IO.Path.GetFullPath(".");
         #endif
     }
 

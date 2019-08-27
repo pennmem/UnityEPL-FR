@@ -28,7 +28,7 @@ public abstract class ExperimentBase : EventLoop {
         if((int)manager.GetSetting("session") >= (int)manager.GetSetting("numSessions")) {
             // Queue Dos to manager since loop is never started
             manager.Do(new EventBase<string, string>(manager.ShowText, "experiment complete warning", "Requested Session is not part of protocol"));
-            manager.DoIn(new EventBase(manager.LaunchLauncher), 2500);
+            manager.DoIn(new EventBase(manager.LaunchLauncher), 5000);
             return;
         }
     }
@@ -59,6 +59,7 @@ public abstract class ExperimentBase : EventLoop {
     }
 
     protected void RecordTest(string wavPath) {
+        manager.Do(new EventBase(manager.lowBeep.Play));
         manager.Do(new EventBase<string>(manager.recorder.StartRecording, wavPath));
         manager.Do(new EventBase<string, string, string>(manager.ShowText, "recording test", "Recording...", "red"));
 
@@ -207,7 +208,7 @@ public abstract class ExperimentBase : EventLoop {
         int Sum(int[] arg){
             int sum = 0;
             for(int i=0; i < arg.Length; i++) {
-                sum += i;
+                sum += arg[i];
             }
             return sum;
         }
@@ -234,9 +235,12 @@ public abstract class ExperimentBase : EventLoop {
             // submit answer and play tone depending on right or wrong answer 
             else if(key == "enter" || key == "return") {
                 int result;
-                if(int.TryParse(state.distractorAnswer, out result) && result == Sum(state.distractorProblem)) {
+                int.TryParse(state.distractorAnswer, out result) ;
+                if(result == Sum(state.distractorProblem)) {
                     manager.Do(new EventBase(manager.lowBeep.Play));
-                    ReportDistractorAnswered(true, state.distractorProblem, state.distractorAnswer);
+                    ReportDistractorAnswered(true, state.distractorProblem[0].ToString() + " + " 
+                        + state.distractorProblem[1].ToString() + " + " 
+                        + state.distractorProblem[2].ToString() + " = ", state.distractorAnswer);
                 } 
                 else {
                     manager.Do(new EventBase(manager.lowerBeep.Play));

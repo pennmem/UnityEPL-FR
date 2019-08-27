@@ -68,7 +68,6 @@ public class LaunchExperiment : MonoBehaviour
         loadingButton.SetActive(true);
         yield return null;
         
-        //manager.expEvtMgr.triggerEvent("launch", settings)
         UnityEngine.SceneManagement.SceneManager.LoadScene(FRExperimentSettings.ExperimentNameToExperimentScene(UnityEPL.GetExperimentName()));
     }
 

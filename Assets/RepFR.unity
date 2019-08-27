@@ -437,6 +437,11 @@ PrefabInstance:
       propertyPath: m_Enabled
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 114009831355908404, guid: 941b5dccbc0da4585a324a844ffff8a8,
+        type: 3}
+      propertyPath: videoTransform
+      value: 
+      objectReference: {fileID: 1602713777}
     - target: {fileID: 4193480935844490, guid: 941b5dccbc0da4585a324a844ffff8a8, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -491,8 +496,39 @@ PrefabInstance:
       propertyPath: m_PlayOnAwake
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 328937643129792720, guid: 941b5dccbc0da4585a324a844ffff8a8,
+        type: 3}
+      propertyPath: m_AspectRatio
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 328937643129792720, guid: 941b5dccbc0da4585a324a844ffff8a8,
+        type: 3}
+      propertyPath: m_RenderMode
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 328937643129792720, guid: 941b5dccbc0da4585a324a844ffff8a8,
+        type: 3}
+      propertyPath: m_TargetCamera
+      value: 
+      objectReference: {fileID: 1668755673}
+    - target: {fileID: 328937643129792720, guid: 941b5dccbc0da4585a324a844ffff8a8,
+        type: 3}
+      propertyPath: m_WaitForFirstFrame
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 328937643129792720, guid: 941b5dccbc0da4585a324a844ffff8a8,
+        type: 3}
+      propertyPath: m_DataSource
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 941b5dccbc0da4585a324a844ffff8a8, type: 3}
+--- !u!224 &1602713777 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 224126303121770298, guid: 941b5dccbc0da4585a324a844ffff8a8,
+    type: 3}
+  m_PrefabInstance: {fileID: 1602713776}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1668755671
 GameObject:
   m_ObjectHideFlags: 0

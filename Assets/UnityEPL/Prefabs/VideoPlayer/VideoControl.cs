@@ -4,6 +4,7 @@ using UnityEngine.Video;
 
 public class VideoControl : MonoBehaviour
 {
+    public UnityEngine.RectTransform videoTransform;
     private UnityEngine.KeyCode pauseToggleKey;
     private UnityEngine.KeyCode deactivateKey;
     public UnityEngine.Video.VideoPlayer videoPlayer;

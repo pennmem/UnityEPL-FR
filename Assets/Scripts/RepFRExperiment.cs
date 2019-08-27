@@ -76,16 +76,14 @@ public class RepFRExperiment : ExperimentBase {
       if(state.isComplete) {
         // Queue Dos to manager since loop is never started
         manager.Do(new EventBase<string, string>(manager.ShowText, "session complete warning", "Session Already Complete"));
-        manager.DoIn(new EventBase(manager.LaunchLauncher), 2500);
+        manager.DoIn(new EventBase(manager.LaunchLauncher), 5000);
         return;
       }
 
       if(state.wordIndex > 0) {
         state.listIndex++;
       }
-
-      state.runIndex = 5; // start trom QuitorContinue
-
+      state.runIndex = 0; // always start at the beginning, can move mictest up to obviate this need
     }
     // generate new session if untouched
     else {
@@ -120,14 +118,10 @@ public class RepFRExperiment : ExperimentBase {
     stateMachine["MicrophoneTest"] = new List<Action> {DoMicTestPrompt,
                                                        DoRecordTest,
                                                        DoPlaybackTest};
-    
-    
-   
 
     Start();
   }
 
-  // TODO:
   protected void LogExperimentInfo() {
     //write versions to logfile
     Dictionary<string, object> versionsData = new Dictionary<string, object>();
@@ -222,13 +216,13 @@ public class RepFRExperiment : ExperimentBase {
 
   protected bool CheckLoop() {
     if(state.mainLoopIndex == stateMachine["MainLoop"].Count) {
-      if(state.listIndex == 0) {
-        Do(new EventBase(DoConfirmStart));
-      }
       state.mainLoopIndex = 0;
       state.listIndex++;
 
-      return false;
+      if(state.listIndex == 0) {
+        Do(new EventBase(DoConfirmStart));
+        return false;
+      }
     }
 
     if(state.listIndex  == currentSession.Count) {
