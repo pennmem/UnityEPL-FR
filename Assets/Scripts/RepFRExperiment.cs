@@ -75,8 +75,8 @@ public class RepFRExperiment : ExperimentBase {
       currentSession = LoadRepFRSession((string)manager.GetSetting("participantCode"), (int)manager.GetSetting("session"));
       if(state.isComplete) {
         // Queue Dos to manager since loop is never started
-        manager.Do(new EventBase<string, string>(manager.ShowText, "session complete warning", "Session Already Complete"));
-        manager.DoIn(new EventBase(manager.LaunchLauncher), 5000);
+        manager.Do(new EventBase<string, int>(manager.ShowWarning, "Session Already Complete", 5000));
+        manager.Do(new EventBase(manager.LaunchLauncher));
         return;
       }
 

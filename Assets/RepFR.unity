@@ -170,6 +170,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1867217279982840, guid: e6672ad97ff294adba0eb53a61d1502f, type: 3}
+      propertyPath: m_Name
+      value: MemoryWordCanvas
+      objectReference: {fileID: 0}
     - target: {fileID: 224608295462917530, guid: e6672ad97ff294adba0eb53a61d1502f,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -290,10 +294,21 @@ PrefabInstance:
       propertyPath: m_LocalScale.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 1867217279982840, guid: e6672ad97ff294adba0eb53a61d1502f, type: 3}
-      propertyPath: m_Name
-      value: MemoryWordCanvas
+    - target: {fileID: 223431702409890432, guid: e6672ad97ff294adba0eb53a61d1502f,
+        type: 3}
+      propertyPath: m_SortingOrder
+      value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 114487739435193272, guid: e6672ad97ff294adba0eb53a61d1502f,
+        type: 3}
+      propertyPath: textElement
+      value: 
+      objectReference: {fileID: 699250616}
+    - target: {fileID: 114487739435193272, guid: e6672ad97ff294adba0eb53a61d1502f,
+        type: 3}
+      propertyPath: titleElement
+      value: 
+      objectReference: {fileID: 699250619}
     - target: {fileID: 1885532220077830, guid: e6672ad97ff294adba0eb53a61d1502f, type: 3}
       propertyPath: m_Name
       value: Title
@@ -307,16 +322,6 @@ PrefabInstance:
       propertyPath: m_Text
       value: 
       objectReference: {fileID: 0}
-    - target: {fileID: 114487739435193272, guid: e6672ad97ff294adba0eb53a61d1502f,
-        type: 3}
-      propertyPath: textElement
-      value: 
-      objectReference: {fileID: 699250616}
-    - target: {fileID: 114487739435193272, guid: e6672ad97ff294adba0eb53a61d1502f,
-        type: 3}
-      propertyPath: titleElement
-      value: 
-      objectReference: {fileID: 699250619}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e6672ad97ff294adba0eb53a61d1502f, type: 3}
 --- !u!114 &699250616 stripped

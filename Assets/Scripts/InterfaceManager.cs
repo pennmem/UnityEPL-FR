@@ -36,6 +36,7 @@ public class InterfaceManager : MonoBehaviour
         else {
             _instance = this;
             DontDestroyOnLoad(this.gameObject);
+            DontDestroyOnLoad(warning);
         }
     }
 
@@ -82,6 +83,7 @@ public class InterfaceManager : MonoBehaviour
     public VideoControl videoControl;
     public TextDisplayer textDisplayer; // doesn't currently support multiple  text displays
     public SoundRecorder recorder;
+    public GameObject warning;
 
     public AudioSource highBeep;
     public AudioSource lowBeep;
@@ -403,6 +405,16 @@ public class InterfaceManager : MonoBehaviour
         }
 
         videoControl.StartVideo(videoPath, skippable, callback);
+    }
+
+    public void ShowWarning(string warnMsg, int duration) {
+        warning.SetActive(true);
+        TextDisplayer warnText = warning.GetComponent<TextDisplayer>();
+        warnText.DisplayText("warning", warnMsg);
+
+        Do(new EventBase(() => { warnText.ClearText();
+                                 warning.SetActive(false);}));
+
     }
 
     //////////

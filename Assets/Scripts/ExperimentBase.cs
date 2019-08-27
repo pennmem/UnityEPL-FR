@@ -24,13 +24,6 @@ public abstract class ExperimentBase : EventLoop {
 
         state.isComplete = false;
         state.runIndex = 0;
-
-        if((int)manager.GetSetting("session") >= (int)manager.GetSetting("numSessions")) {
-            // Queue Dos to manager since loop is never started
-            manager.Do(new EventBase<string, string>(manager.ShowText, "experiment complete warning", "Requested Session is not part of protocol"));
-            manager.DoIn(new EventBase(manager.LaunchLauncher), 5000);
-            return;
-        }
     }
 
     // executes state machine current function
