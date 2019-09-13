@@ -80,10 +80,12 @@ public class RepFRExperiment : ExperimentBase {
         return;
       }
 
+      // TODO: log experiment resume
+
       if(state.wordIndex > 0) {
         state.listIndex++;
       }
-      state.runIndex = 0; // always start at the beginning, can move mictest up to obviate this need
+      state.runIndex = 3; // start at microphone test 
     }
     // generate new session if untouched
     else {
@@ -96,11 +98,11 @@ public class RepFRExperiment : ExperimentBase {
     state.mainLoopIndex = 0;
     state.micTestIndex = 0;
 
-    stateMachine["Run"] = new List<Action> {DoMicrophoneTest,
-                                            DoRepeatMicTest,
-                                            DoIntroductionPrompt,
+    stateMachine["Run"] = new List<Action> {DoIntroductionPrompt,
                                             DoIntroductionVideo,
                                             DoRepeatVideo,
+                                            DoMicrophoneTest,
+                                            DoRepeatMicTest,
                                             DoQuitorContinue,
                                             MainLoop,
                                             Quit};
@@ -120,15 +122,8 @@ public class RepFRExperiment : ExperimentBase {
                                                        DoPlaybackTest};
 
     Start();
-  }
-
-  protected void LogExperimentInfo() {
-    //write versions to logfile
-    Dictionary<string, object> versionsData = new Dictionary<string, object>();
-    versionsData.Add("Application Version", Application.version);
-    versionsData.Add("Experiment version", (string)manager.GetSetting("experimentName"));
-    versionsData.Add("Logfile version", "1");
-    manager.scriptedInput.ReportOutOfThreadScriptedEvent("versions", versionsData);
+    manager.Do(new EventBase<EventBase>(Do, new EventBase(Run)));
+    // ^ make sure experiment doesn't start until mgr is ready
   }
 
   //////////
@@ -227,6 +222,8 @@ public class RepFRExperiment : ExperimentBase {
 
     if(state.listIndex  == currentSession.Count) {
       state.runIndex++;
+      state.isComplete = true;
+
       this.Do(new EventBase(Run));
       return false;
     }
@@ -277,7 +274,7 @@ public class RepFRExperiment : ExperimentBase {
 
   protected void DoRecall() {
     state.mainLoopIndex++;
-    string path = System.IO.Path.Combine(manager.fileManager.SessionPath(), state.listIndex.ToString());
+    string path = System.IO.Path.Combine(manager.fileManager.SessionPath(), state.listIndex.ToString() + ".wav");
     Recall(path);
   }
 
@@ -333,6 +330,13 @@ public class RepFRExperiment : ExperimentBase {
     string filename = System.IO.Path.Combine(manager.fileManager.SessionPath(), "session_words.json");
     JsonSerializer serializer = new JsonSerializer();
 
+    // create .lst files for annotation scripts
+    for(int i = 0; i < currentSession.Count; i++) {
+      string lstfile = System.IO.Path.Combine(manager.fileManager.SessionPath(), i.ToString() + ".lst");
+      IList<string> noRepeats = new HashSet<string>(currentSession[i].encoding.words).ToList();
+      WriteAllLinesNoExtraNewline(lstfile, noRepeats); 
+    }
+
     using (StreamWriter sw = new StreamWriter(filename))
       using (JsonWriter writer = new JsonTextWriter(sw))
       {
@@ -348,6 +352,29 @@ public class RepFRExperiment : ExperimentBase {
       return null;
     }
   }
+
+  protected static void WriteAllLinesNoExtraNewline(string path, IList<string> lines)
+    {
+        if (path == null)
+            throw new UnityException("path argument should not be null");
+        if (lines == null)
+            throw new UnityException("lines argument should not be null");
+
+        using (var stream = System.IO.File.OpenWrite(path))
+        {
+            using (System.IO.StreamWriter writer = new System.IO.StreamWriter(stream))
+            {
+                if (lines.Count > 0)
+                {
+                    for (int i = 0; i < lines.Count - 1; i++)
+                    {
+                        writer.WriteLine(lines[i]);
+                    }
+                    writer.Write(lines[lines.Count - 1]);
+                }
+            }
+        }
+    }
 
   //////////
   // Word/Stim list generation

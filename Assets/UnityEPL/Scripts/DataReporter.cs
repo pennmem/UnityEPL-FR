@@ -16,6 +16,8 @@ public abstract class DataReporter : MonoBehaviour
     protected static double OSStartTime;
     private static float unityTimeStartTime;
 
+    private InterfaceManager manager = null;
+
     protected bool IsMacOS()
     {
         return Application.platform == RuntimePlatform.OSXEditor || Application.platform == RuntimePlatform.OSXPlayer;
@@ -23,6 +25,10 @@ public abstract class DataReporter : MonoBehaviour
 
     void Awake()
     {
+        GameObject mgr = GameObject.Find("InterfaceManager");
+        if(mgr != null)
+            manager = (InterfaceManager)mgr.GetComponent("InterfaceManager");
+
         if (!startTimeInitialized)
         {
             realWorldStartTime = System.DateTime.UtcNow;

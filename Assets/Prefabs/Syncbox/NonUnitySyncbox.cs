@@ -29,6 +29,10 @@ public class NonUnitySyncbox : EventLoop
 
     public int testField;
 
+    public NonUnitySyncbox(InterfaceManager _manager) {
+        manager= _manager;
+    }
+
     public void Init() {
         Debug.Log(Marshal.PtrToStringAuto (OpenUSB()));
         Debug.Log(testField);
@@ -48,6 +52,7 @@ public class NonUnitySyncbox : EventLoop
 
 	private void Pulse ()
     {
+        Debug.Log("Pew");
 		if(!stopped)
         {
             //pulse
@@ -56,7 +61,7 @@ public class NonUnitySyncbox : EventLoop
             manager.scriptedInput.ReportOutOfThreadScriptedEvent("Sync pulse end", new System.Collections.Generic.Dictionary<string, object>());
 
             //wait a random time between min and max
-            int timeBetweenPulses = (int)(TIME_BETWEEN_PULSES_MIN + (InterfaceManager.rnd.NextDouble() * (TIME_BETWEEN_PULSES_MAX - TIME_BETWEEN_PULSES_MIN)));
+            int timeBetweenPulses = (int)(TIME_BETWEEN_PULSES_MIN + (int)(InterfaceManager.rnd.NextDouble() * (TIME_BETWEEN_PULSES_MAX - TIME_BETWEEN_PULSES_MIN)));
             DoIn(new EventBase(Pulse), timeBetweenPulses);
 		}
 	}

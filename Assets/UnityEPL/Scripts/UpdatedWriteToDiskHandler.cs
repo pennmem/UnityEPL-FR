@@ -67,6 +67,9 @@ public class UpdatedWriteToDiskHandler : DataHandler
         while (waitingPoints.Count > 0)
         {
             string directory = manager.fileManager.SessionPath();
+            if(directory == null) {
+                return;
+            }
             System.IO.Directory.CreateDirectory(directory);
             string filePath = System.IO.Path.Combine(directory, "unnamed_file");
 
@@ -77,7 +80,7 @@ public class UpdatedWriteToDiskHandler : DataHandler
             {
                 case FORMAT.JSON_LINES:
                     writeMe = dataPoint.ToJSON();
-                    filePath = System.IO.Path.Combine(directory, extensionlessFileName + ".json");
+                    filePath = System.IO.Path.Combine(directory, extensionlessFileName + ".jsonl");
                     break;
             }
             System.IO.File.AppendAllText(filePath, writeMe + System.Environment.NewLine);

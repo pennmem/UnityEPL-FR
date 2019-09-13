@@ -46,6 +46,7 @@ public abstract class ExperimentBase : EventLoop {
     }
 
     protected void CountdownVideo() {
+        manager.scriptedInput.ReportOutOfThreadScriptedEvent("countdown", new Dictionary<string, object>());
         manager.Do(new EventBase<string, bool, Action>(manager.ShowVideo, 
                                                             "countdownVideo", false, 
                                                             () => this.Do(new EventBase(Run))));
@@ -54,20 +55,25 @@ public abstract class ExperimentBase : EventLoop {
     protected void RecordTest(string wavPath) {
         manager.Do(new EventBase(manager.lowBeep.Play));
         manager.Do(new EventBase<string>(manager.recorder.StartRecording, wavPath));
-        manager.Do(new EventBase<string, string, string>(manager.ShowText, "recording test", "Recording...", "red"));
+        manager.Do(new EventBase<string, string, string>(manager.ShowText, "microphone test recording", "Recording...", "red"));
 
         DoIn(new EventBase(() => {
                             manager.Do(new EventBase( () => {
-                                manager.recorder.StopRecording();
                                 manager.ClearText();
+                                manager.recorder.StopRecording();
+                                this.Do(new EventBase(Run));
                                 }));
-                            this.Do(new EventBase(Run));
                             }), 
                         (int)manager.GetSetting("micTestDuration"));
     }
 
+    // NOTE: rather than use flags for the audio test, this is entirely based off of timings.
+    // Since there is processing latency (which seems to be unity version dependent), this
+    // is really a bit of a hack that lets us get through the mic test unscathed. More time critical
+    // applications need a different approach
+
     protected void PlaybackTest(string wavPath) {
-        manager.Do(new EventBase<string, string, string>(manager.ShowText, "playing test", "Playing...", "green"));
+        manager.Do(new EventBase<string, string, string>(manager.ShowText, "microphone test playing", "Playing...", "green"));
         manager.Do(new EventBase( () => {
                 manager.playback.clip = manager.recorder.AudioClipFromDatapath(wavPath);
                 manager.playback.Play();
@@ -77,7 +83,7 @@ public abstract class ExperimentBase : EventLoop {
                                 manager.Do(new EventBase(manager.ClearText));
                                 manager.Do(new EventBase(manager.ClearTitle));
                                 this.Do(new EventBase(Run));
-                            }), (int)manager.GetSetting("micTestDuration"));
+                            }), (int)manager.GetSetting("micTestDuration") + 1000); // pad for latency
     }
 
     protected bool Encoding(IList<string> words, int index) {
@@ -92,6 +98,7 @@ public abstract class ExperimentBase : EventLoop {
 
         manager.Do(new EventBase<string, string>(manager.ShowText, "word stimulus", words[index]));
         DoIn(new EventBase(() => { manager.Do(new EventBase(manager.ClearText)); 
+                                    manager.scriptedInput.ReportOutOfThreadScriptedEvent("clear word stimulus", new Dictionary<string, object>());
                                     this.DoIn(new EventBase(Run), interval);
                                 }), 
                             (int)manager.GetSetting("stimulusDuration"));
@@ -102,13 +109,12 @@ public abstract class ExperimentBase : EventLoop {
     protected void Distractor() {
         int[] nums = new int[] { InterfaceManager.rnd.Next(1, 9), InterfaceManager.rnd.Next(1, 9), InterfaceManager.rnd.Next(1, 9) };
         string problem = nums[0].ToString() + " + " + nums[1].ToString() + " + " + nums[2].ToString() + " = ";
-        manager.Do(new EventBase<string, string>(manager.ShowText, "distractor", problem));
-        Debug.Log("distractor");
 
         state.distractorProblem = nums;
         state.distractorAnswer = "";
 
         manager.RegisterKeyHandler(DistractorAnswer);
+        manager.Do(new EventBase<string, string>(manager.ShowText, "display distractor problem", problem));
     }
 
 
@@ -119,7 +125,7 @@ public abstract class ExperimentBase : EventLoop {
 
         limits = manager.GetSetting("orientationDuration").ToObject<int[]>();
         int duration = InterfaceManager.rnd.Next(limits[0], limits[1]);
-        manager.Do(new EventBase<string, string>(manager.ShowText, "orientation", "+"));
+        manager.Do(new EventBase<string, string>(manager.ShowText, "orientation stimulus", "+"));
         DoIn(new EventBase(() => {
                                     manager.Do(new EventBase(manager.ClearText)); 
                                     this.DoIn(new EventBase(Run), interval);
@@ -131,6 +137,7 @@ public abstract class ExperimentBase : EventLoop {
         manager.Do(new EventBase<string>(manager.recorder.StartRecording, wavPath));
         DoIn(new EventBase(() => {
                 manager.Do(new EventBase(() => {
+                    manager.scriptedInput.ReportOutOfThreadScriptedEvent("end recall period", new Dictionary<string, object>());
                     manager.recorder.StopRecording();
                     manager.ClearText();
                     manager.lowBeep.Play();
@@ -141,7 +148,7 @@ public abstract class ExperimentBase : EventLoop {
 
     protected void RecallPrompt() {
         manager.Do(new EventBase(manager.highBeep.Play));
-        manager.Do(new EventBase<string, string>(manager.ShowText, "recall stars", "*******"));
+        manager.Do(new EventBase<string, string>(manager.ShowText, "display recall text", "*******"));
         DoIn(new EventBase(() => {
                                     manager.Do(new EventBase(manager.ClearText));
                                     this.Do(new EventBase(Run));
@@ -151,7 +158,7 @@ public abstract class ExperimentBase : EventLoop {
     
     
     public void QuitPrompt() {
-        WaitForKey("Quit Prompt", "Running " + (string)manager.GetSetting("participantCode") + " in session " 
+        WaitForKey("subject/session confirmation", "Running " + (string)manager.GetSetting("participantCode") + " in session " 
             + (int)manager.GetSetting("session") + " of " + (string)manager.GetSetting("experimentName") 
             + ".\n Press Y to continue, N to quit.", 
             (Action<string, bool>)QuitOrContinue);
@@ -169,7 +176,7 @@ public abstract class ExperimentBase : EventLoop {
 
     public void MicTestPrompt() {
         manager.Do(new EventBase<string, string>(manager.ShowTitle, "microphone test title", "Microphone Test"));
-        WaitForKey("start recording", "Press any key to record a sound after the beep.", AnyKey);
+        WaitForKey("microphone test prompt", "Press any key to record a sound after the beep.", AnyKey);
     }
 
     public void ConfirmStart() {
@@ -189,7 +196,7 @@ public abstract class ExperimentBase : EventLoop {
             manager.Do(new EventBase<string, string>(manager.ShowText, "session end", "Yay! Session Complete."));
         }
         Stop();
-        manager.Do(new EventBase(manager.Quit));
+        manager.DoIn(new EventBase(manager.LaunchLauncher), 10000);
     }
 
 
@@ -206,6 +213,8 @@ public abstract class ExperimentBase : EventLoop {
             return sum;
         }
 
+        string message = "distractor update";
+
         // at every stage other than confirming answer, keyhandler is
         // re-enqueued to interface manager
 
@@ -216,14 +225,14 @@ public abstract class ExperimentBase : EventLoop {
                 if(state.distractorAnswer.Length < 3) {
                     state.distractorAnswer = state.distractorAnswer + key;
                 }
-                manager.RegisterKeyHandler(DistractorAnswer);
+                message = "modify distractor answer";
             }
             // delete key removes last character from answer
             else if(key == "delete" || key == "backspace") {
                 if(state.distractorAnswer != "") {
                     state.distractorAnswer = state.distractorAnswer.Substring(0, state.distractorAnswer.Length - 1);
                 }
-                manager.RegisterKeyHandler(DistractorAnswer);
+                message = "modify distractor answer";
             }
             // submit answer and play tone depending on right or wrong answer 
             else if(key == "enter" || key == "return") {
@@ -248,14 +257,14 @@ public abstract class ExperimentBase : EventLoop {
                 return;
             }
         }
-        else {
-            manager.RegisterKeyHandler(DistractorAnswer);
-        }
+
+        manager.RegisterKeyHandler(DistractorAnswer);
+
         string problem = state.distractorProblem[0].ToString() + " + " 
                         + state.distractorProblem[1].ToString() + " + " 
                         + state.distractorProblem[2].ToString() + " = ";
         string answer = state.distractorAnswer;
-        manager.Do(new EventBase<string, string>(manager.ShowText, "distractor", problem + answer));
+        manager.Do(new EventBase<string, string>(manager.ShowText, message, problem + answer));
     }
 
     public void AnyKey(string key, bool down) {
@@ -270,7 +279,6 @@ public abstract class ExperimentBase : EventLoop {
 
 
     public void QuitOrContinue(string key, bool down) {
-
         if(down && key == "Y") {
             manager.Do(new EventBase(manager.ClearText));
             this.Do(new EventBase(Run));

@@ -294,11 +294,6 @@ PrefabInstance:
       propertyPath: m_LocalScale.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 223431702409890432, guid: e6672ad97ff294adba0eb53a61d1502f,
-        type: 3}
-      propertyPath: m_SortingOrder
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 114487739435193272, guid: e6672ad97ff294adba0eb53a61d1502f,
         type: 3}
       propertyPath: textElement
@@ -309,6 +304,16 @@ PrefabInstance:
       propertyPath: titleElement
       value: 
       objectReference: {fileID: 699250619}
+    - target: {fileID: 114487739435193272, guid: e6672ad97ff294adba0eb53a61d1502f,
+        type: 3}
+      propertyPath: wordEventReporter
+      value: 
+      objectReference: {fileID: 1809667596}
+    - target: {fileID: 223431702409890432, guid: e6672ad97ff294adba0eb53a61d1502f,
+        type: 3}
+      propertyPath: m_SortingOrder
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1885532220077830, guid: e6672ad97ff294adba0eb53a61d1502f, type: 3}
       propertyPath: m_Name
       value: Title
@@ -504,7 +509,7 @@ PrefabInstance:
     - target: {fileID: 328937643129792720, guid: 941b5dccbc0da4585a324a844ffff8a8,
         type: 3}
       propertyPath: m_AspectRatio
-      value: 0
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 328937643129792720, guid: 941b5dccbc0da4585a324a844ffff8a8,
         type: 3}

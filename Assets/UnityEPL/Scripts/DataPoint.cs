@@ -9,6 +9,8 @@ public class DataPoint
     private System.Collections.Generic.Dictionary<string, object> dataDict;
     private System.DateTime time;
 
+
+
     /// <summary>
     /// Initializes a new instance of the <see cref="T:DataPoint"/> class.  This represents a piece of data that you might want to keep about your project.
     /// 
@@ -25,18 +27,6 @@ public class DataPoint
     {
         if (newDataDict == null)
             newDataDict = new System.Collections.Generic.Dictionary<string, object>();
-        string[] participants = UnityEPL.GetParticipants();
-        if (participants != null)
-        {
-            for (int i = 0; i < participants.Length; i++)
-            {
-                newDataDict.Add("participant " + (i + 1).ToString(), participants[i]);
-            }
-        }
-        if (UnityEPL.GetExperimentName() != null)
-        {
-            newDataDict.Add("experiment", UnityEPL.GetExperimentName());
-        }
 
         type = newType;
         dataDict = newDataDict;

@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.Networking;
 using UnityEngine;
 
 public class SoundRecorder : MonoBehaviour
@@ -15,11 +16,15 @@ public class SoundRecorder : MonoBehaviour
 
     void OnEnable()
     {
+        //TODO: enable cycling through devices
         recording = Microphone.Start("", true, SECONDS_IN_MEMORY, SAMPLE_RATE);
     }
 
     void OnDisable()
     {
+        // device = null;
+        if(isRecording)
+            StopRecording();
         Microphone.End("");
     }
 
@@ -43,7 +48,7 @@ public class SoundRecorder : MonoBehaviour
         {
             throw new UnityException("Not recording.  Please StartRecording first.");
         }
-
+        SavWav.Save(nextOutputPath, recording);
         isRecording = false;
 
         float recordingLength = Time.unscaledTime - startTime;
@@ -54,6 +59,7 @@ public class SoundRecorder : MonoBehaviour
         float[] saveData = GetLastSamples(outputLength);
 
         croppedClip.SetData(saveData, 0);
+
         SavWav.Save(nextOutputPath, croppedClip);
     }
 
@@ -81,12 +87,23 @@ public class SoundRecorder : MonoBehaviour
     public AudioClip AudioClipFromDatapath(string datapath)
     {
         string url = "file:///" + datapath;
-        WWW audioFile = new WWW(url);
-        while (!audioFile.isDone)
-        {
-
+        UnityWebRequest audioFile = UnityWebRequestMultimedia.GetAudioClip(url, AudioType.WAV);
+        //audioFile.timeout = 10; // timeout in ten seconds
+        audioFile.SendWebRequest();
+        while(!audioFile.isDone) {
+    
+            Debug.Log("blocking");
+            // block
         }
-        return audioFile.GetAudioClip();
+
+        if(audioFile.isNetworkError) {
+            throw new System.Exception(audioFile.error);
+        }
+        if(audioFile.isHttpError) {
+            throw new System.Exception(audioFile.responseCode.ToString());
+        }
+
+        return DownloadHandlerAudioClip.GetContent(audioFile);
     }
 
     void OnApplicationQuit()

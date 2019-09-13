@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System;
 using UnityEngine;
 
 /// <summary>
@@ -13,6 +12,8 @@ public class UpdatedLaunchExperiment : MonoBehaviour
     public GameObject cantGoPrompt;
     public UnityEngine.UI.InputField participantNameInput;
     public UnityEngine.GameObject launchButton;
+    
+    public UnityEngine.GameObject syncButton;
     public UnityEngine.GameObject greyedLaunchButton;
     public UnityEngine.GameObject loadingButton;
 
@@ -20,6 +21,7 @@ public class UpdatedLaunchExperiment : MonoBehaviour
         GameObject mgr = GameObject.Find("InterfaceManager");
         manager = (InterfaceManager)mgr.GetComponent("InterfaceManager");
     }
+
     void Update()
     {
         launchButton.SetActive(isValidParticipant(participantNameInput.text));
@@ -33,7 +35,13 @@ public class UpdatedLaunchExperiment : MonoBehaviour
     }
 
     public void DoSyncBoxTest() {
-        manager.Do(new EventBase(manager.TestSyncbox));
+        if(!manager.syncBox.IsRunning())
+            syncButton.GetComponent<UnityEngine.UI.Button>().interactable = false;
+            manager.Do(new EventBase<Action>(manager.TestSyncbox, ResetSyncBoxButton));
+    }
+
+    public void ResetSyncBoxButton() {
+        syncButton.GetComponent<UnityEngine.UI.Button>().interactable = true;
     }
 
     // activated by UI launch button

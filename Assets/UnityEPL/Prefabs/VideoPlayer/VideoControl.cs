@@ -8,7 +8,6 @@ public class VideoControl : MonoBehaviour
     private UnityEngine.KeyCode pauseToggleKey;
     private UnityEngine.KeyCode deactivateKey;
     public UnityEngine.Video.VideoPlayer videoPlayer;
-    public bool deactivateWhenFinished = true;
     public Action callback = null;
 
     public bool skippable;
@@ -27,10 +26,6 @@ public class VideoControl : MonoBehaviour
         if (skippable && Input.GetKeyDown(deactivateKey))
         {
             videoPlayer.Stop();
-            gameObject.SetActive(false);
-        }
-        if (videoPlayer.time >= videoPlayer.clip.length)
-        {
             gameObject.SetActive(false);
         }
     }
@@ -54,7 +49,8 @@ public class VideoControl : MonoBehaviour
     }
 
     public void StartVideo(string video, bool _skippable, Action onDone) {
-        videoPlayer.clip = Resources.Load<VideoClip>(video);
+        videoPlayer.url = "file://" + video;
+
         callback = onDone;
         gameObject.SetActive(true);
 

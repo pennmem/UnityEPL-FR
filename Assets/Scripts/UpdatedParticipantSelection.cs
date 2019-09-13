@@ -135,8 +135,7 @@ public class UpdatedParticipantSelection : MonoBehaviour
 
     public void IncreaseSessionNumber()
     {
-        if(nextSessionNumber < (int)manager.GetSetting("numSessions"))
-            nextSessionNumber++;
+        nextSessionNumber++;
         LoadSession();
     }
 

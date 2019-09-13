@@ -110,7 +110,7 @@ public class InterfaceManager : MonoBehaviour
 
         // create objects not tied to unity
         fileManager = new FileManager(this);
-        syncBox = new NonUnitySyncbox();
+        syncBox = new NonUnitySyncbox(this);
         onKey = new ConcurrentQueue<Action<string, bool>>();
 
         // load system configuration file
@@ -121,7 +121,8 @@ public class InterfaceManager : MonoBehaviour
         string configPath = fileManager.ConfigPath();
         string[] configs = Directory.GetFiles(configPath, "*.json");
         if(configs.Length < 2) {
-            throw new Exception("Missing configuration file");
+            ShowWarning("Configuration File Error", 5000);
+            DoIn(new EventBase(Quit), 5000);            
         }
 
         JArray exps = new JArray();
@@ -138,13 +139,14 @@ public class InterfaceManager : MonoBehaviour
             // Stim hardward interface 
 
         // Syncbox interface
+        // TODO
         if(!(bool)GetSetting("isTest")) {
             syncBox.Init();
         }
 
         // Start experiment Launcher scene
         mainEvents.Do(new EventBase(LaunchLauncher));
-        eventsPerFrame = (int)(GetSetting("eventsPerFrame") ?? 1);
+        eventsPerFrame = (int)(GetSetting("eventsPerFrame") ?? 5);
     }
 
     // Update is called once per frame
@@ -155,7 +157,7 @@ public class InterfaceManager : MonoBehaviour
         }
 
         int i = 0;
-        while(mainEvents.Process() && (i < eventsPerFrame)) {
+        while(process && mainEvents.Process() && (i < eventsPerFrame)) {
             i++;
         }
     }
@@ -166,6 +168,8 @@ public class InterfaceManager : MonoBehaviour
     //////////
     void onSceneLoaded(Scene scene, LoadSceneMode mode) 
     {
+        onKey = new ConcurrentQueue<Action<string, bool>>(); // clear keyhandler queue on scene change
+
         if((bool)GetSetting("isLegacyExperiment") == true) {
             Debug.Log("Legacy Experiment");
             process = true; // re enable processing of events
@@ -294,9 +298,6 @@ public class InterfaceManager : MonoBehaviour
             process = false; // disable event processing during scene transition
             SceneManager.LoadScene((string)GetSetting("experimentScene"));
 
-            Type t = Type.GetType((string)GetSetting("experimentClass")); 
-            exp = (ExperimentBase)Activator.CreateInstance(t, new object[] {this});
-
             Cursor.visible = false;
             Application.runInBackground = true;
             // Make the game run as fast as possible
@@ -311,16 +312,22 @@ public class InterfaceManager : MonoBehaviour
                 syncBox.Do(new EventBase(syncBox.StartPulse));
             }
 
-            exp.Do(new EventBase(exp.Run));
+            // won't execute until mgr is ready
+            Do(new EventBase(LogExperimentInfo));
+
+            Type t = Type.GetType((string)GetSetting("experimentClass")); 
+            exp = (ExperimentBase)Activator.CreateInstance(t, new object[] {this});
         }
         else {
             throw new Exception("No experiment configuration loaded");
         }
     }
 
-    public void TestSyncbox() {
+    public void TestSyncbox(Action callback) {
         syncBox.Do(new EventBase(syncBox.StartPulse));
-        DoIn(new EventBase(syncBox.StopPulse), GetSetting("syncBoxTestLength"));
+        // DoIn(new EventBase(syncBox.StopPulse), (int)GetSetting("syncBoxTestLength"));
+        DoIn(new EventBase(syncBox.StopPulse), 5000); 
+        DoIn(new EventBase(callback), 5000); 
     }
 
     public void Quit() {
@@ -397,8 +404,8 @@ public class InterfaceManager : MonoBehaviour
             throw new Exception("No video player in this scene");
         }
 
-        // path to video asset relative to Resources folder
-        string videoPath = (string)GetSetting(video);
+        // absolute video path
+        string videoPath = fileManager.ExperimentRoot() + (string)GetSetting(video);
 
         if(videoPath == null) {
             throw new Exception("Video resource not found");
@@ -412,9 +419,23 @@ public class InterfaceManager : MonoBehaviour
         TextDisplayer warnText = warning.GetComponent<TextDisplayer>();
         warnText.DisplayText("warning", warnMsg);
 
-        Do(new EventBase(() => { warnText.ClearText();
-                                 warning.SetActive(false);}));
+        DoIn(new EventBase(() => { warnText.ClearText();
+                                   warning.SetActive(false);}), duration);
 
+    }
+
+
+    protected void LogExperimentInfo() {
+        //write versions to logfile
+        Dictionary<string, object> versionsData = new Dictionary<string, object>();
+        versionsData.Add("Application Version", Application.version);
+        versionsData.Add("Experiment version", (string)GetSetting("experimentName"));
+        versionsData.Add("Logfile version", "0");
+        versionsData.Add("Participant", (string)GetSetting("participantCode"));
+        versionsData.Add("Session", (int)GetSetting("session"));
+
+        // occurring during loading, so reference may not yet be obtained
+        Do(new EventBase<string, Dictionary<string, object>>(scriptedInput.ReportOutOfThreadScriptedEvent, "session start", versionsData));
     }
 
     //////////
@@ -424,6 +445,10 @@ public class InterfaceManager : MonoBehaviour
     //////////
     
     public void Key(string key, bool pressed) {
+        if(!process) {
+            return;
+        }
+
         Action<string, bool> action;
         while(onKey.Count != 0) {
             if(onKey.TryDequeue(out action)) {
@@ -472,8 +497,7 @@ public class FileManager {
         #if UNITY_EDITOR
             return System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop);
         #else
-            return System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop);
-            //return System.IO.Path.GetFullPath(".");
+            return System.IO.Path.GetFullPath(".");
         #endif
     }
 
@@ -507,9 +531,9 @@ public class FileManager {
     }
 
     public string SessionPath() {
-        string session = (string)manager.GetSetting("session").ToString();
+        string session = (string)manager.GetSetting("session");
         if(session == null) {
-            throw new Exception("No session selected");
+            return null;
         }
         string dir = ParticipantPath();
         dir = System.IO.Path.Combine(dir, session.ToString());
