@@ -1,10 +1,11 @@
-﻿using System.Collections;
+﻿using System.Collections.Generic;
 using System.Collections.Concurrent;
 using UnityEngine;
 
 //this superclass implements an interface for retrieving behavioral events from a queue
 public abstract class DataReporter : MonoBehaviour
 {
+    public string reportingID = "Object ID not set.";
     private static System.DateTime realWorldStartTime;
     private static System.Diagnostics.Stopwatch stopwatch;
 
@@ -16,18 +17,19 @@ public abstract class DataReporter : MonoBehaviour
     protected static double OSStartTime;
     private static float unityTimeStartTime;
 
-    private InterfaceManager manager = null;
+    public DataHandler reportTo;
 
     protected bool IsMacOS()
     {
-        return Application.platform == RuntimePlatform.OSXEditor || Application.platform == RuntimePlatform.OSXPlayer;
+        //return Application.platform == RuntimePlatform.OSXEditor || Application.platform == RuntimePlatform.OSXPlayer;
+        return false;
     }
 
     void Awake()
     {
-        GameObject mgr = GameObject.Find("InterfaceManager");
-        if(mgr != null)
-            manager = (InterfaceManager)mgr.GetComponent("InterfaceManager");
+        if(reportingID == "Object ID not set.") {
+            GenerateDefaultName();
+        }
 
         if (!startTimeInitialized)
         {
@@ -40,6 +42,27 @@ public abstract class DataReporter : MonoBehaviour
 
         if (QualitySettings.vSyncCount == 0)
             Debug.LogWarning("vSync is off!  This will cause tearing, which will prevent meaningful reporting of frame-based time data.");
+    }
+
+    protected virtual void OnEnable() {
+        if(!reportTo)  {
+            GameObject data = GameObject.Find("DataManager");
+            if(data != null) {
+                reportTo = (DataHandler)data.GetComponent("DataHandler");
+            }
+        }
+
+        if(reportTo) {
+            reportTo.AddReporter(this);
+        }
+    }
+
+    protected virtual void OnDisable() 
+    {
+        if(reportTo) { 
+            eventQueue.Enqueue(new DataPoint(reportingID + "Disabled", RealWorldFrameDisplayTime(), new Dictionary<string, object>()));
+            reportTo.RemoveReporter(this);
+        }
     }
 
     /// <summary>
@@ -82,6 +105,21 @@ public abstract class DataReporter : MonoBehaviour
         return dataPoints;
     }
 
+    public void DoReport(System.Collections.Generic.Dictionary<string, object> extraData = null)
+    {
+        if (extraData == null)
+            extraData = new System.Collections.Generic.Dictionary<string, object>();
+        System.Collections.Generic.Dictionary<string, object> transformDict = new System.Collections.Generic.Dictionary<string, object>(extraData);
+        transformDict.Add("positionX", transform.position.x);
+        transformDict.Add("positionY", transform.position.y);
+        transformDict.Add("positionZ", transform.position.z);
+        transformDict.Add("rotationX", transform.rotation.eulerAngles.x);
+        transformDict.Add("rotationY", transform.rotation.eulerAngles.y);
+        transformDict.Add("rotationZ", transform.rotation.eulerAngles.z);
+        transformDict.Add("object reporting id", reportingID);
+        eventQueue.Enqueue(new DataPoint(gameObject.name + " transform", RealWorldFrameDisplayTime(), transformDict));
+    }
+
     protected System.DateTime RealWorldFrameDisplayTime()
     {
         double secondsSinceUnityStart = Time.unscaledTime - unityTimeStartTime;
@@ -112,5 +150,10 @@ public abstract class DataReporter : MonoBehaviour
     public static System.DateTime GetStartTime()
     {
         return realWorldStartTime;
+    }
+
+    private void GenerateDefaultName()
+    {
+        reportingID = this.name + System.Guid.NewGuid();
     }
 }

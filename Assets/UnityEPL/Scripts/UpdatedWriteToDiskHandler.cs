@@ -17,8 +17,6 @@ public class UpdatedWriteToDiskHandler : DataHandler
     private int framesPerWrite = 30;
 
     private System.Collections.Generic.Queue<DataPoint> waitingPoints = new System.Collections.Generic.Queue<DataPoint>();
-    private InterfaceManager manager;
-
 
     public void SetWriteAutomatically(bool newAutomatically)
     {
@@ -36,11 +34,6 @@ public class UpdatedWriteToDiskHandler : DataHandler
     public int GetFramesPerWrite()
     {
         return framesPerWrite;
-    }
-
-    void Awake() {
-        GameObject mgr = GameObject.Find("InterfaceManager");
-        manager = (InterfaceManager)mgr.GetComponent("InterfaceManager");
     }
 
     protected override void Update()
@@ -66,7 +59,7 @@ public class UpdatedWriteToDiskHandler : DataHandler
     {
         while (waitingPoints.Count > 0)
         {
-            string directory = manager.fileManager.SessionPath();
+            string directory = im.fileManager.SessionPath(); 
             if(directory == null) {
                 return;
             }

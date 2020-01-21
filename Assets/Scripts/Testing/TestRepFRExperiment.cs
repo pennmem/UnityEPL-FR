@@ -145,8 +145,8 @@ class TestingRepFR {
       "Staring"};
       
     // FIXME: 
-    var experiment = new RepFRExperiment(input_word_list); var session =
-      experiment.GenerateSession();
+    var experiment = new RepFRExperiment(input_word_list);
+    var session = experiment.GenerateSession();
 
     for (int i=0; i<session.Count; i++) {
       Console.WriteLine("-----------------------------------");

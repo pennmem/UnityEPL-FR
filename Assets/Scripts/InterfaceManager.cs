@@ -81,7 +81,7 @@ public class InterfaceManager : MonoBehaviour
     public RamulatorInterface ramInt;
     public NonUnitySyncbox syncBox;
     public VideoControl videoControl;
-    public TextDisplayer textDisplayer; // doesn't currently support multiple  text displays
+    public TextDisplayer textDisplayer;
     public SoundRecorder recorder;
     public GameObject warning;
 
@@ -405,7 +405,7 @@ public class InterfaceManager : MonoBehaviour
         }
 
         // absolute video path
-        string videoPath = fileManager.ExperimentRoot() + (string)GetSetting(video);
+        string videoPath = System.IO.Path.Combine(fileManager.ExperimentRoot(), (string)GetSetting(video));
 
         if(videoPath == null) {
             throw new Exception("Video resource not found");
@@ -428,11 +428,11 @@ public class InterfaceManager : MonoBehaviour
     protected void LogExperimentInfo() {
         //write versions to logfile
         Dictionary<string, object> versionsData = new Dictionary<string, object>();
-        versionsData.Add("Application Version", Application.version);
-        versionsData.Add("Experiment version", (string)GetSetting("experimentName"));
-        versionsData.Add("Logfile version", "0");
-        versionsData.Add("Participant", (string)GetSetting("participantCode"));
-        versionsData.Add("Session", (int)GetSetting("session"));
+        versionsData.Add("application version", Application.version);
+        versionsData.Add("experiment version", (string)GetSetting("experimentName"));
+        versionsData.Add("logfile version", "0");
+        versionsData.Add("participant", (string)GetSetting("participantCode"));
+        versionsData.Add("session", (int)GetSetting("session"));
 
         // occurring during loading, so reference may not yet be obtained
         Do(new EventBase<string, Dictionary<string, object>>(scriptedInput.ReportOutOfThreadScriptedEvent, "session start", versionsData));

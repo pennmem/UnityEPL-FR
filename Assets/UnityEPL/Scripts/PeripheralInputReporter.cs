@@ -50,7 +50,7 @@ public class PeripheralInputReporter : DataReporter {
         GameObject mgr = GameObject.Find("InterfaceManager");
         manager = (InterfaceManager)mgr.GetComponent("InterfaceManager");
 
-        if(!nativePluginRunning) {
+        if(IsMacOS() && !nativePluginRunning) {
             OSStartTime = StartCocoaPlugin();
             nativePluginRunning = true;
         }
@@ -136,7 +136,8 @@ public class PeripheralInputReporter : DataReporter {
     {
         Dictionary<string, object> dataDict = new Dictionary<string, object>();
         string key;
-        key = KeyLookup.get(keyCode);
+        key = KeyLookup.get(keyCode, IsMacOS());
+        Debug.Log("Key:" + key);
         dataDict.Add("key code", key);
         dataDict.Add("is pressed", pressed);
         string label = "key press/release";

@@ -42,7 +42,7 @@ static Dictionary<int, string> OSXKeyCodes = new Dictionary<int, string> {
 {11, "B"},
 {0, "A"},
 {30, "]"},
-{42, "\\"},
+{42, "slash"}, // causes issues with saved json
 {33, "["},
 {24, "="},
 {81, "="},
@@ -56,7 +56,7 @@ static Dictionary<int, string> OSXKeyCodes = new Dictionary<int, string> {
 {43, ","},
 {69, "+"},
 {67, "*"},
-{49, " "},
+{49, "space"},
 {39, "'"},
 {25, "9"},
 {92, "9"},

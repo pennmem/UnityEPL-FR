@@ -38,6 +38,7 @@ public class RepFRExperiment : ExperimentBase {
 
   public RepFRExperiment(InterfaceManager _manager) : base(_manager) {
     // Repetition specification:
+    Debug.Log("Constructor for repFR");
     int[] repeats = manager.GetSetting("wordRepeats").ToObject<int[]>();
     int[] counts = manager.GetSetting("wordCounts").ToObject<int[]>();
 
@@ -61,13 +62,13 @@ public class RepFRExperiment : ExperimentBase {
 
 
     string source_list = manager.fileManager.GetWordList();
+    Debug.Log(source_list);
     source_words = new List<string>();
     //skip line for csv header
     foreach(var line in File.ReadLines(source_list).Skip(1))
     {
       source_words.Add(line);
     }
-
     // load state if previously existing
     dynamic loadedState = LoadState((string)manager.GetSetting("participantCode"), (int)manager.GetSetting("session"));
     if(loadedState != null) {
@@ -88,7 +89,8 @@ public class RepFRExperiment : ExperimentBase {
       state.runIndex = 3; // start at microphone test 
     }
     // generate new session if untouched
-    else {
+    // else {
+    if(true) {
       currentSession = GenerateSession();
       state.listIndex = 0;
       state.runIndex = 0;

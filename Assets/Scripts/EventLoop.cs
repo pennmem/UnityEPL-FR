@@ -3,7 +3,6 @@ using System.Threading;
 using System.Collections.Concurrent;
 
 public class EventLoop : EventQueue {
-    protected volatile bool running = false;
     private ManualResetEventSlim wait;
 
 
@@ -23,20 +22,16 @@ public class EventLoop : EventQueue {
     }
 
     public void StopTimers() {
-        foreach(RepeatingEvent e in repeatingEvents) {
-            e.flag.Set();
+        RepeatingEvent re;
+        foreach(int i in repeatingEvents.Keys) {
+            if(repeatingEvents.TryGetValue(i, out re)) {
+                re.flag.Set();
+                re.timer.Dispose();
+                repeatingEvents.TryRemove(i, out re);
+            }
         }
 
-        foreach(Timer t in timers) {
-            t.Dispose();
-        }
-
-        base.timers = new ConcurrentBag<Timer>();
-        base.repeatingEvents = new ConcurrentBag<RepeatingEvent>();
-    }
-
-    public bool Running() {
-        return running;
+        base.repeatingEvents = new ConcurrentDictionary<int, RepeatingEvent>();
     }
 
     public void Loop() {
@@ -51,7 +46,7 @@ public class EventLoop : EventQueue {
         }
         wait.Dispose();
     }
-    public override void Do(EventBase thisEvent) {
+    public override void Do(IEventBase thisEvent) {
         if(Running()) {
             base.Do(thisEvent);
             wait.Set();
@@ -74,5 +69,6 @@ public class EventLoop : EventQueue {
     }
 
     public EventLoop() {
+        running = false;
     }
 }

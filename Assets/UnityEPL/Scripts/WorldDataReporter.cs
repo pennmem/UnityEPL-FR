@@ -5,31 +5,53 @@ using UnityEngine;
 [AddComponentMenu("UnityEPL/Reporters/World Data Reporter")]
 public class WorldDataReporter : DataReporter
 {
-    public string reportingID = "Object ID not set.";
-    public bool reportTransform = true;
-    public int framesPerTransformReport = 60;
-    public bool reportEntersView = true;
-    public bool reportLeavesView = true;
 
-    private Dictionary<Camera, bool> camerasToInViewfield = new Dictionary<Camera, bool>();
+    public bool reportView = true;
+
+    public bool isStatic = true;
+    public bool doSpawnReport = true;
+
+    public int framesPerReport = 60;
+
+    private int offset;
+    BoxCollider objectCollider;
+
+    void Awake() {
+        offset = (int)Random.Range(0, framesPerReport / 2);
+    }
 
     void Update()
     {
-        if (reportTransform) CheckTransformReporting();
-        if (reportEntersView || reportLeavesView) CheckView();
+        if (!isStatic) CheckTransformReport();
     }
 
-    void Start()
+    void BoxCheck()
     {
-        if ((reportEntersView || reportLeavesView) && GetComponent<Collider>() == null)
+        if (reportView && GetComponent<BoxCollider>() == null)
         {
-            throw new UnityException("You have selected enter/exit viewfield reporting for " + gameObject.name + " but there is no collider on the object." +
+            reportView = false;
+            throw new UnityException("You have selected enter/exit viewfield reporting for " + gameObject.name + " but there is no box collider on the object." +
                                       "  This feature uses collision detection to compare with camera bounds and other objects.  Please add a collider or " +
                                       "unselect viewfield enter/exit reporting.");
         }
+        objectCollider = gameObject.GetComponent<BoxCollider>();
     }
 
-    public void DoReport(System.Collections.Generic.Dictionary<string, object> extraData = null)
+    protected override void OnEnable() {
+        base.OnEnable();
+        BoxCheck();
+        if(doSpawnReport)
+            DoSpawnReport();
+    }
+
+    protected override void OnDisable() {
+        if(doSpawnReport)
+            DoDespawnReport();
+    }
+
+    // TODO: gather data in single function, use wrapper to set event type
+
+    public void DoTransformReport(System.Collections.Generic.Dictionary<string, object> extraData = null)
     {
         if (extraData == null)
             extraData = new Dictionary<string, object>();
@@ -37,70 +59,69 @@ public class WorldDataReporter : DataReporter
         transformDict.Add("positionX", transform.position.x);
         transformDict.Add("positionY", transform.position.y);
         transformDict.Add("positionZ", transform.position.z);
-        transformDict.Add("rotationX", transform.position.x);
-        transformDict.Add("rotationY", transform.position.y);
-        transformDict.Add("rotationZ", transform.position.z);
-        transformDict.Add("scaleX", transform.position.x);
-        transformDict.Add("scaleY", transform.position.y);
-        transformDict.Add("scaleZ", transform.position.z);
-        transformDict.Add("object reporting id", reportingID);
-        eventQueue.Enqueue(new DataPoint(gameObject.name + " transform", RealWorldFrameDisplayTime(), transformDict));
+
+        transformDict.Add("rotationX", transform.rotation.eulerAngles.x);
+        transformDict.Add("rotationY", transform.rotation.eulerAngles.y);
+        transformDict.Add("rotationZ", transform.rotation.eulerAngles.z);
+
+        transformDict.Add("reportID", reportingID);
+        transformDict.Add("objectName", gameObject.name);
+        eventQueue.Enqueue(new DataPoint(gameObject.name + "Transform", RealWorldFrameDisplayTime(), transformDict));
     }
 
-    private void CheckTransformReporting()
+    private void CheckTransformReport()
     {
-        if (Time.frameCount % framesPerTransformReport == 0)
+        if ((Time.frameCount + offset) % framesPerReport == 0)
         {
-            DoReport();
+            DoTransformReport();
         }
     }
 
-    //untested accuraccy, requires collider
-    void CheckView()
-    {
-        bool enteredViewfield = false;
-        bool leftViewfield = false;
+    private void DoSpawnReport() {
+        System.Collections.Generic.Dictionary<string, object> transformDict = new System.Collections.Generic.Dictionary<string, object>();
+        transformDict.Add("positionX", transform.position.x);
+        transformDict.Add("positionY", transform.position.y);
+        transformDict.Add("positionZ", transform.position.z);
 
-        Camera[] cameras = FindObjectsOfType<Camera>();
+        transformDict.Add("rotationX", transform.rotation.eulerAngles.x);
+        transformDict.Add("rotationY", transform.rotation.eulerAngles.y);
+        transformDict.Add("rotationZ", transform.rotation.eulerAngles.z);
 
-        foreach (Camera thisCamera in cameras)
+        transformDict.Add("reportID", reportingID);
+        transformDict.Add("objectName", gameObject.name);
+        eventQueue.Enqueue(new DataPoint(gameObject.name + "Spawn", RealWorldFrameDisplayTime(), transformDict));
+    }
+    
+    private void DoDespawnReport() {
+        System.Collections.Generic.Dictionary<string, object> transformDict = new System.Collections.Generic.Dictionary<string, object>();
+        transformDict.Add("reportID", reportingID);
+        transformDict.Add("objectName", gameObject.name);
+        eventQueue.Enqueue(new DataPoint(gameObject.name + "Despawn", RealWorldFrameDisplayTime(), transformDict));
+    }
+
+    private Vector3[] GetColliderVertexPositions(BoxCollider boxCollider) {
+        Vector3[] vertices = new Vector3[9];
+
+        Vector3 colliderCenter  = boxCollider.center;
+        Vector3 colliderExtents = boxCollider.size/2.0f;
+        Vector3 pointOffset = new Vector3(.02f, .02f, .02f);
+
+        for (int i = 0; i < 8; i++)
         {
-            Plane[] frustrumPlanes = GeometryUtility.CalculateFrustumPlanes(thisCamera);
-            Collider objectCollider = GetComponent<Collider>();
+            Vector3 extents = colliderExtents;
+            Vector3 offset = pointOffset;
+            extents.Scale(new Vector3((i & 1) == 0 ? 1 : -1, (i & 2) == 0 ? 1 : -1, (i & 4) == 0 ? 1 : -1));
+            offset.Scale(new Vector3((i & 1) == 0 ? 1 : -1, (i & 2) == 0 ? 1 : -1, (i & 4) == 0 ? 1 : -1));
 
-            RaycastHit lineOfSightHit;
-            Physics.Linecast(thisCamera.transform.position, gameObject.transform.position, out lineOfSightHit);
-            bool lineOfSight = lineOfSightHit.collider.Equals(gameObject.GetComponent<Collider>());
-            bool inView = GeometryUtility.TestPlanesAABB(frustrumPlanes, objectCollider.bounds) && lineOfSight;
-            if (inView && (!camerasToInViewfield.ContainsKey(thisCamera) || camerasToInViewfield[thisCamera] == false))
-            {
-                camerasToInViewfield[thisCamera] = true;
-                enteredViewfield = true;
-            }
-            else if (!inView && camerasToInViewfield.ContainsKey(thisCamera) && camerasToInViewfield[thisCamera] == true)
-            {
-                camerasToInViewfield[thisCamera] = false;
-                leftViewfield = true;
-            }
+            Vector3 vertexPosLocal = colliderCenter + extents - offset;
 
-            string eventName = "";
+            Vector3 vertexPosGlobal = boxCollider.transform.TransformPoint(vertexPosLocal);
 
-
-            if (!(enteredViewfield || leftViewfield))
-                continue;
-
-            Dictionary<string, object> dataDict = new Dictionary<string, object>();
-            dataDict.Add("camera", thisCamera.name);
-            if (enteredViewfield && reportEntersView)
-            {
-                eventName = gameObject.name + " enters view";
-                eventQueue.Enqueue(new DataPoint(eventName, RealWorldFrameDisplayTime(), dataDict));
-            }
-            if (leftViewfield && reportLeavesView)
-            {
-                eventName = gameObject.name + " leaves view";
-                eventQueue.Enqueue(new DataPoint(eventName, RealWorldFrameDisplayTime(), dataDict));
-            }
+            // display vector3 to six decimal places
+            vertices[i] = vertexPosGlobal;
         }
+        vertices[8] = boxCollider.transform.TransformPoint(colliderCenter);
+        
+        return vertices;
     }
 }

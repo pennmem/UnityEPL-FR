@@ -220,8 +220,9 @@ public abstract class ExperimentBase : EventLoop {
 
         key = key.ToLower();
         if(down) {
-            // enter only numbers, 2 digit max
-            if(Regex.IsMatch(key, @"^\d+$")) {
+            // enter only numbers
+            if(Regex.IsMatch(key, @"\d$")) {
+                key = key[key.Length-1].ToString(); // Unity gives numbers as Alpha# or Keypad#
                 if(state.distractorAnswer.Length < 3) {
                     state.distractorAnswer = state.distractorAnswer + key;
                 }
