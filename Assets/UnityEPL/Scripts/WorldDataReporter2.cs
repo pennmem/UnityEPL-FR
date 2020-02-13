@@ -5,7 +5,6 @@ using UnityEngine;
 [AddComponentMenu("UnityEPL/Reporters/World Data Reporter2")]
 public class WorldDataReporter2 : DataReporter
 {
-    public string reportingID = "Object ID not set.";
     public bool reportTransform = true;
     public int framesPerTransformReport = 30;
     public bool reportView = true;
@@ -44,7 +43,7 @@ public class WorldDataReporter2 : DataReporter
         transformDict.Add("scaleY", transform.position.y);
         transformDict.Add("scaleZ", transform.position.z);
         transformDict.Add("object reporting id", reportingID);
-        eventQueue.Enqueue(new DataPoint(gameObject.name + " transform", RealWorldFrameDisplayTime(), transformDict));
+        eventQueue.Enqueue(new DataPoint(gameObject.name + " transform", TimeStamp(), transformDict));
     }
 
     private void CheckTransformReport()
@@ -88,7 +87,7 @@ public class WorldDataReporter2 : DataReporter
                 dataDict.Add("cameraName", thisCamera.name);
                 dataDict.Add("isInView", inView);
                 eventName = gameObject.name.ToLower() + "InView";
-                eventQueue.Enqueue(new DataPoint(eventName, RealWorldFrameDisplayTime(), dataDict));
+                eventQueue.Enqueue(new DataPoint(eventName, TimeStamp(), dataDict));
             }
         }
     }

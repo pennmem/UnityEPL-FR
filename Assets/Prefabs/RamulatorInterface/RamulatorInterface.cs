@@ -53,7 +53,7 @@ public class RamulatorInterface : MonoBehaviour
         sessionData.Add("version", Application.version);
         sessionData.Add("subject", UnityEPL.GetParticipants()[0]);
         sessionData.Add("session_number", sessionNumber.ToString());
-        DataPoint sessionDataPoint = new DataPoint("SESSION", DataReporter.RealWorldTime(), sessionData);
+        DataPoint sessionDataPoint = new DataPoint("SESSION", DataReporter.TimeStamp(), sessionData);
         SendMessageToRamulator(sessionDataPoint.ToJSON());
         yield return null;
 
@@ -63,7 +63,7 @@ public class RamulatorInterface : MonoBehaviour
 
 
         //SendReadyEvent////////////////////////////////////////////////////////////////////
-        DataPoint ready = new DataPoint("READY", DataReporter.RealWorldTime(), new Dictionary<string, object>());
+        DataPoint ready = new DataPoint("READY", DataReporter.TimeStamp(), new Dictionary<string, object>());
         SendMessageToRamulator(ready.ToJSON());
         yield return null;
 
@@ -109,7 +109,7 @@ public class RamulatorInterface : MonoBehaviour
     {
         System.Collections.Generic.Dictionary<string, object> sessionData = new Dictionary<string, object>();
         sessionData.Add("trial", trialNumber.ToString());
-        DataPoint sessionDataPoint = new DataPoint("TRIAL", DataReporter.RealWorldTime(), sessionData);
+        DataPoint sessionDataPoint = new DataPoint("TRIAL", DataReporter.TimeStamp(), sessionData);
         SendMessageToRamulator(sessionDataPoint.ToJSON());
     }
 
@@ -119,7 +119,7 @@ public class RamulatorInterface : MonoBehaviour
     {
         extraData.Add("name", stateName);
         extraData.Add("value", stateToggle.ToString());
-        DataPoint sessionDataPoint = new DataPoint("STATE", DataReporter.RealWorldTime(), extraData);
+        DataPoint sessionDataPoint = new DataPoint("STATE", DataReporter.TimeStamp(), extraData);
         SendMessageToRamulator(sessionDataPoint.ToJSON());
     }
 
@@ -130,20 +130,20 @@ public class RamulatorInterface : MonoBehaviour
         mathData.Add("response", response);
         mathData.Add("response_time_ms", responseTimeMs.ToString());
         mathData.Add("correct", correct.ToString());
-        DataPoint mathDataPoint = new DataPoint("MATH", DataReporter.RealWorldTime(), mathData);
+        DataPoint mathDataPoint = new DataPoint("MATH", DataReporter.TimeStamp(), mathData);
         SendMessageToRamulator(mathDataPoint.ToJSON());
     }
 
     public void SendExitMessage()
     {
         var data = new Dictionary<string, object>();
-        var msg = new DataPoint("EXIT", DataReporter.RealWorldTime(), data);
+        var msg = new DataPoint("EXIT", DataReporter.TimeStamp(), data);
         SendMessageToRamulator(msg.ToJSON());
     }
 
     private void SendHeartbeat()
     {
-        DataPoint sessionDataPoint = new DataPoint("HEARTBEAT", DataReporter.RealWorldTime(), null);
+        DataPoint sessionDataPoint = new DataPoint("HEARTBEAT", DataReporter.TimeStamp(), null);
         SendMessageToRamulator(sessionDataPoint.ToJSON());
     }
 

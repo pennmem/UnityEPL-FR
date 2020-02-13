@@ -7,12 +7,45 @@ using UnityEngine.SceneManagement;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
 
+
+// TODO: this is a really terrible name
+// TaskInterface? -> ITaskInterface?
+public abstract class IInterfaceManager : MonoBehaviour {
+    protected virtual void Awake() {
+        // TODO: assert singleton
+        ErrorNotification.mainThread = this;
+    }
+
+    public abstract void Notify(Exception e);
+    public abstract void Do(IEventBase thisEvent);
+    public abstract void DoIn(IEventBase thisEvent, int delay);
+    public abstract void DoRepeating(RepeatingEvent thisEvent);
+    public abstract dynamic GetSetting(string setting);
+    public abstract void ChangeSetting(string setting, dynamic value);
+    
+    // Key handling
+
+    // Show Text/Title/Video
+    // Clear Text/Title
+
+    // Microphone Interface
+
+    // synbox interface
+
+    public abstract void Quit();
+    public abstract void ReportEvent(string type, Dictionary<string, object> data, DateTime time);
+    public abstract void ReportEvent(string type, Dictionary<string, object> data);
+
+    public abstract void SetHostPCStatus(string status);
+    public abstract void SendHostPCMessage(string message, Dictionary<string, object> data);
+}
+
 // It is up to objects that are referenced in this class to 
 // have adequate protection levels on all members, as classes
 // with a reference to manager can call functions from or pass events
 // to classes referenced here.
 
-public class InterfaceManager : MonoBehaviour
+public class InterfaceManager : IInterfaceManager 
 {
     private static string quitKey = "escape"; // escape to quit
     const string SYSTEM_CONFIG = "config.json";
@@ -25,10 +58,13 @@ public class InterfaceManager : MonoBehaviour
 
     private static InterfaceManager _instance;
 
-    public static InterfaceManager Instance { get { return _instance; } }
+    // pass references, rather than relying on Global
+    //    public static InterfaceManager Instance { get { return _instance; } }
 
-    private void Awake()
+    protected override void Awake()
     {
+        base.Awake();
+
         if (_instance != null && _instance != this)
         {
             throw new System.InvalidOperationException("Cannot create multiple InterfaceManager Objects");
@@ -39,8 +75,6 @@ public class InterfaceManager : MonoBehaviour
             DontDestroyOnLoad(warning);
         }
     }
-
-    //////////
 
     //////////
     // Non-unity event handling for scripts to 
@@ -60,6 +94,7 @@ public class InterfaceManager : MonoBehaviour
 
     // system configurations, generated on the fly by
     // FlexibleConfig
+    private object configLock = new object(); // TODO: make access in-thread only
     public JObject systemConfig = null;
     public JObject experimentConfig = null;
     private ExperimentBase exp;
@@ -78,7 +113,7 @@ public class InterfaceManager : MonoBehaviour
     // Devices that can be accessed by managed
     // scripts
     //////////
-    public RamulatorInterface ramInt;
+    public IHostPC hostPC;
     public NonUnitySyncbox syncBox;
     public VideoControl videoControl;
     public TextDisplayer textDisplayer;
@@ -93,6 +128,7 @@ public class InterfaceManager : MonoBehaviour
     //////////
     // Input reporters
     //////////
+
     public VoiceActivityDetection voiceActity;
     public ScriptedEventReporter scriptedInput;
     public PeripheralInputReporter peripheralInput;
@@ -107,20 +143,23 @@ public class InterfaceManager : MonoBehaviour
         // Unity interal event handling
         SceneManager.sceneLoaded += onSceneLoaded;
 
-
         // create objects not tied to unity
         fileManager = new FileManager(this);
         syncBox = new NonUnitySyncbox(this);
         onKey = new ConcurrentQueue<Action<string, bool>>();
 
-        // load system configuration file
+        // load system configuration file // TODO: function
         string text = System.IO.File.ReadAllText(System.IO.Path.Combine(fileManager.ConfigPath(), SYSTEM_CONFIG));
-        systemConfig = FlexibleConfig.LoadFromText(text);
+
+        lock(configLock) {
+            systemConfig = FlexibleConfig.LoadFromText(text);
+        }
 
         // Get all configuration files
         string configPath = fileManager.ConfigPath();
         string[] configs = Directory.GetFiles(configPath, "*.json");
         if(configs.Length < 2) {
+            // TODO: notify
             ShowWarning("Configuration File Error", 5000);
             DoIn(new EventBase(Quit), 5000);            
         }
@@ -135,14 +174,12 @@ public class InterfaceManager : MonoBehaviour
         }
         ChangeSetting("availableExperiments", exps);
 
-        // Initialize hardware
-            // Stim hardward interface 
 
         // Syncbox interface
-        // TODO
         if(!(bool)GetSetting("isTest")) {
             syncBox.Init();
         }
+
 
         // Start experiment Launcher scene
         mainEvents.Do(new EventBase(LaunchLauncher));
@@ -236,49 +273,62 @@ public class InterfaceManager : MonoBehaviour
     // settings return null.
     //////////
 
-    public dynamic GetSetting(string setting) {
-        JToken value = null;
+    // FIXME: must be externally synchronized
+    public override dynamic GetSetting(string setting) {
+        lock(configLock) {
+            JToken value = null;
 
-        if(experimentConfig != null) {
-            if(experimentConfig.TryGetValue(setting, out value)) {
-                if(value != null) {
+            if(experimentConfig != null) {
+                if(experimentConfig.TryGetValue(setting, out value)) {
+                    if(value != null) {
+                        return value;
+                    }
+                }
+            }
+
+            if(systemConfig != null) {
+                if(systemConfig.TryGetValue(setting, out value)) {
                     return value;
                 }
             }
         }
 
-        if(systemConfig != null) {
-            if(systemConfig.TryGetValue(setting, out value)) {
-                return value;
-            }
-        }
-
-        return null;
+        throw new MissingFieldException("Missing Setting " + setting + ".");
     }
 
-    // returns true if value updated, false if new value added
-    public bool ChangeSetting(string setting, dynamic value) {
-        JToken existing = GetSetting(setting);
-        if(existing == null) {
+    public override void ChangeSetting(string setting, dynamic value) {
+        JToken existing;
 
-            // even if setting belongs to systemConfig, experimentConfig setting overrides
-            if(experimentConfig == null) {
-                (systemConfig).Add(setting, value);
-            }
-            else {
-                (experimentConfig).Add(setting, value);
-            }
-            return false;
+        try {
+            existing = GetSetting(setting);
         }
-        else {
-            // even if setting belongs to systemConfig, experimentConfig setting overrides
-            if(experimentConfig == null) {
-                (systemConfig)[setting] = value;
+        catch(MissingFieldException) {
+            existing = null;
+        }
+
+        lock(configLock) {
+            if(existing == null) {
+                // even if setting belongs to systemConfig, experimentConfig setting overrides
+                if(experimentConfig == null) {
+                    systemConfig.Add(setting, value);
+                }
+                else {
+                    experimentConfig.Add(setting, value);
+                }
+
+                return;
             }
             else {
-                (experimentConfig)[setting] = value;
+                // even if setting belongs to systemConfig, experimentConfig setting overrides
+                if(experimentConfig == null) {
+                    systemConfig[setting] = value;
+                }
+                else {
+                    experimentConfig[setting] = value;
+                }
+
+                return;
             }
-            return true;
         }
     }
 
@@ -286,6 +336,13 @@ public class InterfaceManager : MonoBehaviour
     // Functions to be called from other
     // scripts through the messaging system
     //////////
+
+    public void TestSyncbox(Action callback) {
+        syncBox.Do(new EventBase(syncBox.StartPulse));
+        // DoIn(new EventBase(syncBox.StopPulse), (int)GetSetting("syncBoxTestLength"));
+        DoIn(new EventBase(syncBox.StopPulse), 5000); 
+        DoIn(new EventBase(callback), 5000); 
+    }
 
     // TODO: deal with error states if conditions not met
     public void LaunchExperiment() {
@@ -312,6 +369,10 @@ public class InterfaceManager : MonoBehaviour
                 syncBox.Do(new EventBase(syncBox.StartPulse));
             }
 
+            if((bool)GetSetting("elemem")) {
+                hostPC = new ElememInterface(this);
+            }
+
             // won't execute until mgr is ready
             Do(new EventBase(LogExperimentInfo));
 
@@ -323,14 +384,17 @@ public class InterfaceManager : MonoBehaviour
         }
     }
 
-    public void TestSyncbox(Action callback) {
-        syncBox.Do(new EventBase(syncBox.StartPulse));
-        // DoIn(new EventBase(syncBox.StopPulse), (int)GetSetting("syncBoxTestLength"));
-        DoIn(new EventBase(syncBox.StopPulse), 5000); 
-        DoIn(new EventBase(callback), 5000); 
+    public override void ReportEvent(string type, Dictionary<string, object> data, DateTime time) {
+        // TODO: time stamps
+        scriptedInput.ReportScriptedEvent(type, data, time );
     }
 
-    public void Quit() {
+    public override void ReportEvent(string type, Dictionary<string, object> data) {
+        // TODO: time stamps
+        scriptedInput.ReportScriptedEvent(type, data);
+    }
+
+    public override void Quit() {
         Debug.Log("Quitting");
     #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
@@ -347,8 +411,10 @@ public class InterfaceManager : MonoBehaviour
     }
 
     public void LoadExperimentConfig(string name) {
-        string text = System.IO.File.ReadAllText(System.IO.Path.Combine(fileManager.ConfigPath(), name + ".json"));
-        experimentConfig = FlexibleConfig.LoadFromText(text); 
+        lock(configLock) {
+            string text = System.IO.File.ReadAllText(System.IO.Path.Combine(fileManager.ConfigPath(), name + ".json"));
+            experimentConfig = FlexibleConfig.LoadFromText(text); 
+        }
     }
 
     public void ShowText(string tag, string text, string color) {
@@ -424,6 +490,28 @@ public class InterfaceManager : MonoBehaviour
 
     }
 
+    public override void Notify(Exception e) {
+        Debug.Log("Popup now displayed... invisibly");
+        Debug.Log(e);
+
+        // FIXME
+        warning.SetActive(true);
+        TextDisplayer warnText = warning.GetComponent<TextDisplayer>();
+        warnText.DisplayText("warning", e.ToString());
+
+        DoIn(new EventBase(() => { warnText.ClearText();
+                                   warning.SetActive(false);}), 5000);
+
+    }
+
+    public override void SetHostPCStatus(string status) {
+        Debug.Log("Host PC Status");
+        Debug.Log(status);
+    }
+
+    public override void SendHostPCMessage(string message, Dictionary<string, object> data) {
+        hostPC?.Do(new EventBase<string, Dictionary<string, object>>(hostPC.SendMessage, message, data));
+    }
 
     protected void LogExperimentInfo() {
         //write versions to logfile
@@ -435,7 +523,7 @@ public class InterfaceManager : MonoBehaviour
         versionsData.Add("session", (int)GetSetting("session"));
 
         // occurring during loading, so reference may not yet be obtained
-        Do(new EventBase<string, Dictionary<string, object>>(scriptedInput.ReportOutOfThreadScriptedEvent, "session start", versionsData));
+        ReportEvent("session start", versionsData);
     }
 
     //////////
@@ -465,15 +553,15 @@ public class InterfaceManager : MonoBehaviour
     // Wrappers to make event management API consistent
     //////////
 
-    public void Do(EventBase thisEvent) {
+    public override void Do(IEventBase thisEvent) {
         mainEvents.Do(thisEvent);
     }
 
-    public void DoIn(EventBase thisEvent, int delay) {
+    public override void DoIn(IEventBase thisEvent, int delay) {
         mainEvents.DoIn(thisEvent, delay);
     }
 
-    public void DoRepeating(RepeatingEvent thisEvent) {
+    public override void DoRepeating(RepeatingEvent thisEvent) {
         mainEvents.DoRepeating(thisEvent);
     }
 }
@@ -503,7 +591,18 @@ public class FileManager {
 
     public string ExperimentPath() {
         string root = ExperimentRoot();
-        string dir = System.IO.Path.Combine(root, (string)manager.GetSetting("experimentName"));
+        string experiment;
+        
+        try {
+            experiment = (string)manager.GetSetting("experimentName");
+        }
+        catch(MissingFieldException) {
+            manager.Notify(new Exception("No experiment selected"));
+            return null;
+        }
+
+        string dir = System.IO.Path.Combine(root, "data", experiment);
+
         return dir;
     }
     public string ParticipantPath(string participant) {
@@ -514,10 +613,14 @@ public class FileManager {
 
     public string ParticipantPath() {
         string dir = ExperimentPath();
-        string participant = (string)manager.GetSetting("participantCode");
+        string participant;
 
-        if(participant == null) {
-            throw new Exception("No participant selected");
+        try{
+            participant = (string)manager.GetSetting("participantCode");
+        }
+        catch(MissingFieldException) {
+            manager.Notify(new Exception("No participant selected"));
+            return null;
         }
 
         dir = System.IO.Path.Combine(dir, participant);
@@ -526,17 +629,21 @@ public class FileManager {
     
     public string SessionPath(string participant, int session) {
         string dir = ParticipantPath(participant);
-        dir = System.IO.Path.Combine(dir, session.ToString());
+        dir = System.IO.Path.Combine(dir, "session_" + session.ToString());
         return dir;
     }
 
     public string SessionPath() {
-        string session = (string)manager.GetSetting("session");
-        if(session == null) {
+        string session;
+        try{
+            session = (string)manager.GetSetting("session");
+        }
+        catch(MissingFieldException) {
             return null;
         }
+
         string dir = ParticipantPath();
-        dir = System.IO.Path.Combine(dir, session.ToString());
+        dir = System.IO.Path.Combine(dir, "session_" + session.ToString());
         return dir;
     }
 
@@ -545,10 +652,16 @@ public class FileManager {
             return true;
         }
 
-        if((string)manager.GetSetting("experimentName") == null) {
+        string experiment, prefix;
+        try{
+            experiment = (string)manager.GetSetting("experimentName");
+            prefix = (string)manager.GetSetting("prefix");
+        }
+        catch(MissingFieldException) {
             return false;
         }
-        Regex rx = new Regex(@"^" + (string)manager.GetSetting("prefix") + @"\d{1,4}$");
+
+        Regex rx = new Regex(@"^" + prefix + @"\d{1,4}[A-Z]?$");
 
         return rx.IsMatch(code);
     }
@@ -576,7 +689,8 @@ public class FileManager {
 
     public int CurrentSession(string participant) {
         int nextSessionNumber = 0;
-        while (System.IO.Directory.Exists(manager.fileManager.SessionPath(participant, nextSessionNumber)))
+        Debug.Log(SessionPath(participant, nextSessionNumber));
+        while (System.IO.Directory.Exists(SessionPath(participant, nextSessionNumber)))
         {
             nextSessionNumber++;
         }

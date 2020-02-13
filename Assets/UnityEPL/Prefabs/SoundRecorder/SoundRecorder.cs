@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System;
 using UnityEngine.Networking;
 using UnityEngine;
 
@@ -17,7 +16,13 @@ public class SoundRecorder : MonoBehaviour
     void OnEnable()
     {
         //TODO: enable cycling through devices
-        recording = Microphone.Start("", true, SECONDS_IN_MEMORY, SAMPLE_RATE);
+
+        try  {
+            recording = Microphone.Start("", true, SECONDS_IN_MEMORY, SAMPLE_RATE);
+        }
+        catch(Exception e) { // TODO
+            new ErrorNotification().Notify(e);
+        }
     }
 
     void OnDisable()
@@ -48,7 +53,6 @@ public class SoundRecorder : MonoBehaviour
         {
             throw new UnityException("Not recording.  Please StartRecording first.");
         }
-        SavWav.Save(nextOutputPath, recording);
         isRecording = false;
 
         float recordingLength = Time.unscaledTime - startTime;
@@ -91,6 +95,8 @@ public class SoundRecorder : MonoBehaviour
         //audioFile.timeout = 10; // timeout in ten seconds
         audioFile.SendWebRequest();
         while(!audioFile.isDone) {
+
+            // FIXME
     
             Debug.Log("blocking");
             // block

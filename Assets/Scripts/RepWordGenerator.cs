@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 
 // Stores a word and whether or not it should be stimulated during encoding.
 public class WordStim {

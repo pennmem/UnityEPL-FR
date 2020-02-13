@@ -36,7 +36,10 @@ public class VoiceActivityDetection : MonoBehaviour
 			if (someoneIsTalking != talkingState)
 			{
 				talkingState = someoneIsTalking;
-				manager.ramInt.SetState("VOCALIZATION", talkingState, new Dictionary<string, object>());
+				Dictionary<string, object> data = new Dictionary<string, object>();
+				data.Add("voiceactivity", talkingState);
+				manager.Do(new EventBase<string, Dictionary<string, object>>(manager.SendHostPCMessage,
+																"VOCALIZATION", data));
 			}
 		}
         else

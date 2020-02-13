@@ -122,11 +122,11 @@ public class PeripheralInputReporter : DataReporter {
             {
                 if (Input.GetKeyDown(keyCode))
                 {
-                    ReportKey((int)keyCode, true, DataReporter.RealWorldTime());
+                    ReportKey((int)keyCode, true, DataReporter.TimeStamp());
                 }
                 if (Input.GetKeyUp(keyCode))
                 {
-                    ReportKey((int)keyCode, false, DataReporter.RealWorldTime());
+                    ReportKey((int)keyCode, false, DataReporter.TimeStamp());
                 }
             }
         }
@@ -152,7 +152,7 @@ public class PeripheralInputReporter : DataReporter {
     {
         Dictionary<string, object> dataDict = new Dictionary<string, object>();
         dataDict.Add("position", Input.mousePosition);
-        eventQueue.Enqueue(new DataPoint("mouse position", DataReporter.RealWorldTime(), dataDict));
+        eventQueue.Enqueue(new DataPoint("mouse position", DataReporter.TimeStamp(), dataDict));
         lastMousePositionReportFrame = Time.frameCount;
     }
 

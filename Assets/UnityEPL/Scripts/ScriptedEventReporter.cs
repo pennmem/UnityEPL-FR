@@ -7,10 +7,11 @@ public class ScriptedEventReporter : DataReporter
 {
     public void ReportScriptedEvent(string type, Dictionary<string, object> dataDict)
     {
-        eventQueue.Enqueue(new DataPoint(type, ThreadsafeTime(), dataDict));
+        eventQueue.Enqueue(new DataPoint(type, TimeStamp(), dataDict));
     }
-    public void ReportOutOfThreadScriptedEvent(string type, Dictionary<string, object> dataDict)
+
+    public void ReportScriptedEvent(string type, Dictionary<string, object> dataDict, System.DateTime time)
     {
-        eventQueue.Enqueue(new DataPoint(type, ThreadsafeTime(), dataDict));
+        eventQueue.Enqueue(new DataPoint(type, time, dataDict));
     }
 }

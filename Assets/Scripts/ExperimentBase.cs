@@ -46,7 +46,9 @@ public abstract class ExperimentBase : EventLoop {
     }
 
     protected void CountdownVideo() {
-        manager.scriptedInput.ReportOutOfThreadScriptedEvent("countdown", new Dictionary<string, object>());
+        ReportEvent("countdown", new Dictionary<string, object>());
+        SendHostPCMessage("COUNTDOWN", null);
+
         manager.Do(new EventBase<string, bool, Action>(manager.ShowVideo, 
                                                             "countdownVideo", false, 
                                                             () => this.Do(new EventBase(Run))));
@@ -86,24 +88,31 @@ public abstract class ExperimentBase : EventLoop {
                             }), (int)manager.GetSetting("micTestDuration") + 1000); // pad for latency
     }
 
-    protected bool Encoding(IList<string> words, int index) {
-        if(words.Count == index) {
-            return true;
-        }
-
+    protected void Encoding(StimWordList encodingList, int index) {
         int interval;
+        WordStim word = encodingList[index];
 
         int[] limits = manager.GetSetting("stimulusInterval").ToObject<int[]>();
         interval = InterfaceManager.rnd.Next(limits[0], limits[1]);
 
-        manager.Do(new EventBase<string, string>(manager.ShowText, "word stimulus", words[index]));
+        Dictionary<string, object> data = new Dictionary<string, object>();
+        data.Add("word", word.word);
+        data.Add("serialpos", index);
+        data.Add("stim", word.stim);
+
+        ReportEvent("word stimulus", data);
+        SendHostPCMessage("WORD", data);
+
+        manager.Do(new EventBase<string, string>(manager.ShowText, "word stimulus", word.word));
+
+
         DoIn(new EventBase(() => { manager.Do(new EventBase(manager.ClearText)); 
-                                    manager.scriptedInput.ReportOutOfThreadScriptedEvent("clear word stimulus", new Dictionary<string, object>());
+                                    ReportEvent("clear word stimulus", new Dictionary<string, object>());
+                                    SendHostPCMessage("ISI", new Dictionary<string, object>() {{"duration", interval}});
+
                                     this.DoIn(new EventBase(Run), interval);
                                 }), 
                             (int)manager.GetSetting("stimulusDuration"));
-        
-        return false;
     }
 
     protected void Distractor() {
@@ -126,8 +135,14 @@ public abstract class ExperimentBase : EventLoop {
         limits = manager.GetSetting("orientationDuration").ToObject<int[]>();
         int duration = InterfaceManager.rnd.Next(limits[0], limits[1]);
         manager.Do(new EventBase<string, string>(manager.ShowText, "orientation stimulus", "+"));
+
+        SendHostPCMessage("ORIENT", null);
+
         DoIn(new EventBase(() => {
                                     manager.Do(new EventBase(manager.ClearText)); 
+
+                                    SendHostPCMessage("ISI", new Dictionary<string, object>() {{"duration", interval}});
+
                                     this.DoIn(new EventBase(Run), interval);
                                 }), 
                                 duration);
@@ -135,25 +150,32 @@ public abstract class ExperimentBase : EventLoop {
 
     protected void Recall(string wavPath) {
         manager.Do(new EventBase<string>(manager.recorder.StartRecording, wavPath));
+        ReportEvent("start recall period", new Dictionary<string, object>());
+
+        int duration = (int)manager.GetSetting("recallDuration");
+
+        SendHostPCMessage("RECALL", new Dictionary<string, object>() {{"duration", duration}});
+
         DoIn(new EventBase(() => {
                 manager.Do(new EventBase(() => {
-                    manager.scriptedInput.ReportOutOfThreadScriptedEvent("end recall period", new Dictionary<string, object>());
                     manager.recorder.StopRecording();
                     manager.ClearText();
                     manager.lowBeep.Play();
                 }));
+
+                ReportEvent("end recall period", new Dictionary<string, object>());
                 this.Do(new EventBase(Run));
-        }), (int)manager.GetSetting("recallDuration") );
+        }), duration );
     }
 
     protected void RecallPrompt() {
         manager.Do(new EventBase(manager.highBeep.Play));
         manager.Do(new EventBase<string, string>(manager.ShowText, "display recall text", "*******"));
+
         DoIn(new EventBase(() => {
                                     manager.Do(new EventBase(manager.ClearText));
                                     this.Do(new EventBase(Run));
-                                }), 
-                                (int)manager.GetSetting("recallPromptDuration"));
+                                }), 500); // magic number is the duration of beep
     }
     
     
@@ -170,7 +192,7 @@ public abstract class ExperimentBase : EventLoop {
     }
     
     public void WaitForTime(int milliseconds) {
-        // convect to milliseconds
+        // convert to milliseconds
         DoIn(new EventBase(Run), milliseconds); 
     }
 
@@ -191,8 +213,10 @@ public abstract class ExperimentBase : EventLoop {
     }
     
     protected virtual void Quit() {
-        if(state.listIndex == (int)manager.GetSetting("numLists")){
-            state.isComplete = true;
+        ReportEvent("experiment quit", null);
+        SendHostPCMessage("EXIT", null);
+
+        if(state.isComplete){
             manager.Do(new EventBase<string, string>(manager.ShowText, "session end", "Yay! Session Complete."));
         }
         Stop();
@@ -241,16 +265,17 @@ public abstract class ExperimentBase : EventLoop {
                 int.TryParse(state.distractorAnswer, out result) ;
                 if(result == Sum(state.distractorProblem)) {
                     manager.Do(new EventBase(manager.lowBeep.Play));
-                    ReportDistractorAnswered(true, state.distractorProblem[0].ToString() + " + " 
+                    ReportDistractor("distractor answered", true, state.distractorProblem[0].ToString() + " + " 
                         + state.distractorProblem[1].ToString() + " + " 
                         + state.distractorProblem[2].ToString() + " = ", state.distractorAnswer);
                 } 
                 else {
                     manager.Do(new EventBase(manager.lowerBeep.Play));
-                    ReportDistractorAnswered(false, state.distractorProblem[0].ToString() + " + " 
+                    ReportDistractor("distractor answered", false, state.distractorProblem[0].ToString() + " + " 
                         + state.distractorProblem[1].ToString() + " + " 
                         + state.distractorProblem[2].ToString() + " = ", state.distractorAnswer);
                 }
+
                 Do(new EventBase(Run));
                 manager.Do(new EventBase(manager.ClearText));
                 state.distractorProblem = "";
@@ -266,6 +291,8 @@ public abstract class ExperimentBase : EventLoop {
                         + state.distractorProblem[2].ToString() + " = ";
         string answer = state.distractorAnswer;
         manager.Do(new EventBase<string, string>(manager.ShowText, message, problem + answer));
+        ReportDistractor(message, false, problem, answer);
+
     }
 
     public void AnyKey(string key, bool down) {
@@ -292,23 +319,31 @@ public abstract class ExperimentBase : EventLoop {
         }
     }
 
-
     //////////
     // Saving and loading state logic
     //////////
 
-    private void ReportBeepPlayed(string beep, string duration) {
+    protected void ReportBeepPlayed(string beep, string duration) {
         Dictionary<string, object> dataDict = new Dictionary<string, object>() { { "sound name", beep }, { "sound duration", duration } };
-        manager.scriptedInput.ReportScriptedEvent("Sound Played", dataDict);
+        ReportEvent("Sound Played", dataDict);
     }
 
-    private void ReportDistractorAnswered(bool correct, string problem, string answer)
+    protected void SendHostPCMessage(string type, Dictionary<string, object> data) {
+        manager.Do(new EventBase<string, Dictionary<string, object>>(manager.SendHostPCMessage, type, data));
+    }
+
+    protected void ReportEvent(string type, Dictionary<string, object> data) {
+        manager.Do(new EventBase<string, Dictionary<string, object>>(manager.ReportEvent, type, data));
+    }
+
+    private void ReportDistractor(string type, bool correct, string problem, string answer)
     {
         Dictionary<string, object> dataDict = new Dictionary<string, object>();
-        dataDict.Add("correctness", correct.ToString());
+        dataDict.Add("correct", correct);
         dataDict.Add("problem", problem);
         dataDict.Add("answer", answer);
-        manager.scriptedInput.ReportScriptedEvent("distractor answered", dataDict);
+        ReportEvent(type, dataDict);
+        SendHostPCMessage("MATH", dataDict);
     }
     
     public virtual void SaveState() {

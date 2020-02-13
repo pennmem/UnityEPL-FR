@@ -66,7 +66,7 @@ public class WorldDataReporter : DataReporter
 
         transformDict.Add("reportID", reportingID);
         transformDict.Add("objectName", gameObject.name);
-        eventQueue.Enqueue(new DataPoint(gameObject.name + "Transform", RealWorldFrameDisplayTime(), transformDict));
+        eventQueue.Enqueue(new DataPoint(gameObject.name + "Transform", TimeStamp(), transformDict));
     }
 
     private void CheckTransformReport()
@@ -89,14 +89,14 @@ public class WorldDataReporter : DataReporter
 
         transformDict.Add("reportID", reportingID);
         transformDict.Add("objectName", gameObject.name);
-        eventQueue.Enqueue(new DataPoint(gameObject.name + "Spawn", RealWorldFrameDisplayTime(), transformDict));
+        eventQueue.Enqueue(new DataPoint(gameObject.name + "Spawn", TimeStamp(), transformDict));
     }
     
     private void DoDespawnReport() {
         System.Collections.Generic.Dictionary<string, object> transformDict = new System.Collections.Generic.Dictionary<string, object>();
         transformDict.Add("reportID", reportingID);
         transformDict.Add("objectName", gameObject.name);
-        eventQueue.Enqueue(new DataPoint(gameObject.name + "Despawn", RealWorldFrameDisplayTime(), transformDict));
+        eventQueue.Enqueue(new DataPoint(gameObject.name + "Despawn", TimeStamp(), transformDict));
     }
 
     private Vector3[] GetColliderVertexPositions(BoxCollider boxCollider) {

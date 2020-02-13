@@ -101,7 +101,7 @@ public static class UnityEPL
 
     public static double MillisecondsSinceTheEpoch()
     {
-        return DataPoint.ConvertToMillisecondsSinceEpoch(DataReporter.RealWorldTime());
+        return DataPoint.ConvertToMillisecondsSinceEpoch(DataReporter.TimeStamp());
     }
 
     /// <summary>

@@ -11,6 +11,6 @@ public class UIDataReporter : DataReporter
     /// <param name="name">Name of the event to log.</param>
     public void LogUIEvent(string name)
     {
-        eventQueue.Enqueue(new DataPoint(name, RealWorldFrameDisplayTime(), new Dictionary<string, object>()));
+        eventQueue.Enqueue(new DataPoint(name, TimeStamp(), new Dictionary<string, object>()));
     }
 }

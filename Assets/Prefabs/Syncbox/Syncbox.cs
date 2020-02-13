@@ -52,9 +52,9 @@ public class Syncbox : MonoBehaviour
 		while (true)
         {
             //pulse
-            reporter.ReportOutOfThreadScriptedEvent("Sync pulse begin", new System.Collections.Generic.Dictionary<string, object>());
+            reporter.ReportScriptedEvent("Sync pulse begin", new System.Collections.Generic.Dictionary<string, object>());
             SyncPulse();
-            reporter.ReportOutOfThreadScriptedEvent("Sync pulse end", new System.Collections.Generic.Dictionary<string, object>());
+            reporter.ReportScriptedEvent("Sync pulse end", new System.Collections.Generic.Dictionary<string, object>());
 
             //wait a random time between min and max
             float timeBetweenPulses = (float)(TIME_BETWEEN_PULSES_MIN + (random.NextDouble() * (TIME_BETWEEN_PULSES_MAX - TIME_BETWEEN_PULSES_MIN)));

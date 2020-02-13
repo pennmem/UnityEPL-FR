@@ -45,7 +45,7 @@ public class UpdatedParticipantSelection : MonoBehaviour
         UnityEngine.UI.Dropdown dropdown = GetComponent<UnityEngine.UI.Dropdown>();
 
         dropdown.ClearOptions();
-        dropdown.AddOptions(new List<string>() { "Select participant...", "New participant"});
+        dropdown.AddOptions(new List<string>() { "Select participant", "New Participant"});
 
         string participantDirectory = manager.fileManager.ExperimentPath();
         if(Directory.Exists(participantDirectory)) {
@@ -71,7 +71,7 @@ public class UpdatedParticipantSelection : MonoBehaviour
         UnityEngine.UI.Dropdown dropdown = GetComponent<UnityEngine.UI.Dropdown>();
         if (dropdown.value <= 1)
         {
-            participantNameInput.text = "New participant";
+            participantNameInput.text = "New Participant";
         }
         else
         {

@@ -74,7 +74,7 @@ public class WriteToDiskHandler : DataHandler
                     filePath = System.IO.Path.Combine(directory, extensionlessFileName + ".jsonl");
                     break;
             }
-            System.IO.File.AppendAllText(filePath, writeMe + System.Environment.NewLine);
+            System.IO.File.AppendAllText(filePath, writeMe);
         }
     }
 }

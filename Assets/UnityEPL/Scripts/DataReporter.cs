@@ -34,7 +34,6 @@ public abstract class DataReporter : MonoBehaviour
         if (!startTimeInitialized)
         {
             realWorldStartTime = System.DateTime.UtcNow;
-            unityTimeStartTime = Time.realtimeSinceStartup;
             stopwatch = new System.Diagnostics.Stopwatch();
             stopwatch.Start();
             startTimeInitialized = true;
@@ -60,7 +59,7 @@ public abstract class DataReporter : MonoBehaviour
     protected virtual void OnDisable() 
     {
         if(reportTo) { 
-            eventQueue.Enqueue(new DataPoint(reportingID + "Disabled", RealWorldFrameDisplayTime(), new Dictionary<string, object>()));
+            eventQueue.Enqueue(new DataPoint(reportingID + "Disabled", TimeStamp(), new Dictionary<string, object>()));
             reportTo.RemoveReporter(this);
         }
     }
@@ -117,13 +116,7 @@ public abstract class DataReporter : MonoBehaviour
         transformDict.Add("rotationY", transform.rotation.eulerAngles.y);
         transformDict.Add("rotationZ", transform.rotation.eulerAngles.z);
         transformDict.Add("object reporting id", reportingID);
-        eventQueue.Enqueue(new DataPoint(gameObject.name + " transform", RealWorldFrameDisplayTime(), transformDict));
-    }
-
-    protected System.DateTime RealWorldFrameDisplayTime()
-    {
-        double secondsSinceUnityStart = Time.unscaledTime - unityTimeStartTime;
-        return GetStartTime().AddSeconds(secondsSinceUnityStart);
+        eventQueue.Enqueue(new DataPoint(gameObject.name + " transform", TimeStamp(), transformDict));
     }
 
     protected System.DateTime OSXTimestampToTimestamp(double OSXTimestamp)
@@ -132,17 +125,7 @@ public abstract class DataReporter : MonoBehaviour
         return GetStartTime().AddSeconds(secondsSinceOSStart);
     }
 
-    /// <summary>
-    /// Returns the System.DateTime time at startup plus the (higher precision) unity time elapsed since startup, resulting in a value representing the current real world time.
-    /// </summary>
-    /// <returns>The real world time.</returns>
-    public static System.DateTime RealWorldTime()
-    {
-        double secondsSinceUnityStart = Time.realtimeSinceStartup - unityTimeStartTime;
-        return GetStartTime().AddSeconds(secondsSinceUnityStart);
-    }
-
-    public static System.DateTime ThreadsafeTime()
+    public static System.DateTime TimeStamp()
     {
         return GetStartTime().Add(stopwatch.Elapsed);
     }

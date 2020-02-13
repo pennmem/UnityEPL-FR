@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.Collections.Generic;
 using System;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -26,16 +26,12 @@ public class NonUnitySyncbox : EventLoop
 
     private volatile bool stopped = true;
 
-    public int testField;
-
     public NonUnitySyncbox(InterfaceManager _im) {
         im = _im;
     }
 
     public void Init() {
         Debug.Log(Marshal.PtrToStringAuto(OpenUSB()));
-        Debug.Log(testField);
-
         StopPulse();
         Start();
     }
@@ -57,8 +53,7 @@ public class NonUnitySyncbox : EventLoop
 		if(!stopped)
         {
             // Send a pulse
-            Debug.Log("Pew!");
-            im.scriptedInput.ReportOutOfThreadScriptedEvent("syncPulse", new System.Collections.Generic.Dictionary<string, object>());
+            im.Do(new EventBase<string, Dictionary<string, object>, DateTime>(im.ReportEvent, "syncPulse", null, DataReporter.TimeStamp()));
             SyncPulse();
 
             // Wait a random interval between min and max

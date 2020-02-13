@@ -18,7 +18,6 @@ public class EventQueue {
 
     public virtual void DoIn(IEventBase thisEvent, int delay) {
         if(Running()) {
-            Timer timer = null;
             RepeatingEvent repeatingEvent = new RepeatingEvent(thisEvent, 1, delay, Timeout.Infinite);
 
             DoRepeating(repeatingEvent);
@@ -125,7 +124,12 @@ public class EventBase : IEventBase {
     protected Action EventAction;
 
     public virtual void Invoke() {
-        EventAction?.Invoke();
+        try {
+            EventAction?.Invoke();
+        }
+        catch(Exception e) {
+            new ErrorNotification().Notify(e);
+        }
     }
 
     public EventBase(Action thisAction) {
@@ -138,66 +142,18 @@ public class EventBase : IEventBase {
 // Wrapper class to allow different delegate signatures
 // in Event Manager
 public class EventBase<T> : EventBase {
-    protected new Action<T> EventAction;
-    protected T t;
-
-    public override void Invoke() {
-        EventAction?.Invoke(t);
-    }
-    public EventBase(Action<T> thisAction, T _t) {
-        EventAction += thisAction;
-        t = _t;
-    }
+    public EventBase(Action<T> thisAction, T t) : base(() => thisAction(t)) {}
 }
 
 public class EventBase<T, U> : EventBase {
-    protected new Action<T, U> EventAction;
-    protected U u;
-    protected T t;
-
-    public override void Invoke() {
-        EventAction?.Invoke(t, u);
-    }
-    public EventBase(Action<T, U> thisAction, T _t, U _u) {
-        EventAction += thisAction;
-        t = _t;
-        u = _u;
-    }
+    public EventBase(Action<T, U> thisAction, T t, U u) : base(() => thisAction(t, u)) {}
 }
 
 public class EventBase<T, U, V> : EventBase {
-    protected new Action<T, U, V> EventAction;
-    protected T t;
-    protected U u;
-    protected V v;
-
-    public override void Invoke() {
-        EventAction?.Invoke(t,u,v);
-    }
-    public EventBase(Action<T, U, V> thisAction, T _t, U _u, V _v) {
-        EventAction += thisAction;
-        t = _t;
-        u = _u;
-        v = _v;
-    }
+    public EventBase(Action<T, U, V> thisAction, T t, U u, V v) : base(() => thisAction(t, u, v)) {}
 }
 public class EventBase<T, U, V, W> : EventBase {
-    protected new Action<T, U, V, W> EventAction;
-    protected T t;
-    protected U u;
-    protected V v;
-    protected W w;
-
-    public override void Invoke() {
-        EventAction?.Invoke(t, u, v, w);
-    }
-    public EventBase(Action<T, U, V, W> thisAction, T _t, U _u, V _v, W _w) {
-        EventAction += thisAction;
-        t = _t;
-        u = _u;
-        v = _v;
-        w = _w;
-    }
+    public EventBase(Action<T, U, V, W> thisAction, T t, U u, V v, W w) : base(() =>thisAction(t, u, v, w)) {}
 }
 public class RepeatingEvent : IEventBase {
 

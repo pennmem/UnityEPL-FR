@@ -9,6 +9,8 @@ public class DataPoint
     private string type;
     private System.Collections.Generic.Dictionary<string, object> dataDict;
     private System.DateTime time;
+    private static int id = 0;
+    private int thisID;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="T:DataPoint"/> class.  This represents a piece of data that you might want to keep about your project.
@@ -30,6 +32,7 @@ public class DataPoint
         type = newType;
         dataDict = newDataDict;
         time = newTime;
+        thisID = id++;
     }
 
     /// <summary>
@@ -50,7 +53,8 @@ public class DataPoint
             JSONString = JSONString + "\"" + key + "\":" + valueJSONString + ",";
         }
         if (dataDict.Count > 0) JSONString = JSONString.Substring(0, JSONString.Length - 1);
-        JSONString = JSONString + "},\"time\":" + unixTimestamp.ToString() + "}";
+        JSONString = JSONString + "},\"time\":" + unixTimestamp.ToString() + ",";
+        JSONString = JSONString + "\"id\":" + thisID.ToString() + "}\n";
         return JSONString;
     }
 

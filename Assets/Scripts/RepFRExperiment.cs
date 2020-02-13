@@ -1,10 +1,7 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Converters;
 using System.IO;
 using UnityEngine; // to read resource files packaged with Unity
 
@@ -62,35 +59,50 @@ public class RepFRExperiment : ExperimentBase {
 
 
     string source_list = manager.fileManager.GetWordList();
-    Debug.Log(source_list);
     source_words = new List<string>();
+
     //skip line for csv header
     foreach(var line in File.ReadLines(source_list).Skip(1))
     {
       source_words.Add(line);
     }
+
+    // copy wordpool to session directory
+    string path = System.IO.Path.Combine(manager.fileManager.SessionPath(), "wordpool.txt");
+    if(!System.IO.File.Exists(path)) {
+      using(TextWriter tw = new StreamWriter(path))
+      {
+        tw.WriteLine("word"); // header
+        foreach (String s in source_words) {
+          tw.WriteLine(s);
+        }
+      }
+    }
+
     // load state if previously existing
     dynamic loadedState = LoadState((string)manager.GetSetting("participantCode"), (int)manager.GetSetting("session"));
     if(loadedState != null) {
       state = loadedState;
       currentSession = LoadRepFRSession((string)manager.GetSetting("participantCode"), (int)manager.GetSetting("session"));
       if(state.isComplete) {
+
         // Queue Dos to manager since loop is never started
-        manager.Do(new EventBase<string, int>(manager.ShowWarning, "Session Already Complete", 5000));
-        manager.Do(new EventBase(manager.LaunchLauncher));
+        manager.Notify(new InvalidOperationException("Session Already Complete"));
         return;
       }
 
-      // TODO: log experiment resume
+      // log experiment resume
+      manager.Do(new EventBase<string, Dictionary<string, object>>(manager.ReportEvent, "experiment resumed", null));
+      ReportEvent("experiment resume", null);
 
       if(state.wordIndex > 0) {
         state.listIndex++;
       }
-      state.runIndex = 3; // start at microphone test 
+
+      state.runIndex = state.runIndex > 3 ? 3 : state.runIndex; // start at mic test
+
     }
-    // generate new session if untouched
-    // else {
-    if(true) {
+    else {
       currentSession = GenerateSession();
       state.listIndex = 0;
       state.runIndex = 0;
@@ -110,20 +122,26 @@ public class RepFRExperiment : ExperimentBase {
                                             Quit};
 
     stateMachine["MainLoop"] = new List<Action> {DoNextListPrompt,
+                                                 DoStartTrial,
+                                                 DoRest,
                                                  DoCountdownVideo,
-                                                 DoOrientation,
+                                                 DoEncodingDelay,
                                                  DoEncoding,
-                                                 DistractorTimeout,
-                                                 DoDistractor,
-                                                 DoPauseBeforeRecall,
+                                                 DoRest,
                                                  DoRecallPrompt,
-                                                 DoRecall};
+                                                 DoRecall,
+                                                 DoEndTrial};
 
     stateMachine["MicrophoneTest"] = new List<Action> {DoMicTestPrompt,
                                                        DoRecordTest,
                                                        DoPlaybackTest};
 
     Start();
+
+    Dictionary<string, object> data = new Dictionary<string, object>();
+    data.Add("session", (int) manager.GetSetting("session"));
+    SendHostPCMessage("SESSION", data);
+
     manager.Do(new EventBase<EventBase>(Do, new EventBase(Run)));
     // ^ make sure experiment doesn't start until mgr is ready
   }
@@ -137,6 +155,55 @@ public class RepFRExperiment : ExperimentBase {
     int interval = InterfaceManager.rnd.Next(limits[0], limits[1]);
     state.mainLoopIndex++;
     WaitForTime(interval);
+  }
+
+  protected void DoEncodingDelay() {
+    int[] limits = manager.GetSetting("stimulusInterval").ToObject<int[]>(); 
+    int interval = InterfaceManager.rnd.Next(limits[0], limits[1]);
+    state.mainLoopIndex++;
+
+    SendHostPCMessage("ISI", null);
+    WaitForTime(interval);
+  }  
+
+
+  protected void DoRest() {
+    int duration = (int)manager.GetSetting("restDuration");
+    state.mainLoopIndex++;
+    manager.Do(new EventBase<string, string>(manager.ShowText, "orientation stimulus", "+"));
+    ReportEvent("rest", null);
+    SendHostPCMessage("REST", null);
+
+    DoIn(new EventBase(() => {
+                                manager.Do(new EventBase(manager.ClearText)); 
+
+                                ReportEvent("rest end", null);
+
+                                this.Do(new EventBase(Run));
+                            }), 
+                            duration);
+  }
+
+  //////////
+  // List Setup Functions
+  //////////
+
+  protected void DoStartTrial() {
+    Dictionary<string, object> data = new Dictionary<string, object>();
+    data.Add("trial", state.listIndex);
+    data.Add("stim", currentSession[state.listIndex].encoding_stim);
+    // TODO: recall stim
+
+    ReportEvent("start trial", data);
+    SendHostPCMessage("TRIAL", data);
+    state.mainLoopIndex++;
+    Do(new EventBase(Run));
+  }
+
+  protected void DoEndTrial() {
+    SendHostPCMessage("TRIALEND", null);
+    state.mainLoopIndex++;
+    Do(new EventBase(Run));
   }
 
   //////////
@@ -253,15 +320,20 @@ public class RepFRExperiment : ExperimentBase {
     state.mainLoopIndex++;
     base.Orientation();
   }
+
   protected void DoEncoding() {
-    // enforcing types with cast so that the base function can be called properly
-    bool done = base.Encoding((IList<string>)currentSession[state.listIndex].encoding.words, (int)state.wordIndex);
-    state.wordIndex++;
-    if(done) {
+
+    StimWordList currentList = currentSession[state.listIndex].encoding;
+
+    if(state.wordIndex >= currentList.Count) {
       state.wordIndex = 0;
       state.mainLoopIndex++;
       this.Do(new EventBase(Run));
+      return;
     }
+
+    Encoding(currentList, state.wordIndex);
+    state.wordIndex++;
   }
 
   protected void DoDistractor() {
@@ -287,7 +359,7 @@ public class RepFRExperiment : ExperimentBase {
   protected void DoRecordTest() {
     state.micTestIndex++;
     string file =  System.IO.Path.Combine(manager.fileManager.SessionPath(), "microphone_test_" 
-                    + DataReporter.ThreadsafeTime().ToString("yyyy-MM-dd_HH_mm_ss") + ".wav");
+                    + DataReporter.TimeStamp().ToString("yyyy-MM-dd_HH_mm_ss") + ".wav");
 
     state.recordTestPath = file;
     RecordTest(file);
@@ -323,7 +395,6 @@ public class RepFRExperiment : ExperimentBase {
   //////////
 
   public override void SaveState() {
-    Debug.Log("saving from override method");
     base.SaveState();
     SaveRepFRSession();
   }

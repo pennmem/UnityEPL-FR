@@ -49,7 +49,7 @@ public abstract class CoroutineExperiment : MonoBehaviour
             textDisplayer.ChangeColor(Color.red);
             yield return new WaitForSeconds(lowBeep.clip.length);
 
-            wavFilePath = System.IO.Path.Combine(UnityEPL.GetDataPath(), "microphone_test_" + DataReporter.RealWorldTime().ToString("yyyy-MM-dd_HH_mm_ss") + ".wav");
+            wavFilePath = System.IO.Path.Combine(UnityEPL.GetDataPath(), "microphone_test_" + DataReporter.TimeStamp().ToString("yyyy-MM-dd_HH_mm_ss") + ".wav");
             soundRecorder.StartRecording(wavFilePath);
             yield return new WaitForSeconds(MICROPHONE_TEST_LENGTH);
 
@@ -135,4 +135,3 @@ public abstract class CoroutineExperiment : MonoBehaviour
         #endif
     }
 }
-
