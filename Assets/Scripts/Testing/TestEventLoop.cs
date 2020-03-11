@@ -18,7 +18,7 @@ public class TestingEventLoop {
 
     public static void RepeatingCall() {
         eventRepeats += 1;
-        Console.WriteLine("Repeating event: " +  DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond);
+        Console.WriteLine("Repeating event: " +  HighResolutionDateTime.UtcNow.Ticks / TimeSpan.TicksPerMillisecond);
     } 
 
     public static void CallbackFunction() {

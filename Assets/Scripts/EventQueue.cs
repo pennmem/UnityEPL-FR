@@ -77,7 +77,7 @@ public class EventQueue {
     }
 
     public void Pause(bool pause) {
-        DateTime time = DateTime.Now;
+        DateTime time = HighResolutionDateTime.UtcNow;
         if(pause) {
             running = false;
             foreach(RepeatingEvent re in repeatingEvents.Values) {
@@ -172,7 +172,7 @@ public class RepeatingEvent : IEventBase {
         maxIterations = _iterations;
         delay = _delay;
         interval = _interval;
-        startTime = DateTime.Now;
+        startTime = HighResolutionDateTime.UtcNow;
 
         if(_flag == null) {
             flag = new ManualResetEventSlim();
@@ -188,7 +188,7 @@ public class RepeatingEvent : IEventBase {
         maxIterations = _iterations;
         delay = _delay;
         interval = _interval;
-        startTime = DateTime.Now;
+        startTime = HighResolutionDateTime.UtcNow;
 
 
         if(_flag == null) {

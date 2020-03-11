@@ -31,7 +31,9 @@ public class NonUnitySyncbox : EventLoop
     }
 
     public void Init() {
-        Debug.Log(Marshal.PtrToStringAuto(OpenUSB()));
+        if(Marshal.PtrToStringAuto(OpenUSB()) == "didn't open usb...") {
+            im.ReportEvent("syncbox disconnected", null, DataReporter.TimeStamp());
+        }
         StopPulse();
         Start();
     }

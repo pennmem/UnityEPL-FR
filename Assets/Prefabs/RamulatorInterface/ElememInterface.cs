@@ -52,8 +52,6 @@ public class ElememListener {
         queue = null;
     }
 
-
-
     public void Listen() {
         if(IsListening()) {
             throw new AccessViolationException("Already Listening");
@@ -105,11 +103,6 @@ public class ElememListener {
     }
 
     private void ReportMessage(string message) {
-        UnityEngine.Debug.Log("Received Message");
-        UnityEngine.Debug.Log(message);
-
-        // TODO: add system time to message
-
         elemem.Do(new EventBase<string, DateTime>(elemem.HandleMessage, message, DataReporter.TimeStamp()));
     }
 }
@@ -182,8 +175,6 @@ public class ElememInterface : IHostPC
         SendMessage("CONFIGURE", configDict);
         WaitForMessage("CONFIGURE_OK", messageTimeout);
 
-        SendMessage("READY", new Dictionary<string, object>());
-
         // excepts if there's an issue with latency, else returns
         DoLatencyCheck();
 
@@ -194,30 +185,37 @@ public class ElememInterface : IHostPC
         DoRepeating(new RepeatingEvent(SendHeartbeat, -1, 0, interval));
         DoRepeating(new RepeatingEvent(CheckHeartbeat, -1, interval / 2, interval));
 
+        SendMessage("READY", new Dictionary<string, object>());
         im.Do(new EventBase<string>(im.SetHostPCStatus, "READY")); 
     }
 
     private void DoLatencyCheck() {
         // except if latency is unacceptable
         Stopwatch sw = new Stopwatch();
-        int[] delay = new int[20];
+        float[] delay = new float[20];
 
         for(int i=0; i < 20; i++) {
+            sw.Restart();
             SendHeartbeat();
             WaitForMessage("HEARTBEAT_OK", 20);
-            delay[i] = (int)sw.ElapsedMilliseconds;
+            sw.Stop();
+
+            delay[i] = sw.ElapsedTicks * (1000f / Stopwatch.Frequency);
             if(delay[i] > 20) {
                 break;
             }
-            Thread.Sleep(50 - delay[i]);
+
+            Thread.Sleep(50 - (int)delay[i]);
         }
         
-        int max = delay.Max();
-        int mean = delay.Sum() / delay.Length;
+        float max = delay.Max();
+        float mean = delay.Sum() / delay.Length;
+        float acc = (1000L*1000L*1000L) / Stopwatch.Frequency;
 
         Dictionary<string, object> dict = new Dictionary<string, object>();
-        dict.Add("max latency", max);
-        dict.Add("mean latency", mean);
+        dict.Add("max_latency", max);
+        dict.Add("mean_latency", mean);
+        dict.Add("accuracy", acc);
 
         im.Do(new EventBase<string, Dictionary<string, object>>(im.ReportEvent, "latency check", dict));
     }
@@ -259,7 +257,7 @@ public class ElememInterface : IHostPC
         json.Add("task pc time", time);
 
         string type = json.GetValue("type").Value<string>();
-        ReportMessage(message.ToString(), false);
+        ReportMessage(json.ToString(), false);
 
         if(type.Contains("ERROR")) {
             new ErrorNotification().Notify(new Exception("Error received from Host PC."));

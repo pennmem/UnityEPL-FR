@@ -187,8 +187,19 @@ public class InterfaceManager : IInterfaceManager
     }
 
     // Update is called once per frame
+    float deltaTime = 0.0f;
+    int updateRate = 10;
+    int frame = 0;
     void Update()
     {
+		deltaTime += (Time.unscaledDeltaTime - deltaTime) * 0.1f;
+        frame++;
+
+        if(updateRate % frame == 0) {
+            ReportEvent("FPS", new Dictionary<string, object>() {{"fps", 1.0f/deltaTime}}, DataReporter.TimeStamp());
+            frame = 0;
+        }
+
         if(Input.GetKeyDown(quitKey)) {
             Quit();
         }
@@ -414,6 +425,9 @@ public class InterfaceManager : IInterfaceManager
         lock(configLock) {
             string text = System.IO.File.ReadAllText(System.IO.Path.Combine(fileManager.ConfigPath(), name + ".json"));
             experimentConfig = FlexibleConfig.LoadFromText(text); 
+            if((string)GetSetting("experimentName") != name) {
+                Notify(new Exception(" Config and experiment names do not match"));
+            }
         }
     }
 
@@ -497,7 +511,7 @@ public class InterfaceManager : IInterfaceManager
         // FIXME
         warning.SetActive(true);
         TextDisplayer warnText = warning.GetComponent<TextDisplayer>();
-        warnText.DisplayText("warning", e.ToString());
+        warnText.DisplayText("warning", e.Message);
 
         DoIn(new EventBase(() => { warnText.ClearText();
                                    warning.SetActive(false);}), 5000);

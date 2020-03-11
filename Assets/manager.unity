@@ -163,7 +163,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4a80d642fdf2b44aaae46d10dcf2ed18, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ramInt: {fileID: 0}
   videoControl: {fileID: 0}
   textDisplayer: {fileID: 0}
   recorder: {fileID: 0}
