@@ -24,7 +24,6 @@ public class ElememListener {
     ElememInterface elemem;
     Byte[] buffer; 
     const Int32 bufferSize = 2048;
-    Int32 bufferIndex = 0;
 
     private volatile ManualResetEventSlim callbackWaitHandle;
     private ConcurrentQueue<string> queue = null;
@@ -129,8 +128,7 @@ public class ElememInterface : IHostPC
     }
 
     ~ElememInterface() {
-        // TODO
-        //destroy listener, close socket
+        elemem.Close();
     }
 
 
@@ -154,11 +152,15 @@ public class ElememInterface : IHostPC
 
     public override void Connect() {
         elemem = new TcpClient(); 
-        IAsyncResult result = elemem.BeginConnect((string)im.GetSetting("ip"), (int)im.GetSetting("port"), null, null);
-        
-        bool success = result.AsyncWaitHandle.WaitOne(messageTimeout);
-        if(!success) {
-            // TODO: set hostpc state on task side
+
+        try {
+            IAsyncResult result = elemem.BeginConnect((string)im.GetSetting("ip"), (int)im.GetSetting("port"), null, null);
+            
+            result.AsyncWaitHandle.WaitOne(messageTimeout);
+            elemem.EndConnect(result);
+        }
+        catch(SocketException e) {    // TODO: set hostpc state on task side
+            im.Do(new EventBase<string>(im.SetHostPCStatus, "ERROR")); 
             throw new OperationCanceledException("Failed to Connect");
         }
 
@@ -301,7 +303,6 @@ public class ElememInterface : IHostPC
     private void CheckHeartbeat()
     {
         if(heartbeatTimer.ElapsedMilliseconds > heartbeatTimeout) {
-            // TODO: set hostpc status on im 
             im.Do(new EventBase<string>(im.SetHostPCStatus, "ERROR"));
             throw new TimeoutException("Elemem connection timed out.");
         }

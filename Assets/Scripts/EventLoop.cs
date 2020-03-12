@@ -8,6 +8,8 @@ public class EventLoop : EventQueue {
 
     public void Start(){
         // spawn thread
+        // TODO: prevent multiple starts
+
         running = true;
         Thread loop = new Thread(Loop);
         wait = new ManualResetEventSlim();
