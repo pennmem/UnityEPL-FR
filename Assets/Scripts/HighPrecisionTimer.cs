@@ -2,8 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 
-class HighPrecisionTimer : IDisposable {
-   private DateTime start = HighResolutionDateTime.UtcNow; 
+public class HighPrecisionTimer : IDisposable {
    private Stopwatch sw = new Stopwatch();
    private ManualResetEventSlim flag = new ManualResetEventSlim();
    private Int32 dueTime;
@@ -39,34 +38,35 @@ class HighPrecisionTimer : IDisposable {
                 flag.Wait(remainingWait);
                 remainingWait -= (Int32)sw.ElapsedMilliseconds;
             }
-            else {
-                remainingWait = period + remainingWait;
-                ThreadPool.QueueUserWorkItem(callback, stateInfo);
-            }
 
-            if(period < 0) {
-                flag.Wait(-1);
+            if(remainingWait <= 0) {
+                ThreadPool.QueueUserWorkItem(callback, stateInfo);
+
+                if(period >= 0) {
+                    remainingWait = period + remainingWait;
+                } else {
+                    flag.Wait(-1);
+                }
             }
         }
     }
 
 // TODO: change and finalize thread safe?
-    public void Change(Int32 _dueTime, Int32 _period) {
-        flag.Set();
+// FIXME: fail condition
+    public bool Change(Int32 _dueTime, Int32 _period) {
         running = false;
-
         Thread.MemoryBarrier();
+        flag.Set();
 
-        Interlocked.Exchange(ref dueTime, _dueTime);
-        Interlocked.Exchange(ref period, _period);
-        Interlocked.Exchange(ref flag, new ManualResetEventSlim());
-
-        Thread.MemoryBarrier();
+        dueTime = _dueTime;
+        period = _period;
 
         running = true;
         flag.Reset();
 
         ThreadPool.QueueUserWorkItem(Spinner, stateInfo);
+
+        return true;
     }
 
     public void Dispose() {

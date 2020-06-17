@@ -33,7 +33,7 @@ public class RepFRExperiment : ExperimentBase {
 
   protected RepFRSession currentSession;
 
-  public RepFRExperiment(InterfaceManager _manager) : base(_manager) {
+  public RepFRExperiment(IInterfaceManager _manager) : base(_manager) {
     // Repetition specification:
     Debug.Log("Constructor for repFR");
     int[] repeats = manager.GetSetting("wordRepeats").ToObject<int[]>();
@@ -68,6 +68,7 @@ public class RepFRExperiment : ExperimentBase {
     }
 
     // copy wordpool to session directory
+    // TODO: we should just do a direct file copy...
     string path = System.IO.Path.Combine(manager.fileManager.SessionPath(), "wordpool.txt");
     if(!System.IO.File.Exists(path)) {
       using(TextWriter tw = new StreamWriter(path))
@@ -84,30 +85,20 @@ public class RepFRExperiment : ExperimentBase {
     if(loadedState != null) {
       state = loadedState;
       currentSession = LoadRepFRSession((string)manager.GetSetting("participantCode"), (int)manager.GetSetting("session"));
-      if(state.isComplete) {
 
-        // Queue Dos to manager since loop is never started
-        manager.Notify(new InvalidOperationException("Session Already Complete"));
-        return;
-      }
 
       // log experiment resume
       manager.Do(new EventBase<string, Dictionary<string, object>>(manager.ReportEvent, "experiment resumed", null));
       ReportEvent("experiment resume", null);
 
-      if(state.wordIndex > 0) {
-        state.listIndex++;
-      }
-
-      state.runIndex = state.runIndex > 3 ? 3 : state.runIndex; // start at mic test
-
+      state.listIndex++;
     }
     else {
       currentSession = GenerateSession();
       state.listIndex = 0;
-      state.runIndex = 0;
     }
 
+    state.runIndex = 0;
     state.wordIndex = 0;
     state.mainLoopIndex = 0;
     state.micTestIndex = 0;
@@ -138,12 +129,18 @@ public class RepFRExperiment : ExperimentBase {
 
     Start();
 
+    // TODO: some of these functions could be re imagined with wrappers, where the
+    // state machine has functions that take parameters and return functions, such
+    // as using a single function for the 'repeatlast' state that takes a prompt
+    // to show. It's not clear whether this improves clarity or reusability at all,
+    // so I've defferred this. If it makes sense to do this or make more use of
+    // wrapper functions that add state machine information, please do.
+
     Dictionary<string, object> data = new Dictionary<string, object>();
     data.Add("session", (int) manager.GetSetting("session"));
     SendHostPCMessage("SESSION", data);
 
-    manager.Do(new EventBase<EventBase>(Do, new EventBase(Run)));
-    // ^ make sure experiment doesn't start until mgr is ready
+    Do(new EventBase(Run));
   }
 
   //////////
@@ -179,7 +176,7 @@ public class RepFRExperiment : ExperimentBase {
 
                                 ReportEvent("rest end", null);
 
-                                this.Do(new EventBase(Run));
+                                Run();
                             }), 
                             duration);
   }
@@ -197,13 +194,13 @@ public class RepFRExperiment : ExperimentBase {
     ReportEvent("start trial", data);
     SendHostPCMessage("TRIAL", data);
     state.mainLoopIndex++;
-    Do(new EventBase(Run));
+    Run();
   }
 
   protected void DoEndTrial() {
     SendHostPCMessage("TRIALEND", null);
     state.mainLoopIndex++;
-    Do(new EventBase(Run));
+    Run();
   }
 
   //////////
@@ -304,7 +301,7 @@ public class RepFRExperiment : ExperimentBase {
     if(state.micTestIndex == stateMachine["MicrophoneTest"].Count()) {
       state.runIndex++;
       state.micTestIndex = 0;
-      Do(new EventBase(Run));
+      Run();
       return;
     } 
     else {
@@ -328,7 +325,7 @@ public class RepFRExperiment : ExperimentBase {
     if(state.wordIndex >= currentList.Count) {
       state.wordIndex = 0;
       state.mainLoopIndex++;
-      this.Do(new EventBase(Run));
+      Run();
       return;
     }
 
@@ -343,7 +340,7 @@ public class RepFRExperiment : ExperimentBase {
   protected void DistractorTimeout() {
     DoIn(new EventBase(() => state.mainLoopIndex++), (int)manager.GetSetting("distractorDuration"));
     state.mainLoopIndex++;
-    Do(new EventBase(Run));
+    Run();
   }
 
   protected void DoRecall() {

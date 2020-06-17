@@ -135,8 +135,6 @@ public class InterfaceManager : IInterfaceManager
     public UIDataReporter uiInput;
     private int eventsPerFrame;
 
-    private bool process = true;
-
     // Start is called before the first frame update
     void Start()
     {
@@ -192,20 +190,20 @@ public class InterfaceManager : IInterfaceManager
     int frame = 0;
     void Update()
     {
-		deltaTime += (Time.unscaledDeltaTime - deltaTime) * 0.1f;
-        frame++;
+		// deltaTime += (Time.unscaledDeltaTime - deltaTime) * 0.1f;
+        // frame++;
 
-        if(updateRate % frame == 0) {
-            ReportEvent("FPS", new Dictionary<string, object>() {{"fps", 1.0f/deltaTime}}, DataReporter.TimeStamp());
-            frame = 0;
-        }
+        // if(updateRate % frame == 0) {
+        //     ReportEvent("FPS", new Dictionary<string, object>() {{"fps", 1.0f/deltaTime}}, DataReporter.TimeStamp());
+        //     frame = 0;
+        // }
 
         if(Input.GetKeyDown(quitKey)) {
             Quit();
         }
 
         int i = 0;
-        while(process && mainEvents.Process() && (i < eventsPerFrame)) {
+        while(mainEvents.Process() && (i < eventsPerFrame)) {
             i++;
         }
     }
@@ -220,7 +218,6 @@ public class InterfaceManager : IInterfaceManager
 
         if((bool)GetSetting("isLegacyExperiment") == true) {
             Debug.Log("Legacy Experiment");
-            process = true; // re enable processing of events
             return;
         }
 
@@ -267,8 +264,6 @@ public class InterfaceManager : IInterfaceManager
             recorder = soundRecorder.GetComponent<SoundRecorder>();
             Debug.Log("Found Sound Recorder");
         }
-
-        process = true; // re enable processing of events
     }
 
     void OnDisable() {
@@ -282,9 +277,11 @@ public class InterfaceManager : IInterfaceManager
     // experiment and system settings. Settings in experiment
     // override those in system. Attempts to read non-existent
     // settings return null.
+    //
+    // **** These are the only two InterfaceManager functions  *****
+    // **** that may be called from outside the main Thread.   *****
     //////////
 
-    // FIXME: must be externally synchronized
     public override dynamic GetSetting(string setting) {
         lock(configLock) {
             JToken value = null;
@@ -356,39 +353,39 @@ public class InterfaceManager : IInterfaceManager
     }
 
     // TODO: deal with error states if conditions not met
-    public void LaunchExperiment() {
+    public async void LaunchExperiment() {
         // launch scene with exp, 
         // instantiate experiment,
         // call start function
 
         // Check if settings are loaded
         if(experimentConfig != null) {
-            process = false; // disable event processing during scene transition
-            SceneManager.LoadScene((string)GetSetting("experimentScene"));
 
             Cursor.visible = false;
             Application.runInBackground = true;
+
             // Make the game run as fast as possible
             QualitySettings.vSyncCount = (int)GetSetting("vSync");
             Application.targetFrameRate = (int)GetSetting("frameRate");
-
+            
             // create path for current participant/session
             fileManager.CreateSession();
 
-            // Start syncbox
-            if(!(bool)GetSetting("isTest")) {
+
+            Do(new EventBase<string>(SceneManager.LoadScene,(string)GetSetting("experimentScene")));
+            Do(new EventBase(() => {
+                // Start syncbox
                 syncBox.Do(new EventBase(syncBox.StartPulse));
-            }
 
-            if((bool)GetSetting("elemem")) {
-                hostPC = new ElememInterface(this);
-            }
+                if((bool)GetSetting("elemem")) {
+                    hostPC = new ElememInterface(this);
+                }
 
-            // won't execute until mgr is ready
-            Do(new EventBase(LogExperimentInfo));
+                LogExperimentInfo();
 
-            Type t = Type.GetType((string)GetSetting("experimentClass")); 
-            exp = (ExperimentBase)Activator.CreateInstance(t, new object[] {this});
+                Type t = Type.GetType((string)GetSetting("experimentClass")); 
+                exp = (ExperimentBase)Activator.CreateInstance(t, new object[] {this});
+            }));
         }
         else {
             throw new Exception("No experiment configuration loaded");
@@ -416,9 +413,8 @@ public class InterfaceManager : IInterfaceManager
     }
 
     public void LaunchLauncher() {
-        process = false; // disable event processing during scene transition
         Debug.Log("Launching: " + (string)GetSetting("launcherScene"));
-        SceneManager.LoadScene((string)GetSetting("launcherScene"));
+        Do(new EventBase<string>(SceneManager.LoadScene,(string)GetSetting("launcherScene")));
     }
 
     public void LoadExperimentConfig(string name) {
@@ -519,6 +515,7 @@ public class InterfaceManager : IInterfaceManager
     }
 
     public override void SetHostPCStatus(string status) {
+        // TODO
         Debug.Log("Host PC Status");
         Debug.Log(status);
     }
@@ -547,10 +544,6 @@ public class InterfaceManager : IInterfaceManager
     //////////
     
     public void Key(string key, bool pressed) {
-        if(!process) {
-            return;
-        }
-
         Action<string, bool> action;
         while(onKey.Count != 0) {
             if(onKey.TryDequeue(out action)) {
@@ -564,7 +557,7 @@ public class InterfaceManager : IInterfaceManager
     }
 
     //////////
-    // Wrappers to make event management API consistent
+    // Wrappers to make event management interface consistent
     //////////
 
     public override void Do(IEventBase thisEvent) {
@@ -577,137 +570,5 @@ public class InterfaceManager : IInterfaceManager
 
     public override void DoRepeating(RepeatingEvent thisEvent) {
         mainEvents.DoRepeating(thisEvent);
-    }
-}
-
-
-//////////
-// Classes to manage the filesystem in
-// which experiment data is stored
-/////////
-
-public class FileManager {
-
-    InterfaceManager manager;
-
-    public FileManager(InterfaceManager _manager) {
-        manager = _manager;
-    }
-
-    public virtual string ExperimentRoot() {
-
-        #if UNITY_EDITOR
-            return System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop);
-        #else
-            return System.IO.Path.GetFullPath(".");
-        #endif
-    }
-
-    public string ExperimentPath() {
-        string root = ExperimentRoot();
-        string experiment;
-        
-        try {
-            experiment = (string)manager.GetSetting("experimentName");
-        }
-        catch(MissingFieldException) {
-            manager.Notify(new Exception("No experiment selected"));
-            return null;
-        }
-
-        string dir = System.IO.Path.Combine(root, "data", experiment);
-
-        return dir;
-    }
-    public string ParticipantPath(string participant) {
-        string dir = ExperimentPath();
-        dir = System.IO.Path.Combine(dir, participant);
-        return dir;
-    }
-
-    public string ParticipantPath() {
-        string dir = ExperimentPath();
-        string participant;
-
-        try{
-            participant = (string)manager.GetSetting("participantCode");
-        }
-        catch(MissingFieldException) {
-            manager.Notify(new Exception("No participant selected"));
-            return null;
-        }
-
-        dir = System.IO.Path.Combine(dir, participant);
-        return dir;
-    }
-    
-    public string SessionPath(string participant, int session) {
-        string dir = ParticipantPath(participant);
-        dir = System.IO.Path.Combine(dir, "session_" + session.ToString());
-        return dir;
-    }
-
-    public string SessionPath() {
-        string session;
-        try{
-            session = (string)manager.GetSetting("session");
-        }
-        catch(MissingFieldException) {
-            return null;
-        }
-
-        string dir = ParticipantPath();
-        dir = System.IO.Path.Combine(dir, "session_" + session.ToString());
-        return dir;
-    }
-
-    public bool isValidParticipant(string code) {
-        if((bool)manager.GetSetting("isTest")) {
-            return true;
-        }
-
-        string experiment, prefix;
-        try{
-            experiment = (string)manager.GetSetting("experimentName");
-            prefix = (string)manager.GetSetting("prefix");
-        }
-        catch(MissingFieldException) {
-            return false;
-        }
-
-        Regex rx = new Regex(@"^" + prefix + @"\d{1,4}[A-Z]?$");
-
-        return rx.IsMatch(code);
-    }
-
-    public string GetWordList() {
-        string root = ExperimentRoot();
-        return System.IO.Path.Combine(root, (string)manager.GetSetting("wordpool"));
-    }
-
-    public void CreateSession() {
-        Directory.CreateDirectory(SessionPath());
-    }
-
-    public void CreateParticipant() {
-        Directory.CreateDirectory(ParticipantPath());
-    }
-    public void CreateExperiment() {
-        Directory.CreateDirectory(ExperimentPath());
-    }
-
-    public string ConfigPath() {
-        string root = ExperimentRoot();
-        return System.IO.Path.Combine(root, "configs");
-    }
-
-    public int CurrentSession(string participant) {
-        int nextSessionNumber = 0;
-        Debug.Log(SessionPath(participant, nextSessionNumber));
-        while (System.IO.Directory.Exists(SessionPath(participant, nextSessionNumber)))
-        {
-            nextSessionNumber++;
-        }
-        return nextSessionNumber;
     }
 }

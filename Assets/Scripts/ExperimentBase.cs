@@ -63,7 +63,7 @@ public abstract class ExperimentBase : EventLoop {
                             manager.Do(new EventBase( () => {
                                 manager.ClearText();
                                 manager.recorder.StopRecording();
-                                this.Do(new EventBase(Run));
+                                Run();
                                 }));
                             }), 
                         (int)manager.GetSetting("micTestDuration"));
@@ -84,7 +84,7 @@ public abstract class ExperimentBase : EventLoop {
         DoIn(new EventBase(() => {
                                 manager.Do(new EventBase(manager.ClearText));
                                 manager.Do(new EventBase(manager.ClearTitle));
-                                this.Do(new EventBase(Run));
+                                Run();
                             }), (int)manager.GetSetting("micTestDuration") + 1000); // pad for latency
     }
 
@@ -164,7 +164,7 @@ public abstract class ExperimentBase : EventLoop {
                 }));
 
                 ReportEvent("end recall period", new Dictionary<string, object>());
-                this.Do(new EventBase(Run));
+                Run();
         }), duration );
     }
 
@@ -174,34 +174,34 @@ public abstract class ExperimentBase : EventLoop {
 
         DoIn(new EventBase(() => {
                                     manager.Do(new EventBase(manager.ClearText));
-                                    this.Do(new EventBase(Run));
+                                    Run();
                                 }), 500); // magic number is the duration of beep
     }
     
     
-    public void QuitPrompt() {
+    protected void QuitPrompt() {
         WaitForKey("subject/session confirmation", "Running " + (string)manager.GetSetting("participantCode") + " in session " 
             + (int)manager.GetSetting("session") + " of " + (string)manager.GetSetting("experimentName") 
             + ".\n Press Y to continue, N to quit.", 
             (Action<string, bool>)QuitOrContinue);
     }
 
-    public void WaitForKey(string tag, string prompt, Action<string, bool> keyHandler) {
+    protected void WaitForKey(string tag, string prompt, Action<string, bool> keyHandler) {
         manager.Do(new EventBase<string, string>(manager.ShowText, tag, prompt));
         manager.Do(new EventBase<Action<string, bool>>(manager.RegisterKeyHandler, keyHandler));
     }
     
-    public void WaitForTime(int milliseconds) {
+    protected void WaitForTime(int milliseconds) {
         // convert to milliseconds
         DoIn(new EventBase(Run), milliseconds); 
     }
 
-    public void MicTestPrompt() {
+    protected void MicTestPrompt() {
         manager.Do(new EventBase<string, string>(manager.ShowTitle, "microphone test title", "Microphone Test"));
         WaitForKey("microphone test prompt", "Press any key to record a sound after the beep.", AnyKey);
     }
 
-    public void ConfirmStart() {
+    protected void ConfirmStart() {
         WaitForKey("confirm start", "Please let the experimenter know \n" +
                 "if you have any questions about \n" +
                 "what you just did.\n\n" +
@@ -355,7 +355,13 @@ public abstract class ExperimentBase : EventLoop {
         if(System.IO.File.Exists(System.IO.Path.Combine(manager.fileManager.SessionPath(participant, session), "experiment_state.json"))) {
             string json = System.IO.File.ReadAllText(System.IO.Path.Combine(manager.fileManager.SessionPath(participant, session), "experiment_state.json"));
             dynamic jObjCfg = FlexibleConfig.LoadFromText(json);
-            return FlexibleConfig.CastToStatic(jObjCfg);
+            dynamic state =  FlexibleConfig.CastToStatic(jObjCfg);
+
+            if(state.isComplete) {
+                manager.Notify(new InvalidOperationException("Session Already Complete"));
+            }
+
+            return state;
         }
         else {
             return null;

@@ -33,7 +33,7 @@ public class EventQueue {
     public virtual void DoRepeating(RepeatingEvent thisEvent) {
         // timers should only be created if running
         if(Running()) {
-            thisEvent.timer = new Timer(delegate(System.Object obj){ RepeatingEvent evnt = (RepeatingEvent)obj;
+            thisEvent.timer = new HighPrecisionTimer(delegate(System.Object obj){ RepeatingEvent evnt = (RepeatingEvent)obj;
                                                             if(!evnt.flag.IsSet){Do(evnt);} }, 
                                                             thisEvent, thisEvent.delay, thisEvent.interval);
             repeatingEventID++;
@@ -63,7 +63,7 @@ public class EventQueue {
         RepeatingEvent cleanEvents = new RepeatingEvent(CleanRepeatingEvents, -1, 0, 30000);
 
         // Timers need a reference to Do, so need to have access to this scope
-        cleanEvents.timer = new Timer(delegate(System.Object obj){ RepeatingEvent evnt = (RepeatingEvent)obj;
+        cleanEvents.timer = new HighPrecisionTimer(delegate(System.Object obj){ RepeatingEvent evnt = (RepeatingEvent)obj;
                                                             if(!evnt.flag.IsSet){Do(evnt);} }, 
                                                             cleanEvents, cleanEvents.delay, cleanEvents.interval);
         
@@ -163,7 +163,7 @@ public class RepeatingEvent : IEventBase {
     public int delay;
     public int interval;
     public ManualResetEventSlim flag;
-    public Timer timer;
+    public HighPrecisionTimer timer;
     public DateTime startTime;
 
     private IEventBase thisEvent;

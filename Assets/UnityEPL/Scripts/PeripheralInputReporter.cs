@@ -145,6 +145,7 @@ public class PeripheralInputReporter : DataReporter {
             label = "key/mouse press/release";
         eventQueue.Enqueue(new DataPoint(label, timestamp, dataDict));
 
+        // FIXME: use KeyListener
         manager.Do(new EventBase<string, bool>(manager.Key, key, pressed));
    }
 

@@ -11,7 +11,6 @@ using Newtonsoft.Json.Linq;
 // TODO: class containing constructors for elemem messages
 
 public abstract class IHostPC : EventLoop {
-
     public abstract JObject WaitForMessage(string type, int timeout);
     public abstract void Connect();
     public abstract NetworkStream GetReadStream();
