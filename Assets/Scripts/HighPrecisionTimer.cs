@@ -10,6 +10,7 @@ public class HighPrecisionTimer : IDisposable {
    private System.Threading.WaitCallback callback;
    private volatile bool running = false;
    private object stateInfo;
+   private object locker = new Object();
 
     public HighPrecisionTimer(System.Threading.WaitCallback _callback, object _stateInfo, Int32 _dueTime, Int32 _period) {
         dueTime = _dueTime;
@@ -18,7 +19,9 @@ public class HighPrecisionTimer : IDisposable {
         stateInfo = _stateInfo;
 
         flag.Reset();
-        running = true;
+
+        lock(locker) {running = true;}
+
         ThreadPool.QueueUserWorkItem(Spinner, stateInfo);
     }
 
@@ -27,6 +30,7 @@ public class HighPrecisionTimer : IDisposable {
         sw.Start();
         Int32 remainingWait = dueTime;
 
+        flag.Reset();
         if(dueTime < 0) {
             flag.Wait(-1);
         }
@@ -49,20 +53,19 @@ public class HighPrecisionTimer : IDisposable {
                 }
             }
         }
+        flag.Dispose();
     }
 
-// TODO: change and finalize thread safe?
-// FIXME: fail condition
+    // FIXME: fail condition
     public bool Change(Int32 _dueTime, Int32 _period) {
-        running = false;
-        Thread.MemoryBarrier();
+        lock(locker) {running = false;}
         flag.Set();
 
-        dueTime = _dueTime;
-        period = _period;
+        Interlocked.Exchange(ref this.dueTime, _dueTime);
+        Interlocked.Exchange(ref this.period, _period);
 
-        running = true;
-        flag.Reset();
+        lock(locker) {running = true;}
+        flag = new ManualResetEventSlim(true);
 
         ThreadPool.QueueUserWorkItem(Spinner, stateInfo);
 
@@ -70,13 +73,12 @@ public class HighPrecisionTimer : IDisposable {
     }
 
     public void Dispose() {
-        running = false;
-        Thread.MemoryBarrier();
+        lock(locker) {running = true;}
         flag.Set();
     }
 
     private bool Running() {
-        return running;
+        lock(locker) {return running;}
     }
 
 }

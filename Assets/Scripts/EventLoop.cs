@@ -4,21 +4,30 @@ using System.Collections.Concurrent;
 
 public class EventLoop : EventQueue {
     private ManualResetEventSlim wait;
+    private CancellationTokenSource tokenSource;
 
 
     public void Start(){
-        // spawn thread
-        // TODO: prevent multiple starts
+        if(Running()) {
+            return;
+        }
 
         running = true;
         Thread loop = new Thread(Loop);
         wait = new ManualResetEventSlim();
 
-        loop.Start();
+        tokenSource = new CancellationTokenSource();
+        loop.Start(tokenSource.Token);
     }
 
     public void Stop(){
+        if(!Running()) {
+            return;
+        }
+
         running = false;
+        tokenSource.Cancel();
+        tokenSource.Dispose();
         wait.Set();
         StopTimers();
     }
@@ -36,27 +45,22 @@ public class EventLoop : EventQueue {
         base.repeatingEvents = new ConcurrentDictionary<int, RepeatingEvent>();
     }
 
-    public void Loop() {
+    protected void Loop(object token) {
         wait.Reset();
-        while(Running()) {
+        while(!((CancellationToken)token).IsCancellationRequested) {
             bool event_ran = Process();
             if ( ! event_ran ) {
-                // Don't block indefinitely
                 wait.Wait(200);
                 wait.Reset();
             }
         }
         wait.Dispose();
     }
-    public override void Do(IEventBase thisEvent) {
-        if(Running()) {
-            base.Do(thisEvent);
-            wait.Set();
-        } else {
-            throw new Exception("Can't enqueue an event to a non running Loop");
-        }
-    }
 
+    public override void Do(IEventBase thisEvent) {
+        base.Do(thisEvent);
+        wait.Set();
+    }
 
     // enqueues repeating event at set intervals. If timer isn't
     // stopped, stopping processing thread will still stop execution

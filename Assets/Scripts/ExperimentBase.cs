@@ -29,7 +29,13 @@ public abstract class ExperimentBase : EventLoop {
     // executes state machine current function
     public void Run() {
         SaveState();
-        stateMachine["Run"][state.runIndex].Invoke();
+        Do(new EventBase(stateMachine["Run"][state.runIndex]));
+    }
+
+    public void FinishExperiment() {
+        state.isComplete = true;
+        SaveState();
+        Quit();
     }
 
     //////////
@@ -149,8 +155,13 @@ public abstract class ExperimentBase : EventLoop {
     }
 
     protected void Recall(string wavPath) {
-        manager.Do(new EventBase<string>(manager.recorder.StartRecording, wavPath));
-        ReportEvent("start recall period", new Dictionary<string, object>());
+        manager.Do(new EventBase(() => {
+                            // NOTE: unlike other events, that should be aligned to when they are called,
+                            //       this event needs to be precisely aligned with the beginning of a
+                            //       recording.
+                            manager.recorder.StartRecording(wavPath);
+                            ReportEvent("start recall period", new Dictionary<string, object>());
+                        }));
 
         int duration = (int)manager.GetSetting("recallDuration");
 
@@ -312,7 +323,7 @@ public abstract class ExperimentBase : EventLoop {
             this.Do(new EventBase(Run));
         }
         else if(down && key == "N") {
-            this.Quit();
+            Quit();
         }
         else {
             manager.RegisterKeyHandler(QuitOrContinue);
@@ -358,7 +369,7 @@ public abstract class ExperimentBase : EventLoop {
             dynamic state =  FlexibleConfig.CastToStatic(jObjCfg);
 
             if(state.isComplete) {
-                manager.Notify(new InvalidOperationException("Session Already Complete"));
+                ErrorNotification.Notify(new InvalidOperationException("Session Already Complete"));
             }
 
             return state;

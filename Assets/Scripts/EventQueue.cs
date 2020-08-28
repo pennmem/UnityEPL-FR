@@ -7,7 +7,7 @@ using UnityEngine;
 public class EventQueue {
     public ConcurrentQueue<IEventBase> eventQueue;
 
-    protected volatile int repeatingEventID = 0;
+    protected int repeatingEventID = 0;
     protected ConcurrentDictionary<int, RepeatingEvent> repeatingEvents = new ConcurrentDictionary<int, RepeatingEvent>();
 
     protected volatile bool running = true;
@@ -18,7 +18,7 @@ public class EventQueue {
 
     public virtual void DoIn(IEventBase thisEvent, int delay) {
         if(Running()) {
-            RepeatingEvent repeatingEvent = new RepeatingEvent(thisEvent, 1, delay, Timeout.Infinite);
+            RepeatingEvent repeatingEvent = new RepeatingEvent(thisEvent, 1, delay, Timeout.Infinite, this);
 
             DoRepeating(repeatingEvent);
         }
@@ -31,12 +31,9 @@ public class EventQueue {
     // stopped, stopping processing thread will still stop execution
     // of events
     public virtual void DoRepeating(RepeatingEvent thisEvent) {
-        // timers should only be created if running
+
         if(Running()) {
-            thisEvent.timer = new HighPrecisionTimer(delegate(System.Object obj){ RepeatingEvent evnt = (RepeatingEvent)obj;
-                                                            if(!evnt.flag.IsSet){Do(evnt);} }, 
-                                                            thisEvent, thisEvent.delay, thisEvent.interval);
-            repeatingEventID++;
+            Interlocked.Increment(ref this.repeatingEventID);
             if(!repeatingEvents.TryAdd(repeatingEventID, thisEvent)) {
                 throw new Exception("Could not add repeating event to queue");
             }
@@ -46,12 +43,21 @@ public class EventQueue {
         }
     }
 
+    public virtual void DoRepeating(IEventBase thisEvent, int iterations, int delay, int interval) {
+        // timers should only be created if running
+        DoRepeating(new RepeatingEvent(thisEvent, iterations, delay, interval, this));
+    }
+
     // Process one event in the queue.
     // Returns true if an event was available to process.
     public bool Process() {
         IEventBase thisEvent;
         if (running && eventQueue.TryDequeue(out thisEvent)) {
-            thisEvent.Invoke();
+            try {
+                thisEvent.Invoke();
+            } catch(Exception e) {
+                ErrorNotification.Notify(e);
+            }
             return true;
         }
         return false;
@@ -59,17 +65,8 @@ public class EventQueue {
 
     public EventQueue() {
         eventQueue = new ConcurrentQueue<IEventBase>();
-
-        RepeatingEvent cleanEvents = new RepeatingEvent(CleanRepeatingEvents, -1, 0, 30000);
-
-        // Timers need a reference to Do, so need to have access to this scope
-        cleanEvents.timer = new HighPrecisionTimer(delegate(System.Object obj){ RepeatingEvent evnt = (RepeatingEvent)obj;
-                                                            if(!evnt.flag.IsSet){Do(evnt);} }, 
-                                                            cleanEvents, cleanEvents.delay, cleanEvents.interval);
-        
-        if(!repeatingEvents.TryAdd(repeatingEventID, cleanEvents)) {
-                throw new Exception("Could not add repeating event to queue");
-            }
+        RepeatingEvent cleanEvents = new RepeatingEvent(CleanRepeatingEvents, -1, 0, 30000, this);
+        DoRepeating(cleanEvents);
     }
 
     public bool Running() {
@@ -82,13 +79,11 @@ public class EventQueue {
             running = false;
             foreach(RepeatingEvent re in repeatingEvents.Values) {
                 re.flag.Set();
-                Debug.Log(re.delay);
                 re.delay -= (int)((TimeSpan)(time - re.startTime)).TotalMilliseconds;
                 if(re.delay <=0) {
                     re.delay = 0;
                 }
                 re.timer.Change(Timeout.Infinite, Timeout.Infinite);
-                Debug.Log(re.delay);
             }
         } 
         else {
@@ -97,7 +92,6 @@ public class EventQueue {
                 re.flag.Reset();
                 re.startTime = time;
                 bool success = re.timer.Change(re.delay, re.interval);
-                Debug.Log(re.delay);
             } 
         }
     }
@@ -124,12 +118,7 @@ public class EventBase : IEventBase {
     protected Action EventAction;
 
     public virtual void Invoke() {
-        try {
-            EventAction?.Invoke();
-        }
-        catch(Exception e) {
-            new ErrorNotification().Notify(e);
-        }
+        EventAction?.Invoke();
     }
 
     public EventBase(Action thisAction) {
@@ -157,38 +146,24 @@ public class EventBase<T, U, V, W> : EventBase {
 }
 public class RepeatingEvent : IEventBase {
 
-    public volatile int iterations;
+    public int iterations;
 
-    public int maxIterations;
+    public readonly int maxIterations;
     public int delay;
     public int interval;
-    public ManualResetEventSlim flag;
+    public readonly ManualResetEventSlim flag;
     public HighPrecisionTimer timer;
     public DateTime startTime;
 
     private IEventBase thisEvent;
+    private EventQueue queue;
 
-    public RepeatingEvent(Action _action, int _iterations, int _delay, int _interval, ManualResetEventSlim _flag = null) {
+public RepeatingEvent(IEventBase originalEvent, int _iterations, int _delay, int _interval, EventQueue _queue, ManualResetEventSlim _flag = null) {
         maxIterations = _iterations;
         delay = _delay;
         interval = _interval;
         startTime = HighResolutionDateTime.UtcNow;
-
-        if(_flag == null) {
-            flag = new ManualResetEventSlim();
-        }
-        else {
-            flag = _flag;
-        }
-
-        thisEvent = new EventBase(_action);
-    }
-
-    public RepeatingEvent(IEventBase originalEvent, int _iterations, int _delay, int _interval, ManualResetEventSlim _flag = null) {
-        maxIterations = _iterations;
-        delay = _delay;
-        interval = _interval;
-        startTime = HighResolutionDateTime.UtcNow;
+        queue = _queue;
 
 
         if(_flag == null) {
@@ -199,15 +174,29 @@ public class RepeatingEvent : IEventBase {
         }
 
         thisEvent = originalEvent;
+        SetTimer();
+    }
+
+    public RepeatingEvent(Action _action, int _iterations, int _delay,
+                          int _interval, EventQueue _queue,
+                          ManualResetEventSlim _flag = null) 
+                          : this(new EventBase(_action), 
+                                 _iterations, _delay, 
+                                 _interval, _queue, _flag) {}
+
+    private void SetTimer() {
+        this.timer = new HighPrecisionTimer(delegate(System.Object obj){ RepeatingEvent evnt = (RepeatingEvent)obj;
+                                                                              if(!evnt.flag.IsSet){this.queue.Do(evnt);} 
+                                                                            }, 
+                                                this, this.delay, this.interval);
     }
 
     public void Invoke() {
         if(!(maxIterations < 0) && (iterations >= maxIterations)) {
             flag.Set();
-
             return;
         }
-        iterations += 1;
+        Interlocked.Increment(ref this.iterations);
         thisEvent.Invoke();
     }
 }

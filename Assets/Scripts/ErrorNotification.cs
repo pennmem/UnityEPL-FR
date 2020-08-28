@@ -1,11 +1,10 @@
 using System;
 using UnityEngine;
 
-public class ErrorNotification {
-    public static IInterfaceManager mainThread = null;
-    public ErrorNotification() {}
+public static class ErrorNotification {
+    public static InterfaceManager mainThread = null;
 
-    public void Notify(Exception e) {
+    public static void Notify(Exception e) {
         UnityEngine.Debug.Log(e);
         if(mainThread == null) {
 

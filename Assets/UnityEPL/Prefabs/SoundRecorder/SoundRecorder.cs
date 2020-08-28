@@ -21,7 +21,7 @@ public class SoundRecorder : MonoBehaviour
             recording = Microphone.Start("", true, SECONDS_IN_MEMORY, SAMPLE_RATE);
         }
         catch(Exception e) { // TODO
-            new ErrorNotification().Notify(e);
+            ErrorNotification.Notify(e);
         }
     }
 

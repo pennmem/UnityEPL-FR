@@ -33,7 +33,7 @@ public class RepFRExperiment : ExperimentBase {
 
   protected RepFRSession currentSession;
 
-  public RepFRExperiment(IInterfaceManager _manager) : base(_manager) {
+  public RepFRExperiment(InterfaceManager _manager) : base(_manager) {
     // Repetition specification:
     Debug.Log("Constructor for repFR");
     int[] repeats = manager.GetSetting("wordRepeats").ToObject<int[]>();
@@ -68,24 +68,14 @@ public class RepFRExperiment : ExperimentBase {
     }
 
     // copy wordpool to session directory
-    // TODO: we should just do a direct file copy...
     string path = System.IO.Path.Combine(manager.fileManager.SessionPath(), "wordpool.txt");
-    if(!System.IO.File.Exists(path)) {
-      using(TextWriter tw = new StreamWriter(path))
-      {
-        tw.WriteLine("word"); // header
-        foreach (String s in source_words) {
-          tw.WriteLine(s);
-        }
-      }
-    }
+    System.IO.File.Copy(source_list, path, true);
 
     // load state if previously existing
     dynamic loadedState = LoadState((string)manager.GetSetting("participantCode"), (int)manager.GetSetting("session"));
     if(loadedState != null) {
       state = loadedState;
       currentSession = LoadRepFRSession((string)manager.GetSetting("participantCode"), (int)manager.GetSetting("session"));
-
 
       // log experiment resume
       manager.Do(new EventBase<string, Dictionary<string, object>>(manager.ReportEvent, "experiment resumed", null));
@@ -110,10 +100,10 @@ public class RepFRExperiment : ExperimentBase {
                                             DoRepeatMicTest,
                                             DoQuitorContinue,
                                             MainLoop,
-                                            Quit};
+                                            FinishExperiment};
 
-    stateMachine["MainLoop"] = new List<Action> {DoNextListPrompt,
-                                                 DoStartTrial,
+    stateMachine["MainLoop"] = new List<Action> {DoStartTrial,
+                                                 DoNextListPrompt,
                                                  DoRest,
                                                  DoCountdownVideo,
                                                  DoEncodingDelay,
@@ -133,7 +123,7 @@ public class RepFRExperiment : ExperimentBase {
     // state machine has functions that take parameters and return functions, such
     // as using a single function for the 'repeatlast' state that takes a prompt
     // to show. It's not clear whether this improves clarity or reusability at all,
-    // so I've defferred this. If it makes sense to do this or make more use of
+    // so I've deferred this. If it makes sense to do this or make more use of
     // wrapper functions that add state machine information, please do.
 
     Dictionary<string, object> data = new Dictionary<string, object>();
@@ -173,9 +163,7 @@ public class RepFRExperiment : ExperimentBase {
 
     DoIn(new EventBase(() => {
                                 manager.Do(new EventBase(manager.ClearText)); 
-
                                 ReportEvent("rest end", null);
-
                                 Run();
                             }), 
                             duration);
@@ -193,8 +181,17 @@ public class RepFRExperiment : ExperimentBase {
 
     ReportEvent("start trial", data);
     SendHostPCMessage("TRIAL", data);
+
+
     state.mainLoopIndex++;
-    Run();
+
+    if(state.listIndex == (int)manager.GetSetting("practiceLists")) {
+      Do(new EventBase(DoConfirmStart));
+    }
+    else {
+      Run();
+    }
+
   }
 
   protected void DoEndTrial() {
@@ -242,11 +239,12 @@ public class RepFRExperiment : ExperimentBase {
 
   protected void DoNextListPrompt() {
     state.mainLoopIndex++; 
-    if(state.listIndex == 0) {
+    if(state.listIndex < (int)manager.GetSetting("practiceLists")) {
       WaitForKey("pause before list", "Press any key for practice trial.", AnyKey);
     }
     else {
-      WaitForKey("pause before list", "Press any key for trial " + (string)state.listIndex.ToString() + ".", AnyKey);
+      int trialNo = state.listIndex - (int)manager.GetSetting("practiceLists") + 1;
+      WaitForKey("pause before list", "Press any key for trial " + trialNo.ToString() + ".", AnyKey);
     }
   }
 
@@ -279,16 +277,10 @@ public class RepFRExperiment : ExperimentBase {
     if(state.mainLoopIndex == stateMachine["MainLoop"].Count) {
       state.mainLoopIndex = 0;
       state.listIndex++;
-
-      if(state.listIndex == 0) {
-        Do(new EventBase(DoConfirmStart));
-        return false;
-      }
     }
 
-    if(state.listIndex  == currentSession.Count) {
+    if(state.listIndex  >= currentSession.Count) {
       state.runIndex++;
-      state.isComplete = true;
 
       this.Do(new EventBase(Run));
       return false;
@@ -413,6 +405,7 @@ public class RepFRExperiment : ExperimentBase {
         serializer.Serialize(writer, currentSession);
       }
   }
+
   public RepFRSession LoadRepFRSession(string participant, int session) {
     if(System.IO.File.Exists(System.IO.Path.Combine(manager.fileManager.SessionPath(participant, session), "session_words.json"))) {
       string json = System.IO.File.ReadAllText(System.IO.Path.Combine(manager.fileManager.SessionPath(participant, session), "session_words.json"));
@@ -463,12 +456,12 @@ public class RepFRExperiment : ExperimentBase {
     // Parameters retrieved from experiment config, given default
     // value if null.
     // Numbers of list types:
-    int practice_lists = (int)(manager.GetSetting("practiceLists") ?? 1);
-    int pre_no_stim_lists = (int)(manager.GetSetting("preNoStimLists") ?? 3);
-    int encoding_only_lists = (int)(manager.GetSetting("encodingOnlyLists") ?? 4);
-    int retrieval_only_lists = (int)(manager.GetSetting("retrievalOnlyLists") ?? 4);
-    int encoding_and_retrieval_lists = (int)(manager.GetSetting("encodingAndRetrievalLists") ?? 4);
-    int no_stim_lists = (int)(manager.GetSetting("noStimLists") ?? 10);
+    int practice_lists = (int)manager.GetSetting("practiceLists");
+    int pre_no_stim_lists = (int)manager.GetSetting("preNoStimLists");
+    int encoding_only_lists = (int)manager.GetSetting("encodingOnlyLists");
+    int retrieval_only_lists = (int)manager.GetSetting("retrievalOnlyLists");
+    int encoding_and_retrieval_lists = (int)manager.GetSetting("encodingAndRetrievalLists");
+    int no_stim_lists = (int)manager.GetSetting("noStimLists");
     
     RandomSubset subset_gen = new RandomSubset(source_words);
 

@@ -28,7 +28,6 @@ public class UpdatedParticipantSelection : MonoBehaviour
     }
 
     void Update() {
-
         // update participants when new experiments are loaded
         if(experimentUpdated && ((string)manager.GetSetting("experimentName") != null)) {
             experimentUpdated = false;
@@ -92,7 +91,6 @@ public class UpdatedParticipantSelection : MonoBehaviour
         nextSessionNumber = manager.fileManager.CurrentSession(selectedParticipant);
 
         UpdateTexts();
-        //LoadSession(); 
     }
 
     public void LoadSession()
@@ -100,29 +98,6 @@ public class UpdatedParticipantSelection : MonoBehaviour
         UnityEngine.UI.Dropdown dropdown = GetComponent<UnityEngine.UI.Dropdown>();
         string selectedParticipant = dropdown.captionText.text;
         string sessionFilePath = manager.fileManager.SessionPath(selectedParticipant, nextSessionNumber);
-        if (System.IO.Directory.Exists(sessionFilePath))
-        {
-            Debug.Log("Session already started"); 
-        }
-        else //start from the beginning if it doesn't exist yet
-        {
-            nextListNumber = 0;
-        }
-        UpdateTexts();
-    }
-
-    public void DecreaseListNumber()
-    {
-        if (nextListNumber > 0)
-            nextListNumber--;
-        UpdateTexts();
-    }
-
-    public void IncreaseListNumber()
-    {
-        
-        if (nextListNumber < (int)manager.GetSetting("numLists"))
-            nextListNumber++;
         UpdateTexts();
     }
 

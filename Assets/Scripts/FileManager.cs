@@ -35,13 +35,16 @@ public class FileManager {
             experiment = (string)manager.GetSetting("experimentName");
         }
         catch(MissingFieldException) {
-            manager.Notify(new Exception("No experiment selected"));
+            ErrorNotification.Notify(new Exception("No experiment selected"));
             return null;
         }
 
         string dir = System.IO.Path.Combine(root, "data", experiment);
-
-        return dir;
+        try {
+            return (string)(manager.GetSetting("dataPath"));
+        } catch {
+            return  dir;
+        }
     }
     public string ParticipantPath(string participant) {
         string dir = ExperimentPath();
@@ -57,7 +60,7 @@ public class FileManager {
             participant = (string)manager.GetSetting("participantCode");
         }
         catch(MissingFieldException) {
-            manager.Notify(new Exception("No participant selected"));
+            ErrorNotification.Notify(new Exception("No participant selected"));
             return null;
         }
 
@@ -97,6 +100,10 @@ public class FileManager {
         }
         catch(MissingFieldException) {
             return false;
+        }
+
+        if(prefix == "any") {
+            return true;
         }
 
         Regex rx = new Regex(@"^" + prefix + @"\d{1,4}[A-Z]?$");

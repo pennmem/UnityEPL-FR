@@ -172,6 +172,7 @@ MonoBehaviour:
   lowBeep: {fileID: 0}
   lowerBeep: {fileID: 0}
   playback: {fileID: 0}
+  ramulator: {fileID: 0}
   voiceActity: {fileID: 0}
   scriptedInput: {fileID: 0}
   peripheralInput: {fileID: 0}
@@ -303,7 +304,12 @@ PrefabInstance:
     - target: {fileID: 223431702409890432, guid: e6672ad97ff294adba0eb53a61d1502f,
         type: 3}
       propertyPath: m_SortingOrder
-      value: 10
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 223431702409890432, guid: e6672ad97ff294adba0eb53a61d1502f,
+        type: 3}
+      propertyPath: m_RenderMode
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 224608295462917530, guid: e6672ad97ff294adba0eb53a61d1502f,
         type: 3}

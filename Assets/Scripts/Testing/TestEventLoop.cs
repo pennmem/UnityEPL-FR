@@ -37,7 +37,7 @@ public class TestingEventLoop {
         loop.Do(new EventBase<Action>(Callback, CallbackFunction));
         loop.Do(new EventBase<Action<string>, string>(CallbackWithArgument, CallbackFunction, "SUCCESS: Args in Callback"));
         loop.Do(new EventBase(NoArguments));
-        loop.DoRepeating(new RepeatingEvent(RepeatingCall, 10, 0, 50));
+        loop.DoRepeating(new EventBase(RepeatingCall), 10, 0, 50);
 
         // Simulating other program work
         Thread.Sleep(1000);

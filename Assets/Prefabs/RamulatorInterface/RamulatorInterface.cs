@@ -5,20 +5,43 @@ using System.Runtime.InteropServices;
 using System.Text;
 using UnityEngine;
 using NetMQ;
+using Newtonsoft.Json.Linq;
+
+public class RamulatorWrapper : IHostPC {
+
+    
+    InterfaceManager manager;
+
+    public RamulatorWrapper(InterfaceManager _manager) {
+       manager = _manager; 
+       manager.ramulator.manager = manager;
+       Start();
+       Do(new EventBase(Connect));
+    } 
+
+    public override void Connect() {
+        CoroutineToEvent.StartCoroutine(manager.ramulator.BeginNewSession((int)manager.GetSetting("session")), manager);
+    }
+
+    public override void SendMessage(string type, Dictionary<string, object> data) {
+        DataPoint point = new DataPoint(type, DataReporter.TimeStamp(), data);
+        string message = point.ToJSON();
+
+        manager.Do(new EventBase(() => manager.ramulator.SendMessageToRamulator(message)));
+    }
+
+    public override void HandleMessage(string message, DateTime time) {
+        throw new NotImplementedException("Ramulator does not expect responses to be handled externally");
+    }
+    public override JObject WaitForMessage(string type, int timeout) {
+        throw new NotImplementedException("Ramulator does not expect responses to be handled externally");
+    }
+}
 
 public class RamulatorInterface : MonoBehaviour
 {
-    public InterfaceManager manager;
-
-    //This will be updated with warnings about the status of ramulator connectivity
-    public UnityEngine.UI.Text ramulatorWarningText;
-    //This will be activated when a warning needs to be displayed
-    public GameObject ramulatorWarning;
-
-    public ScriptedEventReporter reporter;
-
     //how long to wait for ramulator to connect
-    const int timeoutDelay = 600;
+    const int timeoutDelay = 150;
     const int unreceivedHeartbeatsToQuit = 8;
 
     private int unreceivedHeartbeats = 0;
@@ -26,11 +49,14 @@ public class RamulatorInterface : MonoBehaviour
     private NetMQ.Sockets.PairSocket zmqSocket;
     private const string address = "tcp://*:8889";
 
+    public InterfaceManager manager;
+
     void OnApplicationQuit()
     {
-        if (zmqSocket != null)
+        if (zmqSocket != null) {
             zmqSocket.Close();
-        NetMQConfig.Cleanup();
+            NetMQConfig.Cleanup();
+        }
     }
 
     //this coroutine connects to ramulator and communicates how ramulator expects it to
@@ -77,9 +103,6 @@ public class RamulatorInterface : MonoBehaviour
 
     private IEnumerator WaitForMessage(string containingString, string errorMessage)
     {
-        ramulatorWarning.SetActive(true);
-        ramulatorWarningText.text = "Waiting on Ramulator";
-
         string receivedMessage = "";
         float startTime = Time.time;
         while (receivedMessage == null || !receivedMessage.Contains(containingString))
@@ -95,18 +118,17 @@ public class RamulatorInterface : MonoBehaviour
             //if we have exceeded the timeout time, show warning and stop trying to connect
             if (Time.time > startTime + timeoutDelay)
             {
-                ramulatorWarningText.text = errorMessage;
-                Debug.LogWarning("Timed out waiting for ramulator");
                 yield break;
             }
             yield return null;
         }
-        ramulatorWarning.SetActive(false);
     }
 
     //ramulator expects this before the beginning of a new list
     public void BeginNewTrial(int trialNumber)
     {
+        if (zmqSocket == null)
+            throw new Exception("Please begin a session before beginning trials");
         System.Collections.Generic.Dictionary<string, object> sessionData = new Dictionary<string, object>();
         sessionData.Add("trial", trialNumber.ToString());
         DataPoint sessionDataPoint = new DataPoint("TRIAL", DataReporter.TimeStamp(), sessionData);
@@ -115,11 +137,11 @@ public class RamulatorInterface : MonoBehaviour
 
     //ramulator expects this when you display words to the subject.
     //for words, stateName is "WORD"
-    public void SetState(string stateName, bool stateToggle, System.Collections.Generic.Dictionary<string, object> extraData)
+    public void SetState(string stateName, bool stateToggle, System.Collections.Generic.Dictionary<string, object> sessionData)
     {
-        extraData.Add("name", stateName);
-        extraData.Add("value", stateToggle.ToString());
-        DataPoint sessionDataPoint = new DataPoint("STATE", DataReporter.TimeStamp(), extraData);
+        sessionData.Add("name", stateName);
+        sessionData.Add("value", stateToggle.ToString());
+        DataPoint sessionDataPoint = new DataPoint("STATE", DataReporter.TimeStamp(), sessionData);
         SendMessageToRamulator(sessionDataPoint.ToJSON());
     }
 
@@ -134,12 +156,6 @@ public class RamulatorInterface : MonoBehaviour
         SendMessageToRamulator(mathDataPoint.ToJSON());
     }
 
-    public void SendExitMessage()
-    {
-        var data = new Dictionary<string, object>();
-        var msg = new DataPoint("EXIT", DataReporter.TimeStamp(), data);
-        SendMessageToRamulator(msg.ToJSON());
-    }
 
     private void SendHeartbeat()
     {
@@ -151,13 +167,12 @@ public class RamulatorInterface : MonoBehaviour
     {
         unreceivedHeartbeats = unreceivedHeartbeats + 1;
         Debug.Log("Unreceived heartbeats: " + unreceivedHeartbeats.ToString());
+
         if (unreceivedHeartbeats > unreceivedHeartbeatsToQuit)
         {
-#if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
-#else
-			Application.Quit();
-#endif
+            CancelInvoke("ReceiveHeartbeat");
+            CancelInvoke("SendHeartbeat");
+            ErrorNotification.Notify(new Exception("Too many missed heartbeats."));
         }
 
         string receivedMessage = "";
@@ -166,17 +181,16 @@ public class RamulatorInterface : MonoBehaviour
         if (receivedMessage != "" && receivedMessage != null)
         {
             string messageString = receivedMessage.ToString();
-            //Debug.Log("heartbeat received: " + messageString);
+            Debug.Log("heartbeat received: " + messageString);
             ReportMessage(messageString, false);
             unreceivedHeartbeats = 0;
         }
     }
 
-    private void SendMessageToRamulator(string message)
+    public void SendMessageToRamulator(string message)
     {
-        if (zmqSocket != null)
-            zmqSocket.TrySendFrame(message, more: false);
-
+        bool wouldNotHaveBlocked = zmqSocket.TrySendFrame(message, more: false);
+        Debug.Log("Tried to send a message: " + message + " \nWouldNotHaveBlocked: " + wouldNotHaveBlocked.ToString());
         ReportMessage(message, true);
     }
 
@@ -185,6 +199,6 @@ public class RamulatorInterface : MonoBehaviour
         Dictionary<string, object> messageDataDict = new Dictionary<string, object>();
         messageDataDict.Add("message", message);
         messageDataDict.Add("sent", sent.ToString());
-        reporter.ReportScriptedEvent("network", messageDataDict);
+        manager.ReportEvent("network", messageDataDict);
     }
 }

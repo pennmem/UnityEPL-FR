@@ -7,48 +7,16 @@ using UnityEngine.SceneManagement;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
 
-
-// TODO: this is a really terrible name
-// TaskInterface? -> ITaskInterface?
-public abstract class IInterfaceManager : MonoBehaviour {
-    protected virtual void Awake() {
-        // TODO: assert singleton
-        ErrorNotification.mainThread = this;
-    }
-
-    public abstract void Notify(Exception e);
-    public abstract void Do(IEventBase thisEvent);
-    public abstract void DoIn(IEventBase thisEvent, int delay);
-    public abstract void DoRepeating(RepeatingEvent thisEvent);
-    public abstract dynamic GetSetting(string setting);
-    public abstract void ChangeSetting(string setting, dynamic value);
-    
-    // Key handling
-
-    // Show Text/Title/Video
-    // Clear Text/Title
-
-    // Microphone Interface
-
-    // synbox interface
-
-    public abstract void Quit();
-    public abstract void ReportEvent(string type, Dictionary<string, object> data, DateTime time);
-    public abstract void ReportEvent(string type, Dictionary<string, object> data);
-
-    public abstract void SetHostPCStatus(string status);
-    public abstract void SendHostPCMessage(string message, Dictionary<string, object> data);
-}
-
 // It is up to objects that are referenced in this class to 
 // have adequate protection levels on all members, as classes
 // with a reference to manager can call functions from or pass events
 // to classes referenced here.
 
-public class InterfaceManager : IInterfaceManager 
+public class InterfaceManager : MonoBehaviour 
 {
     private static string quitKey = "escape"; // escape to quit
     const string SYSTEM_CONFIG = "config.json";
+
     //////////
     // Singleton Boilerplate
     // makes sure that only one Experiment Manager
@@ -61,10 +29,8 @@ public class InterfaceManager : IInterfaceManager
     // pass references, rather than relying on Global
     //    public static InterfaceManager Instance { get { return _instance; } }
 
-    protected override void Awake()
+    protected  void Awake()
     {
-        base.Awake();
-
         if (_instance != null && _instance != this)
         {
             throw new System.InvalidOperationException("Cannot create multiple InterfaceManager Objects");
@@ -74,6 +40,8 @@ public class InterfaceManager : IInterfaceManager
             DontDestroyOnLoad(this.gameObject);
             DontDestroyOnLoad(warning);
         }
+
+        ErrorNotification.mainThread = this;
     }
 
     //////////
@@ -81,6 +49,7 @@ public class InterfaceManager : IInterfaceManager
     // activate InterfaceManager functions
     //////////
     private EventQueue mainEvents = new EventQueue();
+    public static implicit operator EventQueue(InterfaceManager im) => im.mainEvents;
 
     // queue to store key handlers before key event
     private ConcurrentQueue<Action<string, bool>> onKey;
@@ -124,6 +93,8 @@ public class InterfaceManager : IInterfaceManager
     public AudioSource lowBeep;
     public AudioSource lowerBeep;
     public AudioSource playback;
+
+    public RamulatorInterface ramulator;
 
     //////////
     // Input reporters
@@ -184,10 +155,10 @@ public class InterfaceManager : IInterfaceManager
         eventsPerFrame = (int)(GetSetting("eventsPerFrame") ?? 5);
     }
 
-    // Update is called once per frame
-    float deltaTime = 0.0f;
-    int updateRate = 10;
-    int frame = 0;
+    // // Update is called once per frame
+    // float deltaTime = 0.0f;
+    // int updateRate = 10;
+    // int frame = 0;
     void Update()
     {
 		// deltaTime += (Time.unscaledDeltaTime - deltaTime) * 0.1f;
@@ -215,11 +186,6 @@ public class InterfaceManager : IInterfaceManager
     void onSceneLoaded(Scene scene, LoadSceneMode mode) 
     {
         onKey = new ConcurrentQueue<Action<string, bool>>(); // clear keyhandler queue on scene change
-
-        if((bool)GetSetting("isLegacyExperiment") == true) {
-            Debug.Log("Legacy Experiment");
-            return;
-        }
 
         // text displayer
         GameObject canvas =  GameObject.Find("MemoryWordCanvas");
@@ -264,6 +230,14 @@ public class InterfaceManager : IInterfaceManager
             recorder = soundRecorder.GetComponent<SoundRecorder>();
             Debug.Log("Found Sound Recorder");
         }
+
+        GameObject ramulatorObject = GameObject.Find("RamulatorInterface");
+        if(ramulatorObject != null) {
+            ramulator = ramulatorObject.GetComponent<RamulatorInterface>();
+            Debug.Log("Found Ramulator");
+        }
+
+        mainEvents.Pause(false);
     }
 
     void OnDisable() {
@@ -282,7 +256,7 @@ public class InterfaceManager : IInterfaceManager
     // **** that may be called from outside the main Thread.   *****
     //////////
 
-    public override dynamic GetSetting(string setting) {
+    public  dynamic GetSetting(string setting) {
         lock(configLock) {
             JToken value = null;
 
@@ -304,7 +278,7 @@ public class InterfaceManager : IInterfaceManager
         throw new MissingFieldException("Missing Setting " + setting + ".");
     }
 
-    public override void ChangeSetting(string setting, dynamic value) {
+    public  void ChangeSetting(string setting, dynamic value) {
         JToken existing;
 
         try {
@@ -316,7 +290,7 @@ public class InterfaceManager : IInterfaceManager
 
         lock(configLock) {
             if(existing == null) {
-                // even if setting belongs to systemConfig, experimentConfig setting overrides
+                // even if setting belongs to systemConfig, experimentConfig setting s
                 if(experimentConfig == null) {
                     systemConfig.Add(setting, value);
                 }
@@ -327,7 +301,7 @@ public class InterfaceManager : IInterfaceManager
                 return;
             }
             else {
-                // even if setting belongs to systemConfig, experimentConfig setting overrides
+                // even if setting belongs to systemConfig, experimentConfig setting s
                 if(experimentConfig == null) {
                     systemConfig[setting] = value;
                 }
@@ -353,7 +327,7 @@ public class InterfaceManager : IInterfaceManager
     }
 
     // TODO: deal with error states if conditions not met
-    public async void LaunchExperiment() {
+    public void LaunchExperiment() {
         // launch scene with exp, 
         // instantiate experiment,
         // call start function
@@ -371,14 +345,18 @@ public class InterfaceManager : IInterfaceManager
             // create path for current participant/session
             fileManager.CreateSession();
 
+            Do(new EventBase(() => {mainEvents.Pause(true);
+                                    SceneManager.LoadScene((string)GetSetting("experimentScene"));
+                                }));
 
-            Do(new EventBase<string>(SceneManager.LoadScene,(string)GetSetting("experimentScene")));
             Do(new EventBase(() => {
                 // Start syncbox
                 syncBox.Do(new EventBase(syncBox.StartPulse));
 
                 if((bool)GetSetting("elemem")) {
                     hostPC = new ElememInterface(this);
+                } else if((bool)GetSetting("ramulator")) {
+                    hostPC = new RamulatorWrapper(this);
                 }
 
                 LogExperimentInfo();
@@ -392,17 +370,17 @@ public class InterfaceManager : IInterfaceManager
         }
     }
 
-    public override void ReportEvent(string type, Dictionary<string, object> data, DateTime time) {
+    public  void ReportEvent(string type, Dictionary<string, object> data, DateTime time) {
         // TODO: time stamps
         scriptedInput.ReportScriptedEvent(type, data, time );
     }
 
-    public override void ReportEvent(string type, Dictionary<string, object> data) {
+    public  void ReportEvent(string type, Dictionary<string, object> data) {
         // TODO: time stamps
         scriptedInput.ReportScriptedEvent(type, data);
     }
 
-    public override void Quit() {
+    public  void Quit() {
         Debug.Log("Quitting");
     #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
@@ -413,12 +391,17 @@ public class InterfaceManager : IInterfaceManager
     }
 
     public void LaunchLauncher() {
+
         Debug.Log("Launching: " + (string)GetSetting("launcherScene"));
-        Do(new EventBase<string>(SceneManager.LoadScene,(string)GetSetting("launcherScene")));
+        Do(new EventBase(() => {mainEvents.Pause(true);
+                                SceneManager.LoadScene((string)GetSetting("launcherScene"));
+                            }));
     }
 
     public void LoadExperimentConfig(string name) {
+        Debug.Log("load experiment");
         lock(configLock) {
+            Debug.Log("In lock");
             string text = System.IO.File.ReadAllText(System.IO.Path.Combine(fileManager.ConfigPath(), name + ".json"));
             experimentConfig = FlexibleConfig.LoadFromText(text); 
             if((string)GetSetting("experimentName") != name) {
@@ -500,7 +483,7 @@ public class InterfaceManager : IInterfaceManager
 
     }
 
-    public override void Notify(Exception e) {
+    public  void Notify(Exception e) {
         Debug.Log("Popup now displayed... invisibly");
         Debug.Log(e);
 
@@ -514,13 +497,13 @@ public class InterfaceManager : IInterfaceManager
 
     }
 
-    public override void SetHostPCStatus(string status) {
+    public  void SetHostPCStatus(string status) {
         // TODO
         Debug.Log("Host PC Status");
         Debug.Log(status);
     }
 
-    public override void SendHostPCMessage(string message, Dictionary<string, object> data) {
+    public  void SendHostPCMessage(string message, Dictionary<string, object> data) {
         hostPC?.Do(new EventBase<string, Dictionary<string, object>>(hostPC.SendMessage, message, data));
     }
 
@@ -560,15 +543,15 @@ public class InterfaceManager : IInterfaceManager
     // Wrappers to make event management interface consistent
     //////////
 
-    public override void Do(IEventBase thisEvent) {
+    public  void Do(IEventBase thisEvent) {
         mainEvents.Do(thisEvent);
     }
 
-    public override void DoIn(IEventBase thisEvent, int delay) {
+    public  void DoIn(IEventBase thisEvent, int delay) {
         mainEvents.DoIn(thisEvent, delay);
     }
 
-    public override void DoRepeating(RepeatingEvent thisEvent) {
-        mainEvents.DoRepeating(thisEvent);
+    public  void DoRepeating(IEventBase thisEvent, int iterations, int delay, int interval) {
+        mainEvents.DoRepeating(thisEvent, iterations, delay, interval);
     }
 }
