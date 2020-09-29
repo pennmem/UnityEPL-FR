@@ -112,6 +112,10 @@ public class EditableExperiment : CoroutineExperiment
 
             yield return PausableWait(Random.Range(currentSettings.minPauseBeforeRecall, currentSettings.maxPauseBeforeRecall));
 
+            // NOTE: This is a fix for the delay of retrieval issue, where the pre recall prompt delays
+            // the start of recording. To keep the clarity of the Ramulator state structure, the delay
+            // is now owned by the PreRecall function
+            yield return DoPreRecall();
             SetRamulatorState("RETRIEVAL", true, new Dictionary<string, object>() { { "current_trial", i } });
             yield return DoRecall();
             SetRamulatorState("RETRIEVAL", false, new Dictionary<string, object>() { { "current_trial", i } });
@@ -261,16 +265,18 @@ public class EditableExperiment : CoroutineExperiment
         scriptedEventReporter.ReportScriptedEvent("distractor answered", dataDict);
     }
 
-    private IEnumerator DoRecall()
-    {
-        VAD.DoVAD(true);
+    private IEnumerator DoPreRecall() {
         highBeep.Play();
         scriptedEventReporter.ReportScriptedEvent("Sound played", new Dictionary<string, object>() { { "sound name", "high beep" }, { "sound duration", highBeep.clip.length.ToString() } });
 
         textDisplayer.DisplayText("display recall text", "*******");
         yield return PausableWait(currentSettings.recallTextDisplayLength);
         textDisplayer.ClearText();
+    }
 
+    private IEnumerator DoRecall()
+    {
+        VAD.DoVAD(true);
         //path
         int listno = (wordsSeen / 12) - 1;
         string output_directory = UnityEPL.GetDataPath();
