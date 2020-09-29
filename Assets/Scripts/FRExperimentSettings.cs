@@ -82,7 +82,7 @@ public static class FRExperimentSettings
     {
         ExperimentSettings FR1Settings = new ExperimentSettings();
         FR1Settings.experimentName = "FR1";
-        FR1Settings.version = "1.0";
+        FR1Settings.version = "1.1";
         FR1Settings.wordListGenerator = new FRListGenerator(0, 13, 0, 0, 0, 0, 0);
         FR1Settings.isCategoryPool = false;
         FR1Settings.numberOfLists = 13;
@@ -98,7 +98,7 @@ public static class FRExperimentSettings
         FR1Settings.maxOrientationStimulusLength = 1.4f;
         FR1Settings.minPauseBeforeRecall = 1f;
         FR1Settings.maxPauseBeforeRecall = 1.4f;
-        FR1Settings.recallTextDisplayLength = 1f;
+        FR1Settings.recallTextDisplayLength = .5f;
         FR1Settings.useRamulator = true;
         FR1Settings.isTwoParter = true;
         FR1Settings.useSessionListSelection = true;
@@ -142,7 +142,7 @@ public static class FRExperimentSettings
     {
         ExperimentSettings FR6Settings = new ExperimentSettings();
         FR6Settings.experimentName = "FR6";
-        FR6Settings.version = "6.0";
+        FR6Settings.version = "6.1";
         FR6Settings.wordListGenerator = new FRListGenerator(16, 6, 4, 5, 5, 6, 1);
         FR6Settings.isCategoryPool = false;
         FR6Settings.numberOfLists = 26;
@@ -221,7 +221,7 @@ public static class FRExperimentSettings
         ExperimentSettings PS4Settings = GetFR6Settings();
         PS4Settings.wordListGenerator = new FRListGenerator(0, 0, 4, 0, 0, 0, 1, NEW_PS_LIST_COUNT: 22);
         PS4Settings.experimentName = "PS4_FR5";
-        PS4Settings.version = "4.1";
+        PS4Settings.version = "4.2";
         return PS4Settings;
     }
 
