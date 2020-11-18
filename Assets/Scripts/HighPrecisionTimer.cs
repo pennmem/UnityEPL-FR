@@ -2,83 +2,98 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 
-public class HighPrecisionTimer : IDisposable {
-   private Stopwatch sw = new Stopwatch();
-   private ManualResetEventSlim flag = new ManualResetEventSlim();
-   private Int32 dueTime;
-   private Int32 period;
-   private System.Threading.WaitCallback callback;
-   private volatile bool running = false;
-   private object stateInfo;
-   private object locker = new Object();
+public class WorkItemState : IDisposable
+{
+    public Stopwatch sw { get; }
+    public ManualResetEventSlim flag { get; }
+    public CancellationToken cancel { get; }
+    public Int32 dueTime { get; }
+    public Int32 period { get; }
 
-    public HighPrecisionTimer(System.Threading.WaitCallback _callback, object _stateInfo, Int32 _dueTime, Int32 _period) {
-        dueTime = _dueTime;
-        period = _period;
+   public WorkItemState(Int32 _dueTime, Int32 _period, CancellationToken _cancel)
+   {
+       dueTime = _dueTime;
+       period = _period; 
+       flag = new ManualResetEventSlim();
+       flag.Reset();
+       sw = new Stopwatch();   
+       cancel = _cancel;
+   }
+
+   public void Dispose()
+   {
+       flag.Set();
+       flag.Dispose();
+   }
+}
+
+public class HighPrecisionTimer : IDisposable
+{
+    private WorkItemState workState;
+    private object callbackState;
+    private System.Threading.WaitCallback callback;
+    private object locker = new Object();
+    private CancellationTokenSource tokenSource = new CancellationTokenSource();
+
+    public HighPrecisionTimer(System.Threading.WaitCallback _callback, object _stateInfo, Int32 _dueTime, Int32 _period)
+    {
+        workState = new WorkItemState(_dueTime, _period, tokenSource.Token);
+        callbackState = _stateInfo;
         callback = _callback;
-        stateInfo = _stateInfo;
 
-        flag.Reset();
-
-        lock(locker) {running = true;}
-
-        ThreadPool.QueueUserWorkItem(Spinner, stateInfo);
+        workState.flag.Reset();
+        ThreadPool.QueueUserWorkItem(Spinner, workState);
     }
 
+    private void Spinner(object stateInfo)
+    {
+        WorkItemState state = (WorkItemState) stateInfo;
+        state.sw.Start();
+        Int32 remainingWait = state.dueTime;
 
-    private void Spinner(object stateInfo) {
-        sw.Start();
-        Int32 remainingWait = dueTime;
-
-        flag.Reset();
-        if(dueTime < 0) {
-            flag.Wait(-1);
+        state.flag.Reset();
+        if(state.dueTime < 0)
+        {
+            return;
         }
 
-        while(Running()) {
-            sw.Restart();
+        while(!state.cancel.IsCancellationRequested) { 
+            state.sw.Restart();
 
             if(remainingWait > 0) {
-                flag.Wait(remainingWait);
-                remainingWait -= (Int32)sw.ElapsedMilliseconds;
+                state.flag.Reset();
+                state.flag.Wait(remainingWait);
+                remainingWait = remainingWait - (Int32)state.sw.ElapsedMilliseconds;
             }
 
             if(remainingWait <= 0) {
-                ThreadPool.QueueUserWorkItem(callback, stateInfo);
-
-                if(period >= 0) {
-                    remainingWait = period + remainingWait;
-                } else {
-                    flag.Wait(-1);
+                if (!ThreadPool.QueueUserWorkItem(callback, callbackState))
+                {
+                    throw new Exception("Failed to queue callback");
+                }
+                if(state.period >= 0) {
+                    remainingWait = state.period + remainingWait;
                 }
             }
         }
-        flag.Dispose();
     }
 
-    // FIXME: fail condition
     public bool Change(Int32 _dueTime, Int32 _period) {
-        lock(locker) {running = false;}
-        flag.Set();
-
-        Interlocked.Exchange(ref this.dueTime, _dueTime);
-        Interlocked.Exchange(ref this.period, _period);
-
-        lock(locker) {running = true;}
-        flag = new ManualResetEventSlim(true);
-
-        ThreadPool.QueueUserWorkItem(Spinner, stateInfo);
-
-        return true;
+        // Cancel and dispose of old state
+        tokenSource.Cancel();
+        tokenSource.Dispose();
+        workState.Dispose();
+        
+        // Set up new spinner with new cancellation and flag states
+        tokenSource = new CancellationTokenSource();
+        workState = new WorkItemState(_dueTime, _period, tokenSource.Token);
+        return ThreadPool.QueueUserWorkItem(Spinner, workState);
     }
 
-    public void Dispose() {
-        lock(locker) {running = true;}
-        flag.Set();
+    public void Dispose()
+    {
+        tokenSource.Cancel();
+        tokenSource.Dispose();
+        workState.Dispose();
     }
-
-    private bool Running() {
-        lock(locker) {return running;}
-    }
-
 }

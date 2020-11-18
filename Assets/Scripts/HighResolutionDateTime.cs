@@ -12,7 +12,7 @@ public static class HighResolutionDateTime
         get
         {
             long endTimestamp = Stopwatch.GetTimestamp();
-            var tickDuration = (endTimestamp - _startTimestamp); // TODO
+            var tickDuration = (endTimestamp - _startTimestamp);
             return new DateTime(_startTime + tickDuration);
         }
     }

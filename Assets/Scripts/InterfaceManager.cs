@@ -393,20 +393,16 @@ public class InterfaceManager : MonoBehaviour
     public void LaunchLauncher() {
 
         Debug.Log("Launching: " + (string)GetSetting("launcherScene"));
-        Do(new EventBase(() => {mainEvents.Pause(true);
+        Do(new EventBase(() => {
+                                mainEvents.Pause(true);
                                 SceneManager.LoadScene((string)GetSetting("launcherScene"));
                             }));
     }
 
     public void LoadExperimentConfig(string name) {
-        Debug.Log("load experiment");
         lock(configLock) {
-            Debug.Log("In lock");
             string text = System.IO.File.ReadAllText(System.IO.Path.Combine(fileManager.ConfigPath(), name + ".json"));
             experimentConfig = FlexibleConfig.LoadFromText(text); 
-            if((string)GetSetting("experimentName") != name) {
-                Notify(new Exception(" Config and experiment names do not match"));
-            }
         }
     }
 

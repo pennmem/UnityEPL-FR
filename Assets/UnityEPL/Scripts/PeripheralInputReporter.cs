@@ -135,8 +135,7 @@ public class PeripheralInputReporter : DataReporter {
     private void ReportKey(int keyCode, bool pressed, System.DateTime timestamp)
     {
         Dictionary<string, object> dataDict = new Dictionary<string, object>();
-        string key;
-        key = KeyLookup.get(keyCode, IsMacOS());
+        var key = KeyLookup.get(keyCode, IsMacOS());
         Debug.Log("Key:" + key);
         dataDict.Add("key code", key);
         dataDict.Add("is pressed", pressed);

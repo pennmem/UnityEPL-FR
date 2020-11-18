@@ -152,7 +152,7 @@ public class RepeatingEvent : IEventBase {
     public int delay;
     public int interval;
     public readonly ManualResetEventSlim flag;
-    public HighPrecisionTimer timer;
+    public Timer timer;
     public DateTime startTime;
 
     private IEventBase thisEvent;
@@ -185,7 +185,7 @@ public RepeatingEvent(IEventBase originalEvent, int _iterations, int _delay, int
                                  _interval, _queue, _flag) {}
 
     private void SetTimer() {
-        this.timer = new HighPrecisionTimer(delegate(System.Object obj){ RepeatingEvent evnt = (RepeatingEvent)obj;
+        this.timer = new Timer(delegate(System.Object obj){ RepeatingEvent evnt = (RepeatingEvent)obj;
                                                                               if(!evnt.flag.IsSet){this.queue.Do(evnt);} 
                                                                             }, 
                                                 this, this.delay, this.interval);
