@@ -507,6 +507,7 @@ public class InterfaceManager : MonoBehaviour
         //write versions to logfile
         Dictionary<string, object> versionsData = new Dictionary<string, object>();
         versionsData.Add("application version", Application.version);
+        versionsData.Add("build date", BuildInfo.Date());
         versionsData.Add("experiment version", (string)GetSetting("experimentName"));
         versionsData.Add("logfile version", "0");
         versionsData.Add("participant", (string)GetSetting("participantCode"));
