@@ -122,15 +122,20 @@ public class StimWordList : ICollection<WordStim> {
   public int Count {
     get { return words_.Count; }
   }
+  protected double score_;
+  public double score {
+      get { return score_; } }
 
   public StimWordList() {
     words_ = new List<string>();
     stims_ = new List<bool>();
+    score_ = Double.NaN;
   }
 
-  public StimWordList(List<string> word_list, List<bool> stim_list = null) {
+  public StimWordList(List<string> word_list, List<bool> stim_list = null, double score=Double.NaN) {
     words_ = new List<string>(word_list);
     stims_ = new List<bool>(stim_list ?? new List<bool>());
+    score_ = score;
 
     // Force the two lists to be the same size.
     if (stims_.Count > words_.Count) {
@@ -143,9 +148,10 @@ public class StimWordList : ICollection<WordStim> {
     }
   }
 
-  public StimWordList(List<WordStim> word_stim_list) {
+  public StimWordList(List<WordStim> word_stim_list, double score=Double.NaN) {
     words_ = new List<string>();
     stims_ = new List<bool>();
+    score_ = score;
     
     foreach (var ws in word_stim_list) {
       words_.Add(ws.word);
@@ -279,7 +285,8 @@ class RepWordGenerator {
 
       for (int i=0; i<s.Count-1; i++) {
         double dist = s[i+1] - s[i];
-        score += 1.0 / (dist-1);
+        // score += 1.0 / (dist-1);
+        score += (Math.Abs(dist) > 1) ? 0 : Double.PositiveInfinity;
       }
     }
 
@@ -289,8 +296,9 @@ class RepWordGenerator {
   // Prepares a list of repeated words with better than random spacing,
   // while keeping the repeats associated with their stim state.
   public static StimWordList SpreadWords(
-      List<RepWordList> repword_lists,
-      double top_percent_spaced=0.2) {
+          List<RepWordList> repword_lists,
+          double top_percent_spaced = 0.2) {
+
     int word_len = 0;
     foreach (var wl in repword_lists) {
       word_len += wl.Count * wl.repeats;
@@ -315,7 +323,6 @@ class RepWordGenerator {
     }
 
     arrangements.Sort((a,b) => a.Item1.CompareTo(b.Item1));
-
     var wordlst = new List<WordStim>();
     foreach (var wl in repword_lists) {
       foreach (var word_stim in wl) {
@@ -331,7 +338,7 @@ class RepWordGenerator {
       words_spread[arrangements[0].Item2[i]] = wordlst[i];
     }
 
-    return new StimWordList(words_spread);
+    return new StimWordList(words_spread, score: arrangements[0].Item1);
   }
 
   public static void AssignRandomStim(RepWordList rw) {

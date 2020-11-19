@@ -48,10 +48,14 @@ class TestUniformity {
         foreach(var _ in Enumerable.Range(0, testRepeats)){
              var repWordList = RepWordGenerator.Generate(
                             new List<RepWordList>{repeats1, repeats2},
-                            singles, true).words;
+                            singles, true);
+
+             if(!Double.IsFinite(repWordList.score)) {
+                 Console.WriteLine("List generated with repeat presentation");
+             }
 
              for(var i=0; i<repWordList.Count; i++) {
-                measured[int.Parse(repWordList[i]) - 1][i] += 1;
+                measured[int.Parse(repWordList.words[i]) - 1][i] += 1;
              }
         }
 
