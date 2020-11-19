@@ -3,6 +3,6 @@
 TEST="RepWordGenerator"
 INCLUDES="stubsRepWordGenerator.cs"
 
-mcs Test"$TEST".cs ../"$TEST".cs $INCLUDES &&
+mcs Test"$TEST".cs ../"$TEST".cs $INCLUDES -d:TESTING &&
 mono Test"$TEST".exe
 
