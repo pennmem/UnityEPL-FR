@@ -263,7 +263,6 @@ class RepWordGenerator {
   // lists with repeats spaced farther receive the lowest scores, and word
   // lists with adjacent repeats receive a score of infinity.
   public static double SpacingScore(List<int> perm,
-    // TODO: try a step function as the scoring function
       List<RepWordList> repword_lists) {
     var split = new List<List<int>>();
     int offset = 0;
@@ -285,8 +284,8 @@ class RepWordGenerator {
 
       for (int i=0; i<s.Count-1; i++) {
         double dist = s[i+1] - s[i];
-        // score += 1.0 / (dist-1);
-        score += (Math.Abs(dist) > 1) ? 0 : Double.PositiveInfinity;
+        score += 1.0 / (dist-1);
+        // score += (Math.Abs(dist) > 1) ? 0 : Double.PositiveInfinity;
       }
     }
 

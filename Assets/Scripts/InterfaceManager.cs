@@ -7,10 +7,14 @@ using UnityEngine.SceneManagement;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
 
+
 // It is up to objects that are referenced in this class to 
 // have adequate protection levels on all members, as classes
 // with a reference to manager can call functions from or pass events
 // to classes referenced here.
+
+// TODO: rather than re-exporting functions, this should primarily
+// collect references for out of thread access/synchronization
 
 public class InterfaceManager : MonoBehaviour 
 {
@@ -345,9 +349,8 @@ public class InterfaceManager : MonoBehaviour
             // create path for current participant/session
             fileManager.CreateSession();
 
-            Do(new EventBase(() => {mainEvents.Pause(true);
-                                    SceneManager.LoadScene((string)GetSetting("experimentScene"));
-                                }));
+            mainEvents.Pause(true);
+            SceneManager.LoadScene((string)GetSetting("experimentScene"));
 
             Do(new EventBase(() => {
                 // Start syncbox
@@ -371,12 +374,10 @@ public class InterfaceManager : MonoBehaviour
     }
 
     public  void ReportEvent(string type, Dictionary<string, object> data, DateTime time) {
-        // TODO: time stamps
         scriptedInput.ReportScriptedEvent(type, data, time );
     }
 
     public  void ReportEvent(string type, Dictionary<string, object> data) {
-        // TODO: time stamps
         scriptedInput.ReportScriptedEvent(type, data);
     }
 
@@ -391,12 +392,9 @@ public class InterfaceManager : MonoBehaviour
     }
 
     public void LaunchLauncher() {
-
-        Debug.Log("Launching: " + (string)GetSetting("launcherScene"));
-        Do(new EventBase(() => {
-                                mainEvents.Pause(true);
-                                SceneManager.LoadScene((string)GetSetting("launcherScene"));
-                            }));
+            syncBox.StopPulse();
+            mainEvents.Pause(true);
+            SceneManager.LoadScene((string)GetSetting("launcherScene"));
     }
 
     public void LoadExperimentConfig(string name) {
@@ -406,6 +404,7 @@ public class InterfaceManager : MonoBehaviour
         }
     }
 
+    // TODO: make this interface dynamic to allow use of varied scene setups
     public void ShowText(string tag, string text, string color) {
         if(textDisplayer == null) {
             throw new Exception("No text displayer in current scene");
@@ -507,7 +506,7 @@ public class InterfaceManager : MonoBehaviour
         //write versions to logfile
         Dictionary<string, object> versionsData = new Dictionary<string, object>();
         versionsData.Add("application version", Application.version);
-        versionsData.Add("build date", BuildInfo.Date());
+        versionsData.Add("build date", BuildInfo.ToString());
         versionsData.Add("experiment version", (string)GetSetting("experimentName"));
         versionsData.Add("logfile version", "0");
         versionsData.Add("participant", (string)GetSetting("participantCode"));

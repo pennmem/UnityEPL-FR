@@ -53,8 +53,10 @@ public class ElememListener {
             throw new AccessViolationException("Already Listening");
         }
 
-        NetworkStream stream = elemem.GetReadStream();
+        NetworkStream stream = host.GetReadStream();
         callbackWaitHandle.Reset();
+
+        // FIXME: how to kill begin read on exit?
         stream.BeginRead(buffer, 0, bufferSize, Callback, 
                         new Tuple<NetworkStream, ManualResetEventSlim, ConcurrentQueue<string>>
                             (stream, callbackWaitHandle, queue));
@@ -74,7 +76,7 @@ public class ElememListener {
         bytesRead = stream.EndRead(ar);
 
         foreach(string msg in ParseBuffer(bytesRead)) {
-            queue?.Enqueue(msg); // queue may be deleted by this point, if wait has ended
+            ReportMessage(msg);
         }
 
         handle.Set();
@@ -84,22 +86,18 @@ public class ElememListener {
         messageBuffer += System.Text.Encoding.UTF8.GetString(buffer, 0, bytesRead);
         List<string> received = new List<string>();
 
-        UnityEngine.Debug.Log("ParseBuffer");
-        UnityEngine.Debug.Log(messageBuffer);
-
         while(messageBuffer.IndexOf("\n") != -1) {
             string message = messageBuffer.Substring(0, messageBuffer.IndexOf("\n") + 1);
             received.Add(message);
             messageBuffer = messageBuffer.Substring(messageBuffer.IndexOf("\n") + 1);
-            
-            ReportMessage(message);
         }
 
         return received;
     }
 
     private void ReportMessage(string message) {
-        elemem.Do(new EventBase<string, DateTime>(elemem.HandleMessage, message, DataReporter.TimeStamp()));
+        queue?.Enqueue(msg); // queue may be deleted by this point, if wait has ended
+        host.Do(new EventBase<string, DateTime>(elemem.HandleMessage, message, DataReporter.TimeStamp()));
     }
 }
 
@@ -126,7 +124,6 @@ public class ElememInterface : IHostPC
     ~ElememInterface() {
         elemem.Close();
     }
-
 
     public NetworkStream GetWriteStream() {
         // TODO implement locking here
@@ -224,6 +221,9 @@ public class ElememInterface : IHostPC
         JObject json;
 
         listener.RegisterMessageQueue(queue);
+        // FIXME: writing this asynchronously would remove the need
+        // for the queue nonsense
+
         while(sw.ElapsedMilliseconds < timeout) {
             listener.Listen();
             wait = listener.GetListenHandle();

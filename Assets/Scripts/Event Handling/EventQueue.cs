@@ -9,7 +9,6 @@ public class EventQueue {
 
     protected int repeatingEventID = 0;
     protected ConcurrentDictionary<int, RepeatingEvent> repeatingEvents = new ConcurrentDictionary<int, RepeatingEvent>();
-
     protected volatile bool running = true;
 
     public virtual void Do(IEventBase thisEvent) {
