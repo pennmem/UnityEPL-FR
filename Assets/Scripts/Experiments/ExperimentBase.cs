@@ -106,7 +106,7 @@ public abstract class ExperimentBase : EventLoop {
         data.Add("serialpos", index);
         data.Add("stim", word.stim);
 
-        ReportEvent("word stimulus", data);
+        ReportEvent("word stimulus info", data);
         SendHostPCMessage("WORD", data);
 
         manager.Do(new EventBase<string, string>(manager.ShowText, "word stimulus", word.word));
@@ -327,6 +327,16 @@ public abstract class ExperimentBase : EventLoop {
         }
         else {
             manager.RegisterKeyHandler(QuitOrContinue);
+        }
+    }
+
+    public void PressSpace(string key, bool down) {
+        if(down && key == "Space") {
+            manager.Do(new EventBase(manager.ClearText));
+            this.Do(new EventBase(Run));
+        }
+        else {
+            manager.RegisterKeyHandler(PressSpace);
         }
     }
 
