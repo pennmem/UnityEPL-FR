@@ -3,7 +3,7 @@ using System.Threading;
 using System.Collections.Concurrent;
 
 public class EventLoop : EventQueue {
-    private ManualResetEventSlim wait;
+    protected ManualResetEventSlim wait;
     private CancellationTokenSource tokenSource;
 
     public EventLoop()
@@ -74,7 +74,9 @@ public class EventLoop : EventQueue {
     // stopped, stopping processing thread will still stop execution
     // of events
     public override void DoRepeating(RepeatingEvent thisEvent) {
-        // timers should only be created if running
+        // timers should only be created if running, otherwise their
+        // behavior isn't well defined
+
         if(Running()) {
             base.DoRepeating(thisEvent);
         } else {

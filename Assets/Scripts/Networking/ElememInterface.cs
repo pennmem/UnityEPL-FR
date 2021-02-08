@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Threading;
+using System.Threading.Tasks;
 using UnityEngine;
 using System.Net.Sockets;
 using Newtonsoft.Json.Linq;
@@ -11,122 +12,119 @@ using Newtonsoft.Json.Linq;
 // TODO: class containing constructors for elemem messages
 
 public abstract class IHostPC : EventLoop {
-    public abstract JObject WaitForMessage(string type, int timeout);
+    public abstract JObject SendAndWait(string type, Dictionary<string, object> data, 
+                                        string response, int timeout);
     public abstract void Connect();
-    public abstract void HandleMessage(string message, DateTime time);
+    public abstract void Disconnect();
+    public abstract void HandleMessage(NetMsg msg);
     public abstract void SendMessage(string type, Dictionary<string, object> data);
 }
 
-public class ElememListener {
-    ElememInterface elemem;
+public struct NetMsg {
+    public string msg;
+    public DateTime time;
+
+    public NetMsg(string msg, DateTime time) {
+        this.msg = msg;
+        this.time = time;
+    }
+}
+
+public class HostPCListener : MessageHandler<NetMsg> {
+
+    // FIXME: catch socket exceptions to give human readable errors
+
     Byte[] buffer; 
     const Int32 bufferSize = 2048;
 
-    private volatile ManualResetEventSlim callbackWaitHandle;
-    private ConcurrentQueue<string> queue = null;
+    CancellationTokenSource tokenSource;
 
     string messageBuffer = "";
-    public ElememListener(ElememInterface _elemem) {
-        elemem = _elemem;
+    public HostPCListener(IHostPC host) : base(host, host.HandleMessage) {
         buffer = new Byte[bufferSize];
-        callbackWaitHandle = new ManualResetEventSlim(true);
     }
 
     public bool IsListening() {
-        return !callbackWaitHandle.IsSet;
+        return tokenSource?.IsCancellationRequested ?? false;
     }
 
-    public ManualResetEventSlim GetListenHandle() {
-        return callbackWaitHandle;
-    }
+    public async Task<NetMsg> Listen(NetworkStream stream) {
+        /*
+        Asynchronously listens for a single network message and
+        passes it to the host message queue through the action
+        used to construct this listener.
+        */
 
-    public void RegisterMessageQueue(ConcurrentQueue<string> messages) {
-        queue = messages;
-    }
-
-    public void RemoveMessageQueue() {
-        queue = null;
-    }
-
-    public void Listen() {
         if(IsListening()) {
             throw new AccessViolationException("Already Listening");
         }
 
-        NetworkStream stream = host.GetReadStream();
-        callbackWaitHandle.Reset();
+        tokenSource = new CancellationTokenSource();
+        NetMsg message;
+        int read;
 
-        // FIXME: how to kill begin read on exit?
-        stream.BeginRead(buffer, 0, bufferSize, Callback, 
-                        new Tuple<NetworkStream, ManualResetEventSlim, ConcurrentQueue<string>>
-                            (stream, callbackWaitHandle, queue));
-    } 
+        do {
+            read = await stream.ReadAsync(buffer, 0, bufferSize, tokenSource.Token);
+        } while(!ParseBuffer(read, out message));
 
-    private void Callback(IAsyncResult ar) {
-        NetworkStream stream;
-        ConcurrentQueue<string> queue;
-        ManualResetEventSlim handle;
-        int bytesRead;
+        var cancelled = tokenSource.IsCancellationRequested;
+        tokenSource.Dispose();
 
-        Tuple<NetworkStream, ManualResetEventSlim, ConcurrentQueue<string>> state = (Tuple<NetworkStream, ManualResetEventSlim, ConcurrentQueue<string>>)ar.AsyncState;
-        stream = state.Item1;
-        handle = state.Item2;
-        queue = state.Item3;
+        Do(message);
 
-        bytesRead = stream.EndRead(ar);
-
-        foreach(string msg in ParseBuffer(bytesRead)) {
-            ReportMessage(msg);
+        if(!cancelled) {
+            Listen(stream);
         }
 
-        handle.Set();
+        return message;
     }
-    
-    private List<string> ParseBuffer(int bytesRead) {
+
+    public void CancelRead() {
+        tokenSource?.Cancel();
+    }
+
+    private bool ParseBuffer(int bytesRead, out NetMsg msgResult) {
+        /*
+        Extract a full message from the byte buffer, and leave remaining characters
+        in string buffer. Return true if message terminating newline is read from string, 
+        false otherwise.
+        */
+
         messageBuffer += System.Text.Encoding.UTF8.GetString(buffer, 0, bytesRead);
-        List<string> received = new List<string>();
 
-        while(messageBuffer.IndexOf("\n") != -1) {
-            string message = messageBuffer.Substring(0, messageBuffer.IndexOf("\n") + 1);
-            received.Add(message);
-            messageBuffer = messageBuffer.Substring(messageBuffer.IndexOf("\n") + 1);
-        }
+        string message = messageBuffer.Substring(0, messageBuffer.IndexOf("\n") + 1);
+        messageBuffer = messageBuffer.Substring(messageBuffer.IndexOf("\n") + 1);
 
-        return received;
-    }
+        msgResult = new NetMsg(message, DataReporter.TimeStamp());
 
-    private void ReportMessage(string message) {
-        queue?.Enqueue(msg); // queue may be deleted by this point, if wait has ended
-        host.Do(new EventBase<string, DateTime>(elemem.HandleMessage, message, DataReporter.TimeStamp()));
+        return message.Length > 0;
     }
 }
 
-// NOTE: the gotcha here is avoiding deadlocks when there's an error
-// message in the queue and some blocking wait in the EventLoop thread
 public class ElememInterface : IHostPC 
 {
     public InterfaceManager im;
 
     int messageTimeout = 1000;
-    int heartbeatTimeout = 8000; // TODO: configuration
+    int heartbeatTimeout = 8000; // TODO: pull value from configuration
 
     private TcpClient elemem;
-    private ElememListener listener;
+    private HostPCListener listener;
     private int heartbeatCount = 0;
 
     public ElememInterface(InterfaceManager _im) {
         im = _im;
-        listener = new ElememListener(this);
+        listener = new HostPCListener(this);
         Start();
         Do(new EventBase(Connect));
     }
 
     ~ElememInterface() {
-        elemem.Close();
+        Disconnect();
     }
 
     public NetworkStream GetWriteStream() {
-        // TODO implement locking here
+        // only one writer can be active at a time
         if(elemem == null) {
             throw new InvalidOperationException("Socket not initialized.");
         }
@@ -135,7 +133,7 @@ public class ElememInterface : IHostPC
     }
 
     public NetworkStream GetReadStream() {
-        // TODO implement locking here
+        // only one reader can be active at a time
         if(elemem == null) {
             throw new InvalidOperationException("Socket not initialized.");
         }
@@ -148,27 +146,27 @@ public class ElememInterface : IHostPC
 
         try {
             IAsyncResult result = elemem.BeginConnect((string)im.GetSetting("ip"), (int)im.GetSetting("port"), null, null);
-            
             result.AsyncWaitHandle.WaitOne(messageTimeout);
             elemem.EndConnect(result);
         }
-        catch(SocketException) {    // TODO: set hostpc state on task side
+        catch(SocketException) {
             im.Do(new EventBase<string>(im.SetHostPCStatus, "ERROR")); 
             throw new OperationCanceledException("Failed to Connect");
         }
 
         im.Do(new EventBase<string>(im.SetHostPCStatus, "INITIALIZING")); 
 
-        SendMessage("CONNECTED", new Dictionary<string, object>()); // Awake
-        WaitForMessage("CONNECTED_OK", messageTimeout);
+        listener.Listen(GetReadStream());
+        SendAndWait("CONNECTED", new Dictionary<string, object>(), 
+                    "CONNECTED_OK", messageTimeout);
 
         Dictionary<string, object> configDict = new Dictionary<string, object>();
         configDict.Add("stim_mode", (string)im.GetSetting("stimMode"));
         configDict.Add("experiment", (string)im.GetSetting("experimentName"));
         configDict.Add("subject", (string)im.GetSetting("participantCode"));
         configDict.Add("session", (int)im.GetSetting("session"));
-        SendMessage("CONFIGURE", configDict);
-        WaitForMessage("CONFIGURE_OK", messageTimeout);
+        SendAndWait("CONFIGURE", configDict,
+                    "CONFIGURE_OK", messageTimeout);
 
         // excepts if there's an issue with latency, else returns
         DoLatencyCheck();
@@ -181,27 +179,41 @@ public class ElememInterface : IHostPC
         im.Do(new EventBase<string>(im.SetHostPCStatus, "READY")); 
     }
 
+    public override void Disconnect() {
+        listener?.CancelRead();
+        elemem.Close();
+        elemem.Dispose();
+    }
+
     private void DoLatencyCheck() {
         // except if latency is unacceptable
         Stopwatch sw = new Stopwatch();
         float[] delay = new float[20];
 
+        // send 20 heartbeats, except if max latency is out of tolerance
         for(int i=0; i < 20; i++) {
             sw.Restart();
             Heartbeat();
             sw.Stop();
 
+            // calculate manually to have sub millisecond resolution,
+            // as ElapsedMilliseconds returns an integer number of
+            // milliseconds.
             delay[i] = sw.ElapsedTicks * (1000f / Stopwatch.Frequency);
+
             if(delay[i] > 20) {
-                break;
+                throw new TimeoutException("Network Latency too large.");
             }
 
+            // send new heartbeat every 50 ms
             Thread.Sleep(50 - (int)delay[i]);
         }
         
         float max = delay.Max();
         float mean = delay.Sum() / delay.Length;
-        float acc = (1000L*1000L*1000L) / Stopwatch.Frequency;
+
+        // the maximum resolution of the timer in nanoseconds
+        long acc = (1000L*1000L*1000L) / Stopwatch.Frequency;
 
         Dictionary<string, object> dict = new Dictionary<string, object>();
         dict.Add("max_latency", max);
@@ -211,73 +223,75 @@ public class ElememInterface : IHostPC
         im.Do(new EventBase<string, Dictionary<string, object>>(im.ReportEvent, "latency check", dict));
     }
 
-    public override JObject WaitForMessage(string type, int timeout) {
-        Stopwatch sw = new Stopwatch();
+    public override JObject SendAndWait(string type, Dictionary<string, object> data,
+                                        string response, int timeout) {
+        JObject json;
+        var sw = new Stopwatch();
+        var remainingWait = timeout;
         sw.Start();
 
-        ManualResetEventSlim wait;
-        int waitDuration;
-        ConcurrentQueue<string> queue = new ConcurrentQueue<string>();
-        JObject json;
+        SendMessage(type, data);
+        while(remainingWait > 0) {
+            // inspect queue for incoming read messages, wait on
+            // loop wait handle until timeout or message received.
+            // This will block other reads/writes on the loop thread
+            // until the message is received or times out. This doesn't
+            // modify the queue, so operations are still ordered and
+            // subsequent waits will complete successfully
 
-        listener.RegisterMessageQueue(queue);
-        // FIXME: writing this asynchronously would remove the need
-        // for the queue nonsense
+            // wait on EventLoop wait handle, signalled when event added to queue
+            wait.Reset();
+            wait.Wait(remainingWait);
 
-        while(sw.ElapsedMilliseconds < timeout) {
-            listener.Listen();
-            wait = listener.GetListenHandle();
-            waitDuration =  timeout - (int)sw.ElapsedMilliseconds;
-            waitDuration =  waitDuration > 0 ? waitDuration : 0;
+            remainingWait = remainingWait - (int)sw.ElapsedMilliseconds;
 
-            wait.Wait(waitDuration);
+            // NOTE: this is inefficient due to looping over the full
+            // collection on every wake, but this queue shouldn't ever
+            // get beyond ~10 events.
+            foreach(IEventBase ev in eventQueue) {
+                // try to convert, null events are writes or other
+                // actions
+                var msgEv = ev as MessageEvent<NetMsg>;
 
-            string message;
-            while(queue.TryDequeue(out message)) {
-                json = JObject.Parse(message);
-                if(json.GetValue("type").Value<string>() == type) {
-                    listener.RemoveMessageQueue();
+                if(msgEv == null) {
+                    continue;
+                }
+
+                json = JObject.Parse(msgEv.msg.msg);
+                if(json.GetValue("type").Value<string>() == response) {
+                    // once this chain returns, Loop continue on to 
+                    // process all messages in queue
                     return json;
                 }
             }
         }
-        
-        listener.RemoveMessageQueue();
-        throw new TimeoutException("Timed out waiting for response");
+
+        throw new TimeoutException();
     }
 
-    public override void HandleMessage(string message, DateTime time) {
-        JObject json = JObject.Parse(message);
-        json.Add("task pc time", time);
-
+    public override void HandleMessage(NetMsg msg) {
+        JObject json = JObject.Parse(msg.msg);
         string type = json.GetValue("type").Value<string>();
-        ReportMessage(json.ToString(), false);
+        ReportMessage(msg, false);
 
         if(type.Contains("ERROR")) {
             throw new Exception("Error received from Host PC.");
         }
+
         if(type == "EXIT") {
             return;
         }
-
-        // // start listener if not running
-        // if(!listener.IsListening()) {
-        //     listener.Listen();
-        // }
     }
 
     public override void SendMessage(string type, Dictionary<string, object> data) {
         DataPoint point = new DataPoint(type, DataReporter.TimeStamp(), data);
         string message = point.ToJSON();
 
-        UnityEngine.Debug.Log("Sent Message");
-        UnityEngine.Debug.Log(message);
-
         Byte[] bytes = System.Text.Encoding.UTF8.GetBytes(message);
 
         NetworkStream stream = GetWriteStream();
         stream.Write(bytes, 0, bytes.Length);
-        ReportMessage(message, true);
+        ReportMessage(new NetMsg(message, DataReporter.TimeStamp()), true);
     }
 
     private void Heartbeat()
@@ -285,17 +299,16 @@ public class ElememInterface : IHostPC
         var data = new Dictionary<string, object>();
         data.Add("count", heartbeatCount);
         heartbeatCount++;
-        SendMessage("HEARTBEAT", data);
-        WaitForMessage("HEARTBEAT_OK", heartbeatTimeout);
+        SendAndWait("HEARTBEAT", data, "HEARTBEAT_OK", heartbeatTimeout);
     }
 
-    private void ReportMessage(string message, bool sent)
+    private void ReportMessage(NetMsg msg, bool sent)
     {
         Dictionary<string, object> messageDataDict = new Dictionary<string, object>();
-        messageDataDict.Add("message", message);
-        messageDataDict.Add("sent", sent.ToString());
+        messageDataDict.Add("message", msg.msg);
+        messageDataDict.Add("sent", sent);
 
         im.Do(new EventBase<string, Dictionary<string, object>, DateTime>(im.ReportEvent, "network", 
-                                messageDataDict, DataReporter.TimeStamp()));
+                                messageDataDict, msg.time));
     }
 }
