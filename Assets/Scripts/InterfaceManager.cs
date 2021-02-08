@@ -479,7 +479,6 @@ public class InterfaceManager : MonoBehaviour
     }
 
     public  void Notify(Exception e) {
-        Debug.Log("Popup now displayed... invisibly");
         Debug.Log(e);
 
         // FIXME

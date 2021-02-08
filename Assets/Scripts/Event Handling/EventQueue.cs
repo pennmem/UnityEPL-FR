@@ -18,7 +18,6 @@ public class EventQueue {
     public virtual void DoIn(IEventBase thisEvent, int delay) {
         if(Running()) {
             RepeatingEvent repeatingEvent = new RepeatingEvent(thisEvent, 1, delay, Timeout.Infinite, this);
-
             DoRepeating(repeatingEvent);
         }
         else {
@@ -99,7 +98,7 @@ public class EventQueue {
         RepeatingEvent re;
         foreach(int i in repeatingEvents.Keys) {
             if(repeatingEvents.TryGetValue(i, out re)) {
-                if(re.iterations > 0 && re.iterations >= re.maxIterations) {
+                if(re.iterations >= 0 && re.iterations >= re.maxIterations) {
                     re.flag.Set();
                     re.timer.Dispose();
                     repeatingEvents.TryRemove(i, out re);
@@ -123,8 +122,6 @@ public class EventBase : IEventBase {
     public EventBase(Action thisAction) {
         EventAction = thisAction;
     }
-
-    public EventBase() {}
 }
 
 // Wrapper class to allow different delegate signatures
