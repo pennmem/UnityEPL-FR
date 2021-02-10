@@ -11,7 +11,7 @@ using UnityEngine;
 public class FlexibleConfig {
     public static dynamic LoadFromText(string json) {
         JObject cfg = JObject.Parse(json);
-        return cfg;
+        return CastToStatic(cfg);
     }
 
     public static void WriteToText(dynamic data, string filename) {
@@ -53,31 +53,31 @@ public class FlexibleConfig {
 
                 Type cType = JTypeConversion((int)jType);
                 if(cType  == typeof(string)) {
-                    ((IDictionary<string, object>)settings).Add(prop.Name, prop.Value.ToObject<string[]>());
+                    ((IDictionary<string, dynamic>)settings).Add(prop.Name, prop.Value.ToObject<string[]>());
                 } 
                 else if(cType == typeof(int)) {
-                    ((IDictionary<string, object>)settings).Add(prop.Name, prop.Value.ToObject<int[]>());
+                    ((IDictionary<string, dynamic>)settings).Add(prop.Name, prop.Value.ToObject<int[]>());
                 }
                 else if(cType == typeof(float)) {
-                    ((IDictionary<string, object>)settings).Add(prop.Name, prop.Value.ToObject<float[]>());
+                    ((IDictionary<string, dynamic>)settings).Add(prop.Name, prop.Value.ToObject<float[]>());
                 }
                 else if(cType == typeof(bool)) {
-                    ((IDictionary<string, object>)settings).Add(prop.Name, prop.Value.ToObject<bool[]>());
+                    ((IDictionary<string, dynamic>)settings).Add(prop.Name, prop.Value.ToObject<bool[]>());
                 }
             }
             else {
                 Type cType = JTypeConversion((int)prop.Value.Type);
                 if(cType == typeof(string)) {
-                    ((IDictionary<string, object>)settings).Add(prop.Name, prop.Value.ToObject<string>());
+                    ((IDictionary<string, dynamic>)settings).Add(prop.Name, prop.Value.ToObject<string>());
                 }
                 else if(cType == typeof(int)) {
-                    ((IDictionary<string, object>)settings).Add(prop.Name, prop.Value.ToObject<int>());
+                    ((IDictionary<string, dynamic>)settings).Add(prop.Name, prop.Value.ToObject<int>());
                 }
                 else if(cType == typeof(float)) {
-                    ((IDictionary<string, object>)settings).Add(prop.Name, prop.Value.ToObject<float>());
+                    ((IDictionary<string, dynamic>)settings).Add(prop.Name, prop.Value.ToObject<float>());
                 }
                 else if(cType == typeof(bool)) {
-                    ((IDictionary<string, object>)settings).Add(prop.Name, prop.Value.ToObject<bool>());
+                    ((IDictionary<string, dynamic>)settings).Add(prop.Name, prop.Value.ToObject<bool>());
                 }
             }
         }
@@ -99,5 +99,4 @@ public class FlexibleConfig {
                 throw new Exception("Unsupported Type");
         }
     }
-    
 }   
