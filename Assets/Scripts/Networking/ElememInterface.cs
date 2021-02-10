@@ -9,8 +9,6 @@ using UnityEngine;
 using System.Net.Sockets;
 using Newtonsoft.Json.Linq;
 
-// TODO: class containing constructors for elemem messages
-
 public abstract class IHostPC : EventLoop {
     public abstract JObject SendAndWait(string type, Dictionary<string, object> data, 
                                         string response, int timeout);
@@ -59,21 +57,25 @@ public class HostPCListener : MessageHandler<NetMsg> {
             throw new AccessViolationException("Already Listening");
         }
 
-        tokenSource = new CancellationTokenSource();
+        if(tokenSource == null) {
+            tokenSource = new CancellationTokenSource();
+        }
+
         NetMsg message;
-        int read;
+        int bytesRead;
 
         do {
-            read = await stream.ReadAsync(buffer, 0, bufferSize, tokenSource.Token);
-        } while(!ParseBuffer(read, out message));
-
-        var cancelled = tokenSource.IsCancellationRequested;
-        tokenSource.Dispose();
+            bytesRead = await stream.ReadAsync(buffer, 0, bufferSize, tokenSource.Token);
+        } while(!ParseBuffer(bytesRead, out message));
 
         Do(message);
 
-        if(!cancelled) {
+        if(!tokenSource.IsCancellationRequested) {
             Listen(stream);
+        }
+        else {
+            tokenSource.Dispose();
+            tokenSource = null;
         }
 
         return message;
