@@ -8,21 +8,16 @@ using UnityEngine; // to read resource files packaged with Unity
 public class RepFRRun {
   public StimWordList encoding;
   public StimWordList recall;
-  public bool encoding_stim;
-  public bool recall_stim;
 
   public RepFRRun(StimWordList encoding_list, StimWordList recall_list,
       bool set_encoding_stim=false, bool set_recall_stim=false) {
     encoding = encoding_list;
     recall = recall_list;
-    encoding_stim = set_encoding_stim;
-    recall_stim = set_recall_stim;
   }
 }
 
 public class RepFRSession : List<RepFRRun> {
 }
-
 
 public class RepFRExperiment : ExperimentBase {
   protected List<string> source_words;
@@ -35,13 +30,13 @@ public class RepFRExperiment : ExperimentBase {
 
   public RepFRExperiment(InterfaceManager _manager) : base(_manager) {
     // Repetition specification:
-    Debug.Log("Constructor for repFR");
-    int[] repeats = manager.GetSetting("wordRepeats").ToObject<int[]>();
-    int[] counts = manager.GetSetting("wordCounts").ToObject<int[]>();
+    int[] repeats = manager.GetSetting("wordRepeats");
+    int[] counts = manager.GetSetting("wordCounts");
 
     if(repeats.Length != counts.Length) {
       throw new Exception("Word Repeats and Counts not aligned");
     }
+
 
     for(int i=0; i < repeats.Length; i++) {
       if(rep_counts == null) {
@@ -51,55 +46,69 @@ public class RepFRExperiment : ExperimentBase {
         rep_counts = rep_counts.RepCnt(repeats[i], counts[i]);
       }
     }
+
+    // boilerplate needed by RepWordGenerator
     words_per_list = rep_counts.TotalWords();
     unique_words_per_list = rep_counts.UniqueWords();
-
-    blank_words =
-      new List<string>(Enumerable.Repeat(string.Empty, words_per_list));
-
-
-    string source_list = manager.fileManager.GetWordList();
-    source_words = new List<string>();
-
-    //skip line for csv header
-    foreach(var line in File.ReadLines(source_list).Skip(1))
-    {
-      source_words.Add(line);
-    }
-
-    // copy wordpool to session directory
-    string path = System.IO.Path.Combine(manager.fileManager.SessionPath(), "wordpool.txt");
-    System.IO.File.Copy(source_list, path, true);
+    blank_words = new List<string>(Enumerable.Repeat(string.Empty, words_per_list));
+    source_words = ReadWordpool();
 
     // load state if previously existing
-    dynamic loadedState = LoadState((string)manager.GetSetting("participantCode"), (int)manager.GetSetting("session"));
+    // state is constructed by base constructor
+    dynamic loadedState = LoadState((string)manager.GetSetting("participantCode"),
+                                    (int)manager.GetSetting("session"));
+
     if(loadedState != null) {
-      state = loadedState;
-      currentSession = LoadRepFRSession((string)manager.GetSetting("participantCode"), (int)manager.GetSetting("session"));
+      currentSession = LoadSession((string)manager.GetSetting("participantCode"),
+                                        (int)manager.GetSetting("session"));
 
       // log experiment resume
-      manager.Do(new EventBase<string, Dictionary<string, object>>(manager.ReportEvent, "experiment resumed", null));
+      manager.Do(new EventBase<string, Dictionary<string, object>>(manager.ReportEvent,
+                                                                   "experiment resumed", null));
       ReportEvent("experiment resume", null);
 
-      state.listIndex++;
+      state.listIndex = ++loadedState.listIndex;
     }
     else {
       currentSession = GenerateSession();
-      state.listIndex = 0;
     }
 
+    Start();
+    Do(new EventBase(Run));
+  }
+
+  //////////
+  // State Machine Constructor Functions
+  //////////
+
+  public override dynamic GetState() {
+    state = base.GetState(); // all data must be serializable
     state.runIndex = 0;
-    state.wordIndex = 0;
-    state.mainLoopIndex = 0;
     state.micTestIndex = 0;
+    state.mainLoopIndex = 0;
+    state.listIndex = 0;
+    state.wordIndex = 0;
+
+    return state;
+  }
+
+  public override Dictionary<string, List<Action>> GetStateMachine() {
+    // TODO: some of these functions could be re imagined with wrappers, where the
+    // state machine has functions that take parameters and return functions, such
+    // as using a single function for the 'repeatlast' state that takes a prompt
+    // to show or having WaitForKey wrap an action. It's not clear whether 
+    // this improves clarity or reusability at all,
+    // so I've deferred this. If it makes sense to do this or make more use of
+    // wrapper functions that add state machine information, please do.
+    Dictionary<string, List<Action>> stateMachine = base.GetStateMachine();
 
     stateMachine["Run"] = new List<Action> {DoIntroductionPrompt,
                                             DoIntroductionVideo,
                                             DoRepeatVideo,
-                                            DoMicrophoneTest,
+                                            DoMicrophoneTest, // runs MicrophoneTest states
                                             DoRepeatMicTest,
                                             DoQuitorContinue,
-                                            MainLoop,
+                                            MainLoop, // runs MainLoop states
                                             FinishExperiment};
 
     stateMachine["MainLoop"] = new List<Action> {DoStartTrial,
@@ -114,23 +123,9 @@ public class RepFRExperiment : ExperimentBase {
                                                  DoEndTrial};
 
     stateMachine["MicrophoneTest"] = new List<Action> {DoMicTestPrompt,
-                                                       DoRecordTest,
-                                                       DoPlaybackTest};
+                                                       DoRecordTest};
 
-    Start();
-
-    // TODO: some of these functions could be re imagined with wrappers, where the
-    // state machine has functions that take parameters and return functions, such
-    // as using a single function for the 'repeatlast' state that takes a prompt
-    // to show. It's not clear whether this improves clarity or reusability at all,
-    // so I've deferred this. If it makes sense to do this or make more use of
-    // wrapper functions that add state machine information, please do.
-
-    Dictionary<string, object> data = new Dictionary<string, object>();
-    data.Add("session", (int) manager.GetSetting("session"));
-    SendHostPCMessage("SESSION", data);
-
-    Do(new EventBase(Run));
+    return stateMachine;
   }
 
   //////////
@@ -138,18 +133,17 @@ public class RepFRExperiment : ExperimentBase {
   //////////
 
   protected void DoPauseBeforeRecall() {
-    int[] limits = manager.GetSetting("recallDelay").ToObject<int[]>();
-    int interval = InterfaceManager.rnd.Next(limits[0], limits[1]);
+    int[] limits = manager.GetSetting("recallDelay");
+    int interval = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
     state.mainLoopIndex++;
     WaitForTime(interval);
   }
 
   protected void DoEncodingDelay() {
-    int[] limits = manager.GetSetting("stimulusInterval").ToObject<int[]>(); 
-    int interval = InterfaceManager.rnd.Next(limits[0], limits[1]);
+    int[] limits = manager.GetSetting("stimulusInterval"); 
+    int interval = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
     state.mainLoopIndex++;
 
-    SendHostPCMessage("ISI", null);
     WaitForTime(interval);
   }  
 
@@ -159,7 +153,6 @@ public class RepFRExperiment : ExperimentBase {
     state.mainLoopIndex++;
     manager.Do(new EventBase<string, string>(manager.ShowText, "orientation stimulus", "+"));
     ReportEvent("rest", null);
-    SendHostPCMessage("REST", null);
 
     DoIn(new EventBase(() => {
                                 manager.Do(new EventBase(manager.ClearText)); 
@@ -173,15 +166,12 @@ public class RepFRExperiment : ExperimentBase {
   // List Setup Functions
   //////////
 
-  protected void DoStartTrial() {
+  protected virtual void DoStartTrial() {
     Dictionary<string, object> data = new Dictionary<string, object>();
     data.Add("trial", state.listIndex);
-    data.Add("stim", currentSession[state.listIndex].encoding_stim);
-    // TODO: recall stim
+    // data.Add("stim", currentSession[state.listIndex].encoding_stim);
 
     ReportEvent("start trial", data);
-    SendHostPCMessage("TRIAL", data);
-
 
     state.mainLoopIndex++;
 
@@ -191,11 +181,9 @@ public class RepFRExperiment : ExperimentBase {
     else {
       Run();
     }
-
   }
 
   protected void DoEndTrial() {
-    SendHostPCMessage("TRIALEND", null);
     state.mainLoopIndex++;
     Run();
   }
@@ -398,6 +386,7 @@ public class RepFRExperiment : ExperimentBase {
     }
   }
 
+
   //////////
   // Microphone testing states
   //////////
@@ -411,11 +400,11 @@ public class RepFRExperiment : ExperimentBase {
     RecordTest(file);
   }
 
-  protected void DoPlaybackTest() {
-    state.micTestIndex++;
-    string file = state.recordTestPath;
-    PlaybackTest(file);
-  }
+  // protected void DoPlaybackTest() {
+  //   state.micTestIndex++;
+  //   string file = state.recordTestPath;
+  //   PlaybackTest(file);
+  // }
 
   //////////
   // state-specific key handlers
@@ -442,10 +431,11 @@ public class RepFRExperiment : ExperimentBase {
 
   public override void SaveState() {
     base.SaveState();
-    SaveRepFRSession();
+    SaveSession();
   }
 
-  public void SaveRepFRSession() {
+  // TODO: these should be moved to the Session class
+  public void SaveSession() {
     string filename = System.IO.Path.Combine(manager.fileManager.SessionPath(), "session_words.json");
     JsonSerializer serializer = new JsonSerializer();
 
@@ -463,7 +453,7 @@ public class RepFRExperiment : ExperimentBase {
       }
   }
 
-  public RepFRSession LoadRepFRSession(string participant, int session) {
+  public RepFRSession LoadSession(string participant, int session) {
     if(System.IO.File.Exists(System.IO.Path.Combine(manager.fileManager.SessionPath(participant, session), "session_words.json"))) {
       string json = System.IO.File.ReadAllText(System.IO.Path.Combine(manager.fileManager.SessionPath(participant, session), "session_words.json"));
       return JsonConvert.DeserializeObject<RepFRSession>(json);
@@ -473,32 +463,32 @@ public class RepFRExperiment : ExperimentBase {
     }
   }
 
-  protected static void WriteAllLinesNoExtraNewline(string path, IList<string> lines)
-    {
-        if (path == null)
-            throw new UnityException("path argument should not be null");
-        if (lines == null)
-            throw new UnityException("lines argument should not be null");
-
-        using (var stream = System.IO.File.OpenWrite(path))
-        {
-            using (System.IO.StreamWriter writer = new System.IO.StreamWriter(stream))
-            {
-                if (lines.Count > 0)
-                {
-                    for (int i = 0; i < lines.Count - 1; i++)
-                    {
-                        writer.WriteLine(lines[i]);
-                    }
-                    writer.Write(lines[lines.Count - 1]);
-                }
-            }
-        }
-    }
-
   //////////
   // Word/Stim list generation
   //////////
+
+  public List<string> ReadWordpool() {
+    // wordpool is a file with 'word' as a header and one word per line.
+    // repeats are described in the config file with two matched arrays,
+    // repeats and counts, which describe the number of presentations
+    // words can have and the number of words that should be assigned to
+    // each of those presentation categories.
+    string source_list = manager.fileManager.GetWordList();
+    source_words = new List<string>();
+
+    //skip line for csv header
+    foreach(var line in File.ReadLines(source_list).Skip(1))
+    {
+      source_words.Add(line);
+    }
+
+    // copy wordpool to session directory
+    string path = System.IO.Path.Combine(manager.fileManager.SessionPath(), "wordpool.txt");
+    System.IO.File.Copy(source_list, path, true);
+
+    return source_words;
+
+  }
 
   public RepFRRun MakeRun(RandomSubset subset_gen, bool enc_stim,
       bool rec_stim) {
