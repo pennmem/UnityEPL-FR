@@ -42,7 +42,7 @@ static Dictionary<int, string> OSXKeyCodes = new Dictionary<int, string> {
 {11, "B"},
 {0, "A"},
 {30, "]"},
-{42, "slash"}, // causes issues with saved json
+{42, "Slash"},
 {33, "["},
 {24, "="},
 {81, "="},
@@ -56,7 +56,7 @@ static Dictionary<int, string> OSXKeyCodes = new Dictionary<int, string> {
 {43, ","},
 {69, "+"},
 {67, "*"},
-{49, "space"},
+{49, "Space"},
 {39, "'"},
 {25, "9"},
 {92, "9"},
@@ -90,6 +90,7 @@ public static string get(int code, bool isOSX=true) {
         }
     }
     else {
+        // FIXME: Unity reports Alpha# or Keypad# for number keys
         return Enum.GetName(typeof(KeyCode), code) ?? "None";
     }
     

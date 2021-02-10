@@ -32,7 +32,7 @@ public class FileManager {
         string experiment;
         
         try {
-            experiment = (string)manager.GetSetting("experimentName");
+            experiment = manager.GetSetting("experimentName");
         }
         catch(MissingFieldException) {
             ErrorNotification.Notify(new Exception("No experiment selected"));
@@ -41,7 +41,7 @@ public class FileManager {
 
         string dir = System.IO.Path.Combine(root, "data", experiment);
         try {
-            return (string)(manager.GetSetting("dataPath"));
+            return manager.GetSetting("dataPath");
         } catch {
             return  dir;
         }
@@ -57,7 +57,7 @@ public class FileManager {
         string participant;
 
         try{
-            participant = (string)manager.GetSetting("participantCode");
+            participant = manager.GetSetting("participantCode");
         }
         catch(MissingFieldException) {
             ErrorNotification.Notify(new Exception("No participant selected"));
@@ -77,14 +77,14 @@ public class FileManager {
     public string SessionPath() {
         string session;
         try{
-            session = (string)manager.GetSetting("session");
+            session = manager.GetSetting("session").ToString();
         }
         catch(MissingFieldException) {
             return null;
         }
 
         string dir = ParticipantPath();
-        dir = System.IO.Path.Combine(dir, "session_" + session.ToString());
+        dir = System.IO.Path.Combine(dir, "session_" + session);
         return dir;
     }
 
@@ -95,8 +95,8 @@ public class FileManager {
 
         string experiment, prefix;
         try{
-            experiment = (string)manager.GetSetting("experimentName");
-            prefix = (string)manager.GetSetting("prefix");
+            experiment = manager.GetSetting("experimentName");
+            prefix = manager.GetSetting("prefix");
         }
         catch(MissingFieldException) {
             return false;
@@ -113,7 +113,7 @@ public class FileManager {
 
     public string GetWordList() {
         string root = ExperimentRoot();
-        return System.IO.Path.Combine(root, (string)manager.GetSetting("wordpool"));
+        return System.IO.Path.Combine(root, manager.GetSetting("wordpool"));
     }
 
     public void CreateSession() {
