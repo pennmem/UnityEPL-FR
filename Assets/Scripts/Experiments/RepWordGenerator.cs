@@ -246,7 +246,7 @@ class RepWordGenerator {
   public static List<T> Shuffle<T>(IList<T> list) {
     var shuf = new List<T>(list);
     for (int i=shuf.Count-1; i>0; i--) {
-      int j = InterfaceManager.rnd.Next(i+1);
+      int j = InterfaceManager.rnd.Value.Next(i+1);
       T tmp = shuf[i];
       shuf[i] = shuf[j];
       shuf[j] = tmp;
@@ -342,7 +342,7 @@ class RepWordGenerator {
 
   public static void AssignRandomStim(RepWordList rw) {
     for (int i=0; i<rw.Count; i++) {
-      bool stim = Convert.ToBoolean(InterfaceManager.rnd.Next(2));
+      bool stim = Convert.ToBoolean(InterfaceManager.rnd.Value.Next(2));
       rw.SetStim(i, stim);
     }
   }
@@ -366,7 +366,7 @@ class RepWordGenerator {
     StimWordList prepared_words = SpreadWords(repeats, top_percent_spaced);
 
     foreach (var word_stim in singles) {
-      int insert_at = InterfaceManager.rnd.Next(prepared_words.Count+1);
+      int insert_at = InterfaceManager.rnd.Value.Next(prepared_words.Count+1);
       prepared_words.Insert(insert_at, word_stim);
     }
     

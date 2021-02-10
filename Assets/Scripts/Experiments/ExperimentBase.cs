@@ -15,15 +15,36 @@ public abstract class ExperimentBase : EventLoop {
     // list of states
     protected Dictionary<string, List<Action>> stateMachine;
 
+    protected InputHandler keyHandler;
+
     protected dynamic state; // object to which fields can be added at runtime
 
     public ExperimentBase(InterfaceManager _manager) {
         manager = _manager;
-        state = new ExpandoObject(); // all data must be serializable
         stateMachine = new Dictionary<string, List<Action>>();
 
+        // keyHandler = new InputHandler();
+        // keyHandler.active = false;
+        // manager.keyHandler.RegisterChild(keyHandler);
+
+        // generate state machine in function so
+        // these experiment functions can be inherited
+        // for variants
+        state = GetState();
+        stateMachine = GetStateMachine();
+    }
+
+    public virtual dynamic GetState() {
+        state = new ExpandoObject(); // all data must be serializable
         state.isComplete = false;
         state.runIndex = 0;
+        return state;
+    }
+    
+    public virtual Dictionary<string, List<Action>> GetStateMachine() {
+       var stateMachine = new Dictionary<string, List<Action>>();
+       stateMachine["Run"] = new List<Action>();
+       return stateMachine;
     }
 
     // executes state machine current function
@@ -60,6 +81,10 @@ public abstract class ExperimentBase : EventLoop {
                                                             () => this.Do(new EventBase(Run))));
     }
 
+    // NOTE: rather than use flags for the audio test, this is entirely based off of timings.
+    // Since there is processing latency (which seems to be unity version dependent), this
+    // is really a hack that lets us get through the mic test unscathed. More time critical
+    // applications need a different approach
     protected void RecordTest(string wavPath) {
         manager.Do(new EventBase(manager.lowBeep.Play));
         manager.Do(new EventBase<string>(manager.recorder.StartRecording, wavPath));
@@ -67,39 +92,29 @@ public abstract class ExperimentBase : EventLoop {
 
         DoIn(new EventBase(() => {
                             manager.Do(new EventBase( () => {
-                                manager.ClearText();
-                                manager.recorder.StopRecording();
-                                Run();
+                                manager.ShowText("microphone test playing", "Playing...", "green");
+                                manager.playback.clip = manager.recorder.StopRecording();
+                                manager.playback.Play(); // can't block manager thread, but could block
+                                                         // experiment to wait on play finishing;
+                                                         // could also subscribe to Unity event, if
+                                                         // there is one
+                                manager.DoIn(new EventBase(() => {
+                                    manager.ClearText();
+                                    manager.ClearTitle();
+                                    Run();
+                                }), (int)manager.GetSetting("micTestDuration") + 1000); // pad for latency
+                                // Run();
                                 }));
                             }), 
                         (int)manager.GetSetting("micTestDuration"));
-    }
-
-    // NOTE: rather than use flags for the audio test, this is entirely based off of timings.
-    // Since there is processing latency (which seems to be unity version dependent), this
-    // is really a bit of a hack that lets us get through the mic test unscathed. More time critical
-    // applications need a different approach
-
-    protected void PlaybackTest(string wavPath) {
-        manager.Do(new EventBase<string, string, string>(manager.ShowText, "microphone test playing", "Playing...", "green"));
-        manager.Do(new EventBase( () => {
-                manager.playback.clip = manager.recorder.AudioClipFromDatapath(wavPath);
-                manager.playback.Play();
-            }));
-
-        DoIn(new EventBase(() => {
-                                manager.Do(new EventBase(manager.ClearText));
-                                manager.Do(new EventBase(manager.ClearTitle));
-                                Run();
-                            }), (int)manager.GetSetting("micTestDuration") + 1000); // pad for latency
     }
 
     protected void Encoding(StimWordList encodingList, int index) {
         int interval;
         WordStim word = encodingList[index];
 
-        int[] limits = manager.GetSetting("stimulusInterval").ToObject<int[]>();
-        interval = InterfaceManager.rnd.Next(limits[0], limits[1]);
+        int[] limits = manager.GetSetting("stimulusInterval");
+        interval = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
 
         Dictionary<string, object> data = new Dictionary<string, object>();
         data.Add("word", word.word);
@@ -122,7 +137,10 @@ public abstract class ExperimentBase : EventLoop {
     }
 
     protected void Distractor() {
-        int[] nums = new int[] { InterfaceManager.rnd.Next(1, 9), InterfaceManager.rnd.Next(1, 9), InterfaceManager.rnd.Next(1, 9) };
+        int[] nums = new int[] { InterfaceManager.rnd.Value.Next(1, 9),
+                                 InterfaceManager.rnd.Value.Next(1, 9),
+                                 InterfaceManager.rnd.Value.Next(1, 9) };
+
         string problem = nums[0].ToString() + " + " + nums[1].ToString() + " + " + nums[2].ToString() + " = ";
 
         state.distractorProblem = nums;
@@ -135,11 +153,11 @@ public abstract class ExperimentBase : EventLoop {
 
     protected void Orientation() {
 
-        int[] limits = manager.GetSetting("stimulusInterval").ToObject<int[]>();
-        int interval = InterfaceManager.rnd.Next(limits[0], limits[1]);
+        int[] limits = manager.GetSetting("stimulusInterval");
+        int interval = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
 
-        limits = manager.GetSetting("orientationDuration").ToObject<int[]>();
-        int duration = InterfaceManager.rnd.Next(limits[0], limits[1]);
+        limits = manager.GetSetting("orientationDuration");
+        int duration = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
         manager.Do(new EventBase<string, string>(manager.ShowText, "orientation stimulus", "+"));
 
         SendHostPCMessage("ORIENT", null);
@@ -179,6 +197,31 @@ public abstract class ExperimentBase : EventLoop {
         }), duration );
     }
 
+    protected void FinalRecall(string wavPath) {
+        manager.Do(new EventBase(() => {
+                            // NOTE: unlike other events, that should be aligned to when they are called,
+                            //       this event needs to be precisely aligned with the beginning of a
+                            //       recording.
+                            manager.recorder.StartRecording(wavPath);
+                            ReportEvent("start final recall period", new Dictionary<string, object>());
+                        }));
+
+        int duration = (int)manager.GetSetting("finalRecallDuration");
+
+        SendHostPCMessage("FINAL RECALL", new Dictionary<string, object>() {{"duration", duration}});
+
+        DoIn(new EventBase(() => {
+                manager.Do(new EventBase(() => {
+                    manager.recorder.StopRecording();
+                    manager.ClearText();
+                    manager.lowBeep.Play();
+                }));
+
+                ReportEvent("end final recall period", new Dictionary<string, object>());
+                Run();
+        }), duration );
+    }
+
     protected void RecallPrompt() {
         manager.Do(new EventBase(manager.highBeep.Play));
         manager.Do(new EventBase<string, string>(manager.ShowText, "display recall text", "*******"));
@@ -200,7 +243,14 @@ public abstract class ExperimentBase : EventLoop {
     protected void WaitForKey(string tag, string prompt, Action<string, bool> keyHandler) {
         manager.Do(new EventBase<string, string>(manager.ShowText, tag, prompt));
         manager.Do(new EventBase<Action<string, bool>>(manager.RegisterKeyHandler, keyHandler));
+        // manager.Do(new EventBase<InputHandler>(manager.input.RegisterChild, keyHandler))
     }
+
+    // protected void WaitForKey(string tag, string prompt, Func<InputHandler, KeyMsg, bool> keyHandler) {
+    //     manager.Do(new EventBase<string, string>(manager.ShowText, tag, prompt));
+    //     // TODO: take string or keyhandler, auto generate for string
+    //     manager.Do(new EventBase<InputHandler>(manager.input.RegisterChild, keyHandler));
+    // }
     
     protected void WaitForTime(int milliseconds) {
         // convert to milliseconds
@@ -316,6 +366,41 @@ public abstract class ExperimentBase : EventLoop {
         }
     }
 
+    // protected bool AnyKey(InputHandler handler, KeyMsg msg) {
+    //     if(msg.down) {
+    //         handler.active = false;
+    //         manager.Do(new EventBase(manager.ClearText));
+    //         Do(new EventBase(Run));
+    //         return false;
+    //     }
+    //     return true;
+    // }
+
+    // protected bool AnyKey(InputHandler handler, KeyMsg msg) {
+    //     if(msg.down && msg.key == 'Space') {
+    //         handler.active = false;
+    //         manager.Do(new EventBase(manager.ClearText));
+    //         Do(new EventBase(Run));
+    //         return false;
+    //     }
+    //     return true;
+    // }
+
+    // protected bool QuitOrContinue(InputHandler handler, KeyMsg msg) {
+    //     if(msg.down && msg.key == "Y") {
+    //         manager.Do(new EventBase(manager.ClearText));
+    //         this.Do(new EventBase(Run));
+    //         handler.active = false;
+    //         return false;
+    //     }
+    //     else if(msg.down && msg.key == "N") {
+    //         handler.active = false;
+    //         Quit();
+    //         return false;
+    //     }
+    //     return true;
+    // }
+
 
     public void QuitOrContinue(string key, bool down) {
         if(down && key == "Y") {
@@ -386,6 +471,29 @@ public abstract class ExperimentBase : EventLoop {
         }
         else {
             return null;
+        }
+    }
+
+    protected static void WriteAllLinesNoExtraNewline(string path, IList<string> lines)
+    {
+        if (path == null)
+            throw new UnityException("path argument should not be null");
+        if (lines == null)
+            throw new UnityException("lines argument should not be null");
+
+        using (var stream = System.IO.File.OpenWrite(path))
+        {
+            using (System.IO.StreamWriter writer = new System.IO.StreamWriter(stream))
+            {
+                if (lines.Count > 0)
+                {
+                    for (int i = 0; i < lines.Count - 1; i++)
+                    {
+                        writer.WriteLine(lines[i]);
+                    }
+                    writer.Write(lines[lines.Count - 1]);
+                }
+            }
         }
     }
 }
