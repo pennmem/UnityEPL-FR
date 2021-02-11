@@ -55,11 +55,14 @@ public class NonUnitySyncbox : EventLoop
 		if(!stopped)
         {
             // Send a pulse
-            im.Do(new EventBase<string, Dictionary<string, object>, DateTime>(im.ReportEvent, "syncPulse", null, DataReporter.TimeStamp()));
+            im.Do(new EventBase<string, Dictionary<string, object>, DateTime>(im.ReportEvent, 
+                                                                              "syncPulse",
+                                                                              null, 
+                                                                              DataReporter.TimeStamp()));
             SyncPulse();
 
             // Wait a random interval between min and max
-            int timeBetweenPulses = (int)(TIME_BETWEEN_PULSES_MIN + (int)(InterfaceManager.rnd.NextDouble() * (TIME_BETWEEN_PULSES_MAX - TIME_BETWEEN_PULSES_MIN)));
+            int timeBetweenPulses = (int)(TIME_BETWEEN_PULSES_MIN + (int)(InterfaceManager.rnd.Value.NextDouble() * (TIME_BETWEEN_PULSES_MAX - TIME_BETWEEN_PULSES_MIN)));
             DoIn(new EventBase(Pulse), timeBetweenPulses);
 		}
 	}
