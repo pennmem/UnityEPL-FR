@@ -63,11 +63,9 @@ public class RepFRExperiment : ExperimentBase {
                                         (int)manager.GetSetting("session"));
 
       // log experiment resume
-      manager.Do(new EventBase<string, Dictionary<string, object>>(manager.ReportEvent,
-                                                                   "experiment resumed", null));
       ReportEvent("experiment resume", null);
 
-      state.listIndex = ++loadedState.listIndex;
+      state.listIndex = loadedState.listIndex + 1;
     }
     else {
       currentSession = GenerateSession();
@@ -93,19 +91,20 @@ public class RepFRExperiment : ExperimentBase {
   }
 
   public override Dictionary<string, List<Action>> GetStateMachine() {
-    // TODO: some of these functions could be re imagined with wrappers, where the
+    // TODO: some of these functions could be re-imagined with wrappers, where the
     // state machine has functions that take parameters and return functions, such
     // as using a single function for the 'repeatlast' state that takes a prompt
     // to show or having WaitForKey wrap an action. It's not clear whether 
     // this improves clarity or reusability at all,
     // so I've deferred this. If it makes sense to do this or make more use of
     // wrapper functions that add state machine information, please do.
+
     Dictionary<string, List<Action>> stateMachine = base.GetStateMachine();
 
     stateMachine["Run"] = new List<Action> {DoIntroductionPrompt,
                                             DoIntroductionVideo,
                                             DoRepeatVideo,
-                                            DoMicrophoneTest, // runs MicrophoneTest states
+                                            MicrophoneTest, // runs MicrophoneTest states
                                             DoRepeatMicTest,
                                             DoQuitorContinue,
                                             MainLoop, // runs MainLoop states
@@ -155,7 +154,6 @@ public class RepFRExperiment : ExperimentBase {
     ReportEvent("rest", null);
 
     DoIn(new EventBase(() => {
-                                manager.Do(new EventBase(manager.ClearText)); 
                                 ReportEvent("rest end", null);
                                 Run();
                             }), 
@@ -277,7 +275,7 @@ public class RepFRExperiment : ExperimentBase {
     return true;
   }
 
-  protected void DoMicrophoneTest() {
+  protected void MicrophoneTest() {
     if(state.micTestIndex == stateMachine["MicrophoneTest"].Count()) {
       state.runIndex++;
       state.micTestIndex = 0;
@@ -314,13 +312,8 @@ public class RepFRExperiment : ExperimentBase {
   }
 
   protected void DoDistractor() {
-    base.Distractor();
-  }
-
-  protected void DistractorTimeout() {
     DoIn(new EventBase(() => state.mainLoopIndex++), (int)manager.GetSetting("distractorDuration"));
-    state.mainLoopIndex++;
-    Run();
+    base.Distractor();
   }
 
   protected void DoRecall() {
@@ -343,29 +336,24 @@ public class RepFRExperiment : ExperimentBase {
     RecordTest(file);
   }
 
-  // protected void DoPlaybackTest() {
-  //   state.micTestIndex++;
-  //   string file = state.recordTestPath;
-  //   PlaybackTest(file);
-  // }
-
   //////////
   // state-specific key handlers
   //////////
 
-  protected void RepeatOrContinue(string key, bool down) {
-    if(down && key=="N") {
+  protected bool RepeatOrContinue(InputHandler handler, KeyMsg msg) {
+    if(msg.down && msg.key == "n") {
       state.runIndex--;
+      handler.active = false;
       Do(new EventBase(Run));
+      return false;
     }
-    else if(down && key=="Y") {
+    else if(msg.down && msg.key == "y") {
       state.runIndex++;
-      manager.Do(new EventBase(manager.ClearText));
+      handler.active = false;
       Do(new EventBase(Run));
+      return false;
     }
-    else {
-      manager.RegisterKeyHandler(RepeatOrContinue);
-    }
+    return true;
   }
 
   //////////

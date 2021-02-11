@@ -4,8 +4,13 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
 using UnityEngine;
+using KeyAction = System.Func<InputHandler, KeyMsg, bool>;
 
 
+// TODO: it would be great to have a system that can handle the state more implicitly,
+// such as changing it to an object that has Increment and Decrement state functions,
+// is aware of the current timeline of the state, and takes a function that can inspect
+// the current state and switch timelines
 public abstract class ExperimentBase : EventLoop {
     public InterfaceManager manager;
     public GameObject microphoneTestMessage; // set in editor
@@ -15,7 +20,7 @@ public abstract class ExperimentBase : EventLoop {
     // list of states
     protected Dictionary<string, List<Action>> stateMachine;
 
-    protected InputHandler keyHandler;
+    protected InputHandler inputHandler;
 
     protected dynamic state; // object to which fields can be added at runtime
 
@@ -23,15 +28,16 @@ public abstract class ExperimentBase : EventLoop {
         manager = _manager;
         stateMachine = new Dictionary<string, List<Action>>();
 
-        // keyHandler = new InputHandler();
-        // keyHandler.active = false;
-        // manager.keyHandler.RegisterChild(keyHandler);
+        inputHandler = new InputHandler(this, null);
+        manager.inputHandler.RegisterChild(inputHandler);
 
         // generate state machine in function so
         // these experiment functions can be inherited
         // for variants
         state = GetState();
         stateMachine = GetStateMachine();
+
+        CleanSlate(); // clear display, disable keyHandler
     }
 
     public virtual dynamic GetState() {
@@ -50,7 +56,16 @@ public abstract class ExperimentBase : EventLoop {
     // executes state machine current function
     public void Run() {
         SaveState();
+        CleanSlate();
         Do(new EventBase(stateMachine["Run"][state.runIndex]));
+    }
+
+    protected void CleanSlate() {
+        manager.Do(new EventBase(() => {
+            manager.textDisplayer.ClearText();
+            manager.textDisplayer.ClearTitle();
+            inputHandler.active = false;
+        }));
     }
 
     public void FinishExperiment() {
@@ -99,14 +114,11 @@ public abstract class ExperimentBase : EventLoop {
                                                          // could also subscribe to Unity event, if
                                                          // there is one
                                 manager.DoIn(new EventBase(() => {
-                                    manager.ClearText();
-                                    manager.ClearTitle();
                                     Run();
-                                }), (int)manager.GetSetting("micTestDuration") + 1000); // pad for latency
-                                // Run();
-                                }));
-                            }), 
-                        (int)manager.GetSetting("micTestDuration"));
+                                }), manager.GetSetting("micTestDuration") + 1000); // pad for latency
+                            }));
+                        }), 
+                        manager.GetSetting("micTestDuration"));
     }
 
     protected void Encoding(StimWordList encodingList, int index) {
@@ -126,33 +138,31 @@ public abstract class ExperimentBase : EventLoop {
 
         manager.Do(new EventBase<string, string>(manager.ShowText, "word stimulus", word.word));
 
-
         DoIn(new EventBase(() => { manager.Do(new EventBase(manager.ClearText)); 
                                     ReportEvent("clear word stimulus", new Dictionary<string, object>());
                                     SendHostPCMessage("ISI", new Dictionary<string, object>() {{"duration", interval}});
 
                                     this.DoIn(new EventBase(Run), interval);
                                 }), 
-                            (int)manager.GetSetting("stimulusDuration"));
+                                manager.GetSetting("stimulusDuration"));
     }
 
     protected void Distractor() {
-        int[] nums = new int[] { InterfaceManager.rnd.Value.Next(1, 9),
-                                 InterfaceManager.rnd.Value.Next(1, 9),
-                                 InterfaceManager.rnd.Value.Next(1, 9) };
+        int[] nums = new int[] { InterfaceManager.rnd.Value.Next(1, 10),
+                                 InterfaceManager.rnd.Value.Next(1, 10),
+                                 InterfaceManager.rnd.Value.Next(1, 10) };
 
         string problem = nums[0].ToString() + " + " + nums[1].ToString() + " + " + nums[2].ToString() + " = ";
 
         state.distractorProblem = nums;
         state.distractorAnswer = "";
 
-        manager.RegisterKeyHandler(DistractorAnswer);
+        inputHandler.SetAction((KeyAction)DistractorAnswer);
         manager.Do(new EventBase<string, string>(manager.ShowText, "display distractor problem", problem));
     }
 
 
     protected void Orientation() {
-
         int[] limits = manager.GetSetting("stimulusInterval");
         int interval = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
 
@@ -164,9 +174,7 @@ public abstract class ExperimentBase : EventLoop {
 
         DoIn(new EventBase(() => {
                                     manager.Do(new EventBase(manager.ClearText)); 
-
                                     SendHostPCMessage("ISI", new Dictionary<string, object>() {{"duration", interval}});
-
                                     this.DoIn(new EventBase(Run), interval);
                                 }), 
                                 duration);
@@ -175,20 +183,19 @@ public abstract class ExperimentBase : EventLoop {
     protected void Recall(string wavPath) {
         manager.Do(new EventBase(() => {
                             // NOTE: unlike other events, that should be aligned to when they are called,
-                            //       this event needs to be precisely aligned with the beginning of a
+                            //       this event needs to be precisely aligned with the beginning of
                             //       recording.
                             manager.recorder.StartRecording(wavPath);
                             ReportEvent("start recall period", new Dictionary<string, object>());
                         }));
 
-        int duration = (int)manager.GetSetting("recallDuration");
+        int duration = manager.GetSetting("recallDuration");
 
         SendHostPCMessage("RECALL", new Dictionary<string, object>() {{"duration", duration}});
 
         DoIn(new EventBase(() => {
                 manager.Do(new EventBase(() => {
                     manager.recorder.StopRecording();
-                    manager.ClearText();
                     manager.lowBeep.Play();
                 }));
 
@@ -206,14 +213,13 @@ public abstract class ExperimentBase : EventLoop {
                             ReportEvent("start final recall period", new Dictionary<string, object>());
                         }));
 
-        int duration = (int)manager.GetSetting("finalRecallDuration");
+        int duration = manager.GetSetting("finalRecallDuration");
 
         SendHostPCMessage("FINAL RECALL", new Dictionary<string, object>() {{"duration", duration}});
 
         DoIn(new EventBase(() => {
                 manager.Do(new EventBase(() => {
                     manager.recorder.StopRecording();
-                    manager.ClearText();
                     manager.lowBeep.Play();
                 }));
 
@@ -223,35 +229,45 @@ public abstract class ExperimentBase : EventLoop {
     }
 
     protected void RecallPrompt() {
-        manager.Do(new EventBase(manager.highBeep.Play));
-        manager.Do(new EventBase<string, string>(manager.ShowText, "display recall text", "*******"));
+        manager.Do(new EventBase(() => {
+                manager.highBeep.Play();
+                manager.ShowText("display recall text", "*******");
+            }));
 
-        DoIn(new EventBase(() => {
-                                    manager.Do(new EventBase(manager.ClearText));
-                                    Run();
-                                }), 500); // magic number is the duration of beep
+        DoIn(new EventBase(Run), 500); // magic number is the duration of beep
     }
     
     
     protected void QuitPrompt() {
-        WaitForKey("subject/session confirmation", "Running " + (string)manager.GetSetting("participantCode") + " in session " 
-            + (int)manager.GetSetting("session") + " of " + (string)manager.GetSetting("experimentName") 
-            + ".\n Press Y to continue, N to quit.", 
-            (Action<string, bool>)QuitOrContinue);
+        WaitForKey("subject/session confirmation", 
+            "Running " + manager.GetSetting("participantCode") + " in session " 
+            + (int)manager.GetSetting("session") + " of " + manager.GetSetting("experimentName") 
+            + ".\nPress Y to continue, N to quit.", 
+            (KeyAction)QuitOrContinue);
     }
 
-    protected void WaitForKey(string tag, string prompt, Action<string, bool> keyHandler) {
+    protected void WaitForKey(string tag, string prompt, Func<InputHandler, KeyMsg, bool> handler) {
         manager.Do(new EventBase<string, string>(manager.ShowText, tag, prompt));
-        manager.Do(new EventBase<Action<string, bool>>(manager.RegisterKeyHandler, keyHandler));
-        // manager.Do(new EventBase<InputHandler>(manager.input.RegisterChild, keyHandler))
+        inputHandler.SetAction(handler);
+        inputHandler.active = true;
+    }
+    protected void WaitForKey(string tag, string prompt, string key) {
+        manager.Do(new EventBase<string, string>(manager.ShowText, tag, prompt));
+
+        inputHandler.SetAction(
+            (handler, msg) => {
+                if(msg.down && msg.key == key) {
+                    handler.active = false;
+                    manager.Do(new EventBase(manager.ClearText));
+                    Do(new EventBase(Run));
+                    return false;
+                }
+                return true;
+            }
+        );
+        inputHandler.active = true;
     }
 
-    // protected void WaitForKey(string tag, string prompt, Func<InputHandler, KeyMsg, bool> keyHandler) {
-    //     manager.Do(new EventBase<string, string>(manager.ShowText, tag, prompt));
-    //     // TODO: take string or keyhandler, auto generate for string
-    //     manager.Do(new EventBase<InputHandler>(manager.input.RegisterChild, keyHandler));
-    // }
-    
     protected void WaitForTime(int milliseconds) {
         // convert to milliseconds
         DoIn(new EventBase(Run), milliseconds); 
@@ -259,7 +275,7 @@ public abstract class ExperimentBase : EventLoop {
 
     protected void MicTestPrompt() {
         manager.Do(new EventBase<string, string>(manager.ShowTitle, "microphone test title", "Microphone Test"));
-        WaitForKey("microphone test prompt", "Press any key to record a sound after the beep.", AnyKey);
+        WaitForKey("microphone test prompt", "Press any key to record a sound after the beep.", (KeyAction)AnyKey);
     }
 
     protected void ConfirmStart() {
@@ -270,7 +286,7 @@ public abstract class ExperimentBase : EventLoop {
                 "Please explain the task to the \n" +
                 "experimenter in your own words.\n\n" +
                 "Press any key to continue \n" +
-                "to the first list.", AnyKey);
+                "to the first list.", (KeyAction)AnyKey);
     }
     
     protected virtual void Quit() {
@@ -289,7 +305,7 @@ public abstract class ExperimentBase : EventLoop {
     // Key Handler functions
     //////////
 
-    protected void DistractorAnswer(string key, bool down) {
+    protected bool DistractorAnswer(InputHandler handler, KeyMsg msg) {
         int Sum(int[] arg){
             int sum = 0;
             for(int i=0; i < arg.Length; i++) {
@@ -298,148 +314,100 @@ public abstract class ExperimentBase : EventLoop {
             return sum;
         }
 
-        string message = "distractor update";
-
-        // at every stage other than confirming answer, keyhandler is
-        // re-enqueued to interface manager
-
-        key = key.ToLower();
-        if(down) {
-            // enter only numbers
-            if(Regex.IsMatch(key, @"\d$")) {
-                key = key[key.Length-1].ToString(); // Unity gives numbers as Alpha# or Keypad#
-                if(state.distractorAnswer.Length < 3) {
-                    state.distractorAnswer = state.distractorAnswer + key;
-                }
-                message = "modify distractor answer";
-            }
-            // delete key removes last character from answer
-            else if(key == "delete" || key == "backspace") {
-                if(state.distractorAnswer != "") {
-                    state.distractorAnswer = state.distractorAnswer.Substring(0, state.distractorAnswer.Length - 1);
-                }
-                message = "modify distractor answer";
-            }
-            // submit answer and play tone depending on right or wrong answer 
-            else if(key == "enter" || key == "return") {
-                int result;
-                int.TryParse(state.distractorAnswer, out result) ;
-                if(result == Sum(state.distractorProblem)) {
-                    manager.Do(new EventBase(manager.lowBeep.Play));
-                    ReportDistractor("distractor answered", true, state.distractorProblem[0].ToString() + " + " 
-                        + state.distractorProblem[1].ToString() + " + " 
-                        + state.distractorProblem[2].ToString() + " = ", state.distractorAnswer);
-                } 
-                else {
-                    manager.Do(new EventBase(manager.lowerBeep.Play));
-                    ReportDistractor("distractor answered", false, state.distractorProblem[0].ToString() + " + " 
-                        + state.distractorProblem[1].ToString() + " + " 
-                        + state.distractorProblem[2].ToString() + " = ", state.distractorAnswer);
-                }
-
-                Do(new EventBase(Run));
-                manager.Do(new EventBase(manager.ClearText));
-                state.distractorProblem = "";
-                state.distractorAnswer = "";
-                return;
-            }
+        if(!msg.down) {
+            return true;
         }
 
-        manager.RegisterKeyHandler(DistractorAnswer);
+        string message = "distractor update";
+        var key = msg.key;
+        bool correct = false;
+
+        // enter only numbers
+        if(Regex.IsMatch(key, @"\d$")) {
+            key = key[key.Length-1].ToString(); // Unity gives numbers as Alpha# or Keypad#
+            if(state.distractorAnswer.Length < 3) {
+                state.distractorAnswer = state.distractorAnswer + key;
+            }
+            message = "modify distractor answer";
+        }
+        // delete key removes last character from answer
+        else if(key == "delete" || key == "backspace") {
+            if(state.distractorAnswer != "") {
+                state.distractorAnswer = state.distractorAnswer.Substring(0, state.distractorAnswer.Length - 1);
+            }
+            message = "modify distractor answer";
+        }
+        // submit answer and play tone depending on right or wrong answer 
+        else if(key == "enter" || key == "return") {
+            int result;
+            int.TryParse(state.distractorAnswer, out result) ;
+            correct = result == Sum(state.distractorProblem);
+
+            message = "distractor answered";
+            if(correct) {
+                manager.Do(new EventBase(manager.lowBeep.Play));
+            } 
+            else {
+                manager.Do(new EventBase(manager.lowerBeep.Play));
+            }
+
+            Do(new EventBase(Run));
+            state.distractorProblem = "";
+            state.distractorAnswer = "";
+
+            handler.active = false; // stop the handler from reporting any more keys
+        }
 
         string problem = state.distractorProblem[0].ToString() + " + " 
                         + state.distractorProblem[1].ToString() + " + " 
                         + state.distractorProblem[2].ToString() + " = ";
         string answer = state.distractorAnswer;
         manager.Do(new EventBase<string, string>(manager.ShowText, message, problem + answer));
-        ReportDistractor(message, false, problem, answer);
-
+        ReportDistractor(message, correct, problem, answer);
+        return false;
     }
 
-    public void AnyKey(string key, bool down) {
-        if(down) {
-            manager.Do(new EventBase(manager.ClearText));
+    protected bool AnyKey(InputHandler handler, KeyMsg msg) {
+        if(msg.down) {
+            handler.active = false; // also done by CleanSlate
             Do(new EventBase(Run));
+            return false;
         }
-        else  {
-            manager.RegisterKeyHandler(AnyKey);
-        }
+        return true;
     }
 
-    // protected bool AnyKey(InputHandler handler, KeyMsg msg) {
-    //     if(msg.down) {
-    //         handler.active = false;
-    //         manager.Do(new EventBase(manager.ClearText));
-    //         Do(new EventBase(Run));
-    //         return false;
-    //     }
-    //     return true;
-    // }
-
-    // protected bool AnyKey(InputHandler handler, KeyMsg msg) {
-    //     if(msg.down && msg.key == 'Space') {
-    //         handler.active = false;
-    //         manager.Do(new EventBase(manager.ClearText));
-    //         Do(new EventBase(Run));
-    //         return false;
-    //     }
-    //     return true;
-    // }
-
-    // protected bool QuitOrContinue(InputHandler handler, KeyMsg msg) {
-    //     if(msg.down && msg.key == "Y") {
-    //         manager.Do(new EventBase(manager.ClearText));
-    //         this.Do(new EventBase(Run));
-    //         handler.active = false;
-    //         return false;
-    //     }
-    //     else if(msg.down && msg.key == "N") {
-    //         handler.active = false;
-    //         Quit();
-    //         return false;
-    //     }
-    //     return true;
-    // }
-
-
-    public void QuitOrContinue(string key, bool down) {
-        if(down && key == "Y") {
-            manager.Do(new EventBase(manager.ClearText));
+    protected bool QuitOrContinue(InputHandler handler, KeyMsg msg) {
+        if(msg.down && msg.key == "y") {
+            handler.active = false; // also done by CleanSlate
             this.Do(new EventBase(Run));
+            return false;
         }
-        else if(down && key == "N") {
+        else if(msg.down && msg.key == "n") {
+            handler.active = false;
             Quit();
+            return false;
         }
-        else {
-            manager.RegisterKeyHandler(QuitOrContinue);
-        }
-    }
-
-    public void PressSpace(string key, bool down) {
-        if(down && key == "Space") {
-            manager.Do(new EventBase(manager.ClearText));
-            this.Do(new EventBase(Run));
-        }
-        else {
-            manager.RegisterKeyHandler(PressSpace);
-        }
+        return true;
     }
 
     //////////
-    // Saving and loading state logic
+    // Saving, Reporting, and Loading state logic
     //////////
 
     protected void ReportBeepPlayed(string beep, string duration) {
-        Dictionary<string, object> dataDict = new Dictionary<string, object>() { { "sound name", beep }, { "sound duration", duration } };
+        var dataDict = new Dictionary<string, object>() { { "sound name", beep }, 
+                                                          { "sound duration", duration } };
         ReportEvent("Sound Played", dataDict);
     }
 
     protected void SendHostPCMessage(string type, Dictionary<string, object> data) {
-        manager.Do(new EventBase<string, Dictionary<string, object>>(manager.SendHostPCMessage, type, data));
+        manager.Do(new EventBase<string, Dictionary<string, object>>(manager.SendHostPCMessage, 
+                                                                     type, data));
     }
 
     protected void ReportEvent(string type, Dictionary<string, object> data) {
-        manager.Do(new EventBase<string, Dictionary<string, object>>(manager.ReportEvent, type, data));
+        manager.Do(new EventBase<string, Dictionary<string, object>>(manager.ReportEvent, 
+                                                                     type, data));
     }
 
     private void ReportDistractor(string type, bool correct, string problem, string answer)
@@ -458,15 +426,15 @@ public abstract class ExperimentBase : EventLoop {
     }
 
     public virtual dynamic LoadState(string participant, int session) {
-        if(System.IO.File.Exists(System.IO.Path.Combine(manager.fileManager.SessionPath(participant, session), "experiment_state.json"))) {
-            string json = System.IO.File.ReadAllText(System.IO.Path.Combine(manager.fileManager.SessionPath(participant, session), "experiment_state.json"));
-            dynamic jObjCfg = FlexibleConfig.LoadFromText(json);
-            dynamic state =  FlexibleConfig.CastToStatic(jObjCfg);
+        var logPath = System.IO.Path.Combine(manager.fileManager.SessionPath(participant, session), 
+                                             "experiment_state.json");
+        if(System.IO.File.Exists(logPath)) {
+            string json = System.IO.File.ReadAllText(logPath);
+            dynamic state = FlexibleConfig.LoadFromText(json);
 
             if(state.isComplete) {
                 ErrorNotification.Notify(new InvalidOperationException("Session Already Complete"));
             }
-
             return state;
         }
         else {
@@ -474,6 +442,7 @@ public abstract class ExperimentBase : EventLoop {
         }
     }
 
+    // TODO: move to one of the data handling classes
     protected static void WriteAllLinesNoExtraNewline(string path, IList<string> lines)
     {
         if (path == null)
