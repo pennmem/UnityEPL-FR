@@ -68,7 +68,7 @@ public class MessageTreeNode<T> : MessageHandler<T> {
         }, msg));
     }
 
-    public void SetAction(Func<MessageTreeNode<T>, T, bool> action) {
+    public virtual void SetAction(Func<MessageTreeNode<T>, T, bool> action) {
         // should only be run from host's thread
         this.action = action;
     }

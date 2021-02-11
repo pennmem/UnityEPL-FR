@@ -8,6 +8,10 @@ public class InputHandler : MessageTreeNode<KeyMsg> {
     public void Key(string key, bool pressed) {
         Do(new KeyMsg(key, pressed));
     }
+    public virtual void SetAction(Func<InputHandler, KeyMsg, bool> action) {
+        // should only be run from host's thread
+        this.action = action as Func<MessageTreeNode<KeyMsg>, KeyMsg, bool>;
+    }
 }
 
 public struct KeyMsg {

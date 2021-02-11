@@ -11,7 +11,8 @@ public class CoroutineToEvent {
         ));
     }
 
-    // TODO:
-    // StopCoroutine
-    // StopAllCoroutines
+    public static void StopCoroutine() {
+        // TODO
+        throw new NotImplementedException();
+    }
 }
