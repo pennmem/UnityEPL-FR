@@ -25,7 +25,7 @@ public class ltpRepFRExperiment : RepFRExperiment {
     stateMachine["Run"] = new List<Action> {DoIntroductionPrompt,
                                             DoIntroductionVideo,
                                             DoRepeatVideo,
-                                            DoMicrophoneTest, // runs MicrophoneTest states
+                                            MicrophoneTest, // runs MicrophoneTest states
                                             DoRepeatMicTest,
                                             DoQuitorContinue,
                                             MainLoop, // runs MainLoop states
@@ -83,7 +83,7 @@ public class ltpRepFRExperiment : RepFRExperiment {
                 "wait for the researcher to come check on you " +
                 "before continuing the experiment. \n\n" +
                 "Researcher: press space to resume the experiment.", 
-                PressSpace);
+                "space");
   }
 
   protected void DoFinalRecallPrompt() {
