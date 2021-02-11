@@ -86,14 +86,17 @@ public static string get(int code, bool isOSX=true) {
     if(isOSX) {
         string value;
         if(OSXKeyCodes.TryGetValue(code, out value)) {
-                return value ?? "None";
+                return (value ?? "none").ToLower();
         }
     }
     else {
         // FIXME: Unity reports Alpha# or Keypad# for number keys
-        return Enum.GetName(typeof(KeyCode), code) ?? "None";
+        // the right way to handle this is likely to switch from
+        // strings to the Unity enum and have the keytable translate
+        // to the enum type
+        return (Enum.GetName(typeof(KeyCode), code) ?? "none").ToLower();
     }
     
-    return "None";
+    return "none";
 }
 }
