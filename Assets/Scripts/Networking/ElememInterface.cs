@@ -71,7 +71,7 @@ public class HostPCListener : MessageHandler<NetMsg> {
         Do(message);
 
         if(!tokenSource.IsCancellationRequested) {
-            Listen(stream);
+            _ = Listen(stream);
         }
         else {
             tokenSource.Dispose();
@@ -158,7 +158,7 @@ public class ElememInterface : IHostPC
 
         im.Do(new EventBase<string>(im.SetHostPCStatus, "INITIALIZING")); 
 
-        listener.Listen(GetReadStream());
+        _ = listener.Listen(GetReadStream());
         SendAndWait("CONNECTED", new Dictionary<string, object>(), 
                     "CONNECTED_OK", messageTimeout);
 

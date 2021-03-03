@@ -37,7 +37,7 @@ public class FlexibleConfig {
             // if JSON contains arrays, we need to peek at the
             // type of the contents to get the right cast, as
             // C# doesn't implicitly cast the contents of an
-            // array when casing the array
+            // array when casting the array
 
             if(prop.Value is Newtonsoft.Json.Linq.JArray) {
                 JTokenType jType = JTokenType.None;

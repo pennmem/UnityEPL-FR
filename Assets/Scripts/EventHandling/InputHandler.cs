@@ -1,16 +1,22 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
+using UnityEngine;
 
 public class InputHandler : MessageTreeNode<KeyMsg> {
-    public InputHandler(EventQueue host, Func<MessageTreeNode<KeyMsg>, KeyMsg, bool> action) : base(host, action) {}
+    new protected Func<InputHandler, KeyMsg, bool> action;
+
+    public InputHandler(EventQueue host, Func<InputHandler, KeyMsg, bool> action) {
+        this.host = host;
+        this.action = action;
+    }
 
     public void Key(string key, bool pressed) {
         Do(new KeyMsg(key, pressed));
     }
     public virtual void SetAction(Func<InputHandler, KeyMsg, bool> action) {
         // should only be run from host's thread
-        this.action = action as Func<MessageTreeNode<KeyMsg>, KeyMsg, bool>;
+        this.action = action;// as 
     }
 }
 

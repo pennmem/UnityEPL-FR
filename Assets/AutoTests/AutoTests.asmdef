@@ -1,0 +1,9 @@
+﻿{
+    "name": "AutoTests",
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ]
+}

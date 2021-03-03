@@ -8,8 +8,6 @@ using NetMQ;
 using Newtonsoft.Json.Linq;
 
 public class RamulatorWrapper : IHostPC {
-
-    
     InterfaceManager manager;
 
     public RamulatorWrapper(InterfaceManager _manager) {
@@ -20,14 +18,14 @@ public class RamulatorWrapper : IHostPC {
     } 
 
     public override void Connect() {
-        CoroutineToEvent.StartCoroutine(manager.ramulator.BeginNewSession((int)manager.GetSetting("session")), manager);
+        manager.ramulator.StartCoroutine(manager.ramulator.BeginNewSession(manager.GetSetting("session")));
+        // CoroutineToEvent.StartCoroutine(manager.ramulator.BeginNewSession(manager.GetSetting("session")), manager);
     }
 
     public override void SendMessage(string type, Dictionary<string, object> data) {
         DataPoint point = new DataPoint(type, DataReporter.TimeStamp(), data);
         string message = point.ToJSON();
-
-        manager.Do(new EventBase(() => manager.ramulator.SendMessageToRamulator(message)));
+        manager.ramulator.SendMessageToRamulator(message);
     }
 
     public override void HandleMessage(NetMsg msg) {
@@ -39,7 +37,8 @@ public class RamulatorWrapper : IHostPC {
     }
 
     public override void Disconnect() {
-        throw new NotImplementedException("Ramulator doesn't implement a manual disconnect.");
+        manager.ramulator.Disconnect();
+        // manager.Do(new EventBase(() => manager.ramulator.Disconnect()));
     }
 }
 
@@ -58,15 +57,19 @@ public class RamulatorInterface : MonoBehaviour
 
     void OnApplicationQuit()
     {
+        Disconnect();
+    }
+    
+    public void Disconnect() {
+        StopAllCoroutines();
+
         if (zmqSocket != null) {
             zmqSocket.Close();
             NetMQConfig.Cleanup();
+            zmqSocket = null;
         }
     }
 
-    //this coroutine connects to ramulator and communicates how ramulator expects it to
-    //in order to start the experiment session.  follow it up with BeginNewTrial and
-    //SetState calls
     public IEnumerator BeginNewSession(int sessionNumber)
     {
         //Connect to ramulator///////////////////////////////////////////////////////////////////
@@ -74,36 +77,29 @@ public class RamulatorInterface : MonoBehaviour
         zmqSocket.Bind(address);
         //Debug.Log ("socket bound");
 
-
         yield return WaitForMessage("CONNECTED", "Ramulated not connected.");
-
 
         //SendSessionEvent//////////////////////////////////////////////////////////////////////
         System.Collections.Generic.Dictionary<string, object> sessionData = new Dictionary<string, object>();
-        sessionData.Add("name", UnityEPL.GetExperimentName());
+        sessionData.Add("name", manager.GetSetting("experimentName"));
         sessionData.Add("version", Application.version);
-        sessionData.Add("subject", UnityEPL.GetParticipants()[0]);
+        sessionData.Add("subject", manager.GetSetting("participantCode"));
         sessionData.Add("session_number", sessionNumber.ToString());
         DataPoint sessionDataPoint = new DataPoint("SESSION", DataReporter.TimeStamp(), sessionData);
         SendMessageToRamulator(sessionDataPoint.ToJSON());
         yield return null;
 
-
         //Begin Heartbeats///////////////////////////////////////////////////////////////////////
         InvokeRepeating("SendHeartbeat", 0, 1);
-
 
         //SendReadyEvent////////////////////////////////////////////////////////////////////
         DataPoint ready = new DataPoint("READY", DataReporter.TimeStamp(), new Dictionary<string, object>());
         SendMessageToRamulator(ready.ToJSON());
         yield return null;
 
-
         yield return WaitForMessage("START", "Start signal not received");
 
-
         InvokeRepeating("ReceiveHeartbeat", 0, 1);
-
     }
 
     private IEnumerator WaitForMessage(string containingString, string errorMessage)
