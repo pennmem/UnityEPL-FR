@@ -48,7 +48,10 @@ public abstract class ExperimentBase : EventLoop {
     }
     
     public virtual Dictionary<string, List<Action>> GetStateMachine() {
-       var stateMachine = new Dictionary<string, List<Action>>();
+    //    var stateMachine = StateMachine();
+        var stateMachine = new Dictionary<string, List<Action>>();
+       
+        // new Dictionary<string, List<Action>>();
        stateMachine["Run"] = new List<Action>();
        return stateMachine;
     }
@@ -58,6 +61,7 @@ public abstract class ExperimentBase : EventLoop {
         SaveState();
         CleanSlate();
         Do(new EventBase(stateMachine["Run"][state.runIndex]));
+        // Do(new EventBase(stateMachine.Run));
     }
 
     protected void CleanSlate() {
@@ -256,9 +260,9 @@ public abstract class ExperimentBase : EventLoop {
 
         inputHandler.SetAction(
             (handler, msg) => {
+                UnityEngine.Debug.Log("Invoking Action");
                 if(msg.down && msg.key == key) {
                     handler.active = false;
-                    manager.Do(new EventBase(manager.ClearText));
                     Do(new EventBase(Run));
                     return false;
                 }

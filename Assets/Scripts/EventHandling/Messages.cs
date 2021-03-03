@@ -45,6 +45,8 @@ public class MessageTreeNode<T> : MessageHandler<T> {
     new protected Func<MessageTreeNode<T>, T, bool> action;
     public bool active { get; set; } = true;
 
+    protected MessageTreeNode() {}
+
     public MessageTreeNode(EventQueue host, Func<MessageTreeNode<T>, T, bool> action) {
         this.host = host;
         this.action = action;
@@ -62,7 +64,10 @@ public class MessageTreeNode<T> : MessageHandler<T> {
 
         base.Do(new MessageEvent<T>( (arg) => {
             // operator short circuits if not active
-            if( active && action.Invoke(this, arg) ) {
+            UnityEngine.Debug.Log(arg);
+            UnityEngine.Debug.Log(action);
+            UnityEngine.Debug.Log(this);
+            if( active && (action?.Invoke(this, arg) ?? false)) {
                 Propagate(arg);
             }
         }, msg));
