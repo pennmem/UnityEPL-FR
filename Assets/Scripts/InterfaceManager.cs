@@ -51,7 +51,6 @@ public class InterfaceManager : MonoBehaviour
     // let interface manager be seen as an event queue
     public static implicit operator EventQueue(InterfaceManager im) => im.mainEvents;
 
-
     // Deprecated Key handling
     private ConcurrentQueue<Action<string, bool>> onKey;
 
@@ -60,7 +59,7 @@ public class InterfaceManager : MonoBehaviour
     // that is instantiated once launch is called
     ////////// 
     // global random number source, wrapped so that out of thread 
-    // access doesn't break generation:w
+    // access doesn't break generation
     public static ThreadLocal<System.Random> rnd = new ThreadLocal<System.Random>(() => new System.Random());
 
     // system configurations, generated on the fly by
@@ -83,7 +82,7 @@ public class InterfaceManager : MonoBehaviour
     // in each scene, so interface manager always looks for the same object
     // which exposes interface functions, rather than interface functions
     // living here. The could potentially be accomplished with a clever
-    // namespace or similar to providej
+    // namespace or similar to provide
 
     //////////
     // Devices that can be accessed by managed
@@ -397,6 +396,7 @@ public class InterfaceManager : MonoBehaviour
             textDisplayer.DisplayText(tag, text);
         }
     }
+
     public void ShowText(string tag, string text) {
         if(textDisplayer == null) {
             throw new Exception("No text displayer in current scene");
@@ -405,6 +405,7 @@ public class InterfaceManager : MonoBehaviour
             textDisplayer.DisplayText(tag, text);
         }
     }
+
     public void ClearText() {
         if(textDisplayer == null) {
             throw new Exception("No text displayer in current scene");

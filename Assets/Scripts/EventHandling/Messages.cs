@@ -43,7 +43,9 @@ public class MessageTreeNode<T> : MessageHandler<T> {
     // override action to have a return value, which suppresses
     // propagation down the tree
     new protected Func<MessageTreeNode<T>, T, bool> action;
-    public bool active { get; set; } = true;
+    // public volatile bool active { get; set; } = true;
+    public volatile bool active = true;
+
 
     protected MessageTreeNode() {}
 
@@ -64,9 +66,6 @@ public class MessageTreeNode<T> : MessageHandler<T> {
 
         base.Do(new MessageEvent<T>( (arg) => {
             // operator short circuits if not active
-            UnityEngine.Debug.Log(arg);
-            UnityEngine.Debug.Log(action);
-            UnityEngine.Debug.Log(this);
             if( active && (action?.Invoke(this, arg) ?? false)) {
                 Propagate(arg);
             }
