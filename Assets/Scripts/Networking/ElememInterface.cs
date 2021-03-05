@@ -281,7 +281,8 @@ public class ElememInterface : IHostPC
         }
 
         if(type == "EXIT") {
-            return;
+            // FIXME: call QUIT
+            throw new Exception("Error received from Host PC.");
         }
     }
 

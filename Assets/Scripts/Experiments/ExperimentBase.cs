@@ -65,10 +65,10 @@ public abstract class ExperimentBase : EventLoop {
     }
 
     protected void CleanSlate() {
+        inputHandler.active = false;
         manager.Do(new EventBase(() => {
-            manager.textDisplayer.ClearText();
-            manager.textDisplayer.ClearTitle();
-            inputHandler.active = false;
+            manager.ClearText();
+            manager.ClearTitle();
         }));
     }
 
@@ -254,13 +254,13 @@ public abstract class ExperimentBase : EventLoop {
         manager.Do(new EventBase<string, string>(manager.ShowText, tag, prompt));
         inputHandler.SetAction(handler);
         inputHandler.active = true;
+        
     }
     protected void WaitForKey(string tag, string prompt, string key) {
         manager.Do(new EventBase<string, string>(manager.ShowText, tag, prompt));
 
         inputHandler.SetAction(
             (handler, msg) => {
-                UnityEngine.Debug.Log("Invoking Action");
                 if(msg.down && msg.key == key) {
                     handler.active = false;
                     Do(new EventBase(Run));

@@ -1,14 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.ComponentModel;
 using UnityEngine;
 
 public class InputHandler : MessageTreeNode<KeyMsg> {
-    new protected Func<InputHandler, KeyMsg, bool> action;
-
     public InputHandler(EventQueue host, Func<InputHandler, KeyMsg, bool> action) {
         this.host = host;
-        this.action = action;
+        SetAction(action);
     }
 
     public void Key(string key, bool pressed) {
@@ -16,7 +15,7 @@ public class InputHandler : MessageTreeNode<KeyMsg> {
     }
     public virtual void SetAction(Func<InputHandler, KeyMsg, bool> action) {
         // should only be run from host's thread
-        this.action = action;// as 
+        this.action = (node, msg) => action((InputHandler)node, msg);
     }
 }
 
