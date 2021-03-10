@@ -12,7 +12,7 @@ public class ltpRepFRExperiment : RepFRExperiment {
   // State Machine Constructor Functions
   //////////
 
-  public override Dictionary<string, List<Action>> GetStateMachine() {
+  public override StateMachine GetStateMachine() {
     // TODO: some of these functions could be re imagined with wrappers, where the
     // state machine has functions that take parameters and return functions, such
     // as using a single function for the 'repeatlast' state that takes a prompt
@@ -20,33 +20,50 @@ public class ltpRepFRExperiment : RepFRExperiment {
     // this improves clarity or reusability at all,
     // so I've deferred this. If it makes sense to do this or make more use of
     // wrapper functions that add state machine information, please do.
-    Dictionary<string, List<Action>> stateMachine = base.GetStateMachine();
+    StateMachine stateMachine = base.GetStateMachine();
 
-    stateMachine["Run"] = new List<Action> {DoIntroductionPrompt,
-                                            DoIntroductionVideo,
-                                            DoRepeatVideo,
+    stateMachine["Run"] = new List<Action<StateMachine>> {IntroductionPrompt,
+                                            IntroductionVideo,
+                                            RepeatVideo,
                                             MicrophoneTest, // runs MicrophoneTest states
-                                            DoRepeatMicTest,
-                                            DoQuitorContinue,
+                                            RepeatMicTest,
+                                            QuitOrContinue,
+                                            Practice, // runs Practice states
+                                            ConfirmStart,
                                             MainLoop, // runs MainLoop states
-                                            DoFinalRecallInstructions,
-                                            DoFinalRecallPrompt,
-                                            DoFinalRecall,
+                                            FinalRecallInstructions,
+                                            FinalRecallPrompt,
+                                            FinalRecall,
                                             FinishExperiment};
 
-    stateMachine["MainLoop"] = new List<Action> {DoStartTrial,
-                                                 DoNextListPrompt,
-                                                 DoRest,
-                                                 DoCountdownVideo,
-                                                 DoEncodingDelay,
-                                                 DoEncoding,
-                                                 DoRest,
-                                                 DoRecallPrompt,
-                                                 DoRecall,
-                                                 DoEndTrial};
+    // though it is largely the same as the main loop,
+    // practice is a conceptually distinct state machine
+    // that just happens to overlap with MainLoop
+    stateMachine["Practice"] = new List<Action<StateMachine>> {StartTrial,
+                                                 NextPracticeListPrompt,
+                                                 Rest,
+                                                 CountdownVideo,
+                                                 EncodingDelay,
+                                                 PracticeEncoding,
+                                                 Rest,
+                                                 RecallPrompt,
+                                                 Recall,
+                                                 EndTrial
+                                                };
 
-    stateMachine["MicrophoneTest"] = new List<Action> {DoMicTestPrompt,
-                                                       DoRecordTest};
+    stateMachine["MainLoop"] = new List<Action<StateMachine>> {StartTrial,
+                                                 NextListPrompt,
+                                                 Rest,
+                                                 CountdownVideo,
+                                                 EncodingDelay,
+                                                 Encoding,
+                                                 Rest,
+                                                 RecallPrompt,
+                                                 Recall,
+                                                 EndTrial};
+
+    stateMachine["MicrophoneTest"] = new List<Action<StateMachine>> {MicTestPrompt,
+                                                       RecordTest};
 
     return stateMachine;
   }
@@ -55,29 +72,26 @@ public class ltpRepFRExperiment : RepFRExperiment {
   // Wait Functions
   //////////
 
-  protected override void DoStartTrial() {
+  protected override void StartTrial(StateMachine state) {
     Dictionary<string, object> data = new Dictionary<string, object>();
-    data.Add("trial", state.listIndex);
+    data.Add("trial", state.currentSession.GetListIndex());
     // data.Add("stim", currentSession[state.listIndex].encoding_stim);
 
     ReportEvent("start trial", data);
 
-    state.mainLoopIndex++;
+    state.IncrementState();
     var restLists = manager.GetSetting("restLists");
 
-    if(state.listIndex == (int)manager.GetSetting("practiceLists")) {
-      Do(new EventBase(DoConfirmStart));
-    }
     // check if this list exists in the configuration rest list
-    else if(Array.IndexOf(manager.GetSetting("restLists"), state.listIndex) != -1) {
-      Do(new EventBase(DoWaitForResearcher));
+    if(state.currentSession.GetList().restList) {
+      Do(new EventBase<StateMachine>(WaitForResearcher, state));
     } 
     else {
       Run();
     }
   }
 
-  protected void DoWaitForResearcher() {
+  protected void WaitForResearcher(StateMachine state) {
     WaitForKey("participant break",
                 "It's time for a short break, please " + 
                 "wait for the researcher to come check on you " +
@@ -86,19 +100,13 @@ public class ltpRepFRExperiment : RepFRExperiment {
                 "space");
   }
 
-  protected void DoFinalRecallPrompt() {
-    state.runIndex++;
-    base.RecallPrompt();
-  }
-
-  protected void DoFinalRecallInstructions() {
-    state.runIndex++;
+  protected void FinalRecallInstructions(StateMachine state) {
+    state.IncrementState();
     WaitForKey("final recall instructions", "You will now have ten minutes to recall as many words as you can from any you studied today. As before, please say any word that comes to mind. \n\n Press Any Key to Continue.", AnyKey); 
   }
 
-  protected void DoFinalRecall() {
-
-    state.runIndex++;
+  protected void FinalRecall(StateMachine state) {
+    state.IncrementState();
     string path = System.IO.Path.Combine(manager.fileManager.SessionPath(), "ffr.wav");
     FinalRecall(path);
   }

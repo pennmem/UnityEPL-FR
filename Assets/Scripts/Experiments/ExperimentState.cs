@@ -2,20 +2,27 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-public class Timeline<T> {
-    // Could also do this functional style, with Func<StateMachine, StateMachine>>
-    protected IList<T> states; 
-    protected bool reset_on_load;
-    protected int index;
+[Serializable]
+public class Timeline<T> { //: IDeserializationCallback {
+    // TODO: would be nice to give this IList interface
 
-    public Timeline(IList<T> states, 
+    public List<T> states; 
+    protected bool reset_on_load;
+    public int index;
+
+    public Timeline(List<T> states, 
                     bool reset_on_load = false) {
         this.states = states;
         this.reset_on_load = reset_on_load;
     }
 
+    public Timeline(bool reset_on_load = false) {
+        this.states = new List<T>();
+        this.reset_on_load = reset_on_load;
+    }
+
     virtual public bool IncrementState() {
-        if(index < states.Count() - 1 ) {
+        if(index < states.Count - 1 ) {
             index++;
             return true;
         }
@@ -34,34 +41,30 @@ public class Timeline<T> {
         }
     }
 
-    public void GetState() {
+    // void IDeserializationCallback.OnDeserialization(Object sender)
+    // {
+    //     // if reset is set, reset when the object is deserialized
+    //     if(reset_on_load) {
+    //         index = 0;
+    //     }
+    // }
+
+    public T GetState() {
         return states[index];
     }
-
-    public void LoadInternalState(dynamic state) {
-        if(!reset_on_load) {
-            index = state;
-        }
-        else {
-            index = 0;
-        }
-    }
-    
-    public dynamic GetInternalState() {
-        return index;
-    }
 }
 
-public class DataTimeline<T> : Timeline<T> {
-    public DateTimeline(IList<T> states, bool reset_on_load = false) : base(states, reset_on_load) {}
-}
-
+[Serializable]
 public class ExperimentTimeline : Timeline<Action<StateMachine>> {
-    public DateTimeline(IList<Action<StateMachine>> states, bool reset_on_load = false) : base(states, reset_on_load) {}
+    public ExperimentTimeline(List<Action<StateMachine>> states, bool reset_on_load = false) : base(states, reset_on_load) {}
+    // TODO: don't serialize functions
 }
 
+[Serializable]
 public class LoopTimeline : ExperimentTimeline {
-    public DateTimeline(IList<Action<StateMachine>> states, bool reset_on_load = false) : base(states, reset_on_load) {}
+    public LoopTimeline(List<Action<StateMachine>> states, bool reset_on_load = false) : base(states, reset_on_load) {}
+
+    // TODO: don't serialize functions
 
     override public bool IncrementState() {
         if(index < states.Count - 1 ) {
@@ -84,16 +87,17 @@ public class LoopTimeline : ExperimentTimeline {
     }
 }
 
+public class StateMachine : Dictionary<string, ExperimentTimeline> {
+    // Must be a serializable type
+    public dynamic currentSession;
+    public bool isComplete {get; set; } = false;
 
-public class StateMachine<T> : Dictionary<string, ExperimentTimeline> {
-    public T sessionData;
-
-    public StateMachine(T sessionData) : base() {
-        this.sessionData = sessionData;
+    public StateMachine(dynamic currentSession) : base() {
+        this.currentSession = currentSession;
     }
 
-    public void Run() {
-        GetTimeline(timelines.Peek()).GetState().Invoke(this);
+    public Action<StateMachine> GetState() {
+        return GetTimeline(timelines.Peek()).GetState();
     }
 
     // LIFO queue describing state machine timelines,
@@ -113,7 +117,7 @@ public class StateMachine<T> : Dictionary<string, ExperimentTimeline> {
     }
 
     public void PushTimeline(string timeline) {
-        if(self.Contains(timeline)) {
+        if(this.ContainsKey(timeline)) {
             timelines.Push(timeline);
         }
         else {
@@ -124,12 +128,6 @@ public class StateMachine<T> : Dictionary<string, ExperimentTimeline> {
     public void PopTimeline() {
         timelines.Pop();
     }
-
-    //     public void SaveState(string path) {
-    //          iterate over all timelines and save their GetInternalState
-    //     }
-    //     public void LoadState(string path) {
-    //     }
 
     private ExperimentTimeline GetTimeline(string timeline) {
         // this throws a keyerror if not existing, which
