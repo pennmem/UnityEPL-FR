@@ -41,6 +41,7 @@ public class RepFRExperiment : ExperimentBase {
 
     // TODO: Load Session
     currentSession = GenerateSession();
+    stateMachine = GetStateMachine();
 
     Start();
     Do(new EventBase(Run));
@@ -53,11 +54,12 @@ public class RepFRExperiment : ExperimentBase {
   public override StateMachine GetStateMachine() {
     StateMachine stateMachine = new StateMachine(currentSession);
 
+    // TODO: reformat
     stateMachine["Run"] = new ExperimentTimeline(new List<Action<StateMachine>> {IntroductionPrompt,
                                                   IntroductionVideo,
                                                   RepeatVideo,
                                                   MicrophoneTest, // runs MicrophoneTest states
-                                                  QuitOrContinue,
+                                                  QuitPrompt,
                                                   Practice, // runs Practice states
                                                   ConfirmStart,
                                                   MainLoop, // runs MainLoop states
@@ -71,12 +73,11 @@ public class RepFRExperiment : ExperimentBase {
                                                                   Rest,
                                                                   CountdownVideo,
                                                                   EncodingDelay,
-                                                                  PracticeEncoding,
+                                                                  Encoding,
                                                                   Rest,
                                                                   RecallPrompt,
                                                                   Recall,
-                                                                  EndTrial
-                                                                  });
+                                                                  EndPracticeTrial});
 
     stateMachine["MainLoop"] =  new LoopTimeline(new List<Action<StateMachine>> {StartTrial,
                                                                     NextListPrompt,
@@ -90,9 +91,10 @@ public class RepFRExperiment : ExperimentBase {
                                                                     EndTrial});
 
     stateMachine["MicrophoneTest"] = new LoopTimeline(new List<Action<StateMachine>> {MicTestPrompt,
-                                                                         RecordTest,
-                                                                         LoopPrompt});
-
+                                                                                      RecordTest,
+                                                                                      RepeatMicTest});
+    
+    stateMachine.PushTimeline("Run");
     return stateMachine;
   }
 
@@ -112,8 +114,7 @@ public class RepFRExperiment : ExperimentBase {
     int interval = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
     state.IncrementState();
     WaitForTime(interval);
-  }  
-
+  }
 
   protected void Rest(StateMachine state) {
     int duration = (int)manager.GetSetting("restDuration");
@@ -145,12 +146,29 @@ public class RepFRExperiment : ExperimentBase {
   }
 
   protected void EndTrial(StateMachine state) {
-    if(state.currentSession.IncrementList()) {
+    if(state.currentSession.NextList()) {
       state.IncrementState();
     }
     else {
       state.PopTimeline();
     }
+    
+    Run();
+  }
+
+  // FIXME awkward handling of practice
+  protected void EndPracticeTrial(StateMachine state) {
+    if(state.currentSession.NextList()) {
+      state.IncrementState();
+
+      if(state.currentSession.GetListIndex() >= manager.GetSetting("practiceLists")) {
+        state.PopTimeline();
+      }
+    }
+    else {
+      state.PopTimeline();
+    }
+
     
     Run();
   }
@@ -174,7 +192,11 @@ public class RepFRExperiment : ExperimentBase {
   }
 
   protected void NextListPrompt(StateMachine state) {
-    WaitForKey("pause before list", "Press any key for trial " + state.currentSession.GetListIndex().ToString() + ".", AnyKey);
+    // FIXME: awkward handling of practice
+    int list = (int)state.currentSession.GetListIndex() + 1 - manager.GetSetting("practiceLists");
+    WaitForKey("pause before list", 
+               String.Format("Press any key for trial {0}.", list),
+               AnyKey);
   }
 
   protected void NextPracticeListPrompt(StateMachine state) {
@@ -184,6 +206,13 @@ public class RepFRExperiment : ExperimentBase {
   //////////
   // Top level functions for state machine loops
   //////////
+
+  // NOTE: could also use this as a 'check loop' function
+  protected void Practice(StateMachine state) {
+    state.IncrementState();
+    state.PushTimeline("Practice");
+    Run();
+  }
 
   protected void MainLoop(StateMachine state) {
     state.IncrementState();
@@ -201,6 +230,7 @@ public class RepFRExperiment : ExperimentBase {
   // Experiment presentation stages
   //////////
 
+  // TODO: need to separately manage practice and encoding lists
   protected void Encoding(StateMachine state) {
     Encoding((WordStim)state.currentSession.GetWord(), state.currentSession.GetSerialPos());
     if(!state.currentSession.NextWord()) {
@@ -208,11 +238,12 @@ public class RepFRExperiment : ExperimentBase {
     }
   }
 
+
   protected void Recall(StateMachine state) {
     string wavPath = System.IO.Path.Combine(manager.fileManager.SessionPath(), 
                                             state.currentSession.GetListIndex().ToString() + ".wav");
-    base.Recall(wavPath);
     state.IncrementState();
+    base.Recall(wavPath);
   }
 
   //////////
@@ -225,21 +256,12 @@ public class RepFRExperiment : ExperimentBase {
     // SaveSession();
   }
 
-  // TODO: these should be moved to the Session class
-  // public void WriteLstFiles() {
-  //   // create .lst files for annotation scripts
-  //   for(int i = 0; i < currentSession.Count; i++) {
-  //     string lstfile = System.IO.Path.Combine(manager.fileManager.SessionPath(), i.ToString() + ".lst");
-  //     IList<string> noRepeats = new HashSet<string>(currentSession[i].encoding.words).ToList();
-  //       using (var stream = System.IO.File.OpenWrite(lstfile))
-  //       {
-  //         using (System.IO.StreamWriter writer = new System.IO.StreamWriter(stream))
-  //         {
-  //           writer.WriteAllLines(noRepeats);
-  //         }
-  //       }
-  //   }
-  // }
+  public void WriteLstFile(StimWordList list, int index) {
+    // create .lst files for annotation scripts
+    string lstfile = System.IO.Path.Combine(manager.fileManager.SessionPath(), index.ToString() + ".lst");
+    IList<string> noRepeats = new HashSet<string>(list.words).ToList();
+    File.WriteAllLines(lstfile, noRepeats, System.Text.Encoding.UTF8);
+  }
 
   //////////
   // Word/Stim list generation
@@ -293,45 +315,49 @@ public class RepFRExperiment : ExperimentBase {
     var session = new RepFRSession();
 
     for (int i=0; i<practice_lists; i++) {
-      session.states.Add(MakeRun(subset_gen, false, false));
+      session.Add(MakeRun(subset_gen, false, false));
     }
 
     for (int i=0; i<pre_no_stim_lists; i++) {
-      session.states.Add(MakeRun(subset_gen, false, false));
+      session.Add(MakeRun(subset_gen, false, false));
     }
 
     var randomized_list = new RepFRSession();
 
     for (int i=0; i<encoding_only_lists; i++) {
-      randomized_list.states.Add(MakeRun(subset_gen, true, false));
+      randomized_list.Add(MakeRun(subset_gen, true, false));
     }
 
     for (int i=0; i<retrieval_only_lists; i++) {
-      randomized_list.states.Add(MakeRun(subset_gen, false, true));
+      randomized_list.Add(MakeRun(subset_gen, false, true));
     }
 
     for (int i=0; i<encoding_and_retrieval_lists; i++) {
-      randomized_list.states.Add(MakeRun(subset_gen, true, true));
+      randomized_list.Add(MakeRun(subset_gen, true, true));
     }
 
     for (int i=0; i<no_stim_lists; i++) {
-      randomized_list.states.Add(MakeRun(subset_gen, false, false));
+      randomized_list.Add(MakeRun(subset_gen, false, false));
     }
 
-    session.states.AddRange(RepWordGenerator.Shuffle(randomized_list));
+    session.AddRange(RepWordGenerator.Shuffle(randomized_list));
+
+    for (int i=0; i<session.Count; i++) {
+      WriteLstFile(session[i].encoding, i);
+    }
 
     return session;
   }
 }
 
 public class RepFRRun {
-  public Timeline<WordStim> encoding;
-  public Timeline<WordStim> recall;
+  public StimWordList encoding;
+  public StimWordList recall;
 
   public RepFRRun(StimWordList encoding_list, StimWordList recall_list,
       bool set_encoding_stim=false, bool set_recall_stim=false) {
     encoding = encoding_list;
-    recall = recall_list;
+    recall = recall_list; 
   }
 }
 
@@ -347,7 +373,7 @@ public class RepFRSession : Timeline<RepFRRun> {
   }
 
   public bool NextList() {
-    return GetState().encoding.IncrementState();
+    return IncrementState();
   }
 
   public int GetSerialPos() {

@@ -3,26 +3,25 @@ using System.Collections;
 using System.Collections.Generic;
 
 [Serializable]
-public class Timeline<T> { //: IDeserializationCallback {
-    // TODO: would be nice to give this IList interface
-
-    public List<T> states; 
+public class Timeline<T> : IList<T> { //: IDeserializationCallback {
+    protected List<T> items = new List<T>();
     protected bool reset_on_load;
+    public virtual bool IsReadOnly { get { return false; } }
     public int index;
+    public virtual int Count {get { return items.Count; } }
 
-    public Timeline(List<T> states, 
+    public Timeline(IEnumerable<T> states, 
                     bool reset_on_load = false) {
-        this.states = states;
+        this.AddRange(states);
         this.reset_on_load = reset_on_load;
     }
 
     public Timeline(bool reset_on_load = false) {
-        this.states = new List<T>();
         this.reset_on_load = reset_on_load;
     }
 
     virtual public bool IncrementState() {
-        if(index < states.Count - 1 ) {
+        if(index < this.Count - 1 ) {
             index++;
             return true;
         }
@@ -49,8 +48,57 @@ public class Timeline<T> { //: IDeserializationCallback {
     //     }
     // }
 
+    public virtual T this[int i] {
+        get { return items[i]; }
+        set { throw new NotSupportedException("Indexing is read only"); }
+    }
+
     public T GetState() {
-        return states[index];
+        return this[index];
+    }
+
+    virtual public int IndexOf(T item) {
+        throw new NotSupportedException("Provided only for compatibility");
+    }
+
+    virtual public void Insert(int index, T item) {
+        items.Insert(index, item);
+    }
+
+    virtual public void RemoveAt(int index) {
+        items.RemoveAt(index);
+    }
+
+    virtual public void Add(T item) {
+        items.Add(item);
+    }
+
+    virtual public void AddRange(IEnumerable<T> new_items) {
+        items.AddRange(new_items);
+    }
+
+    virtual public void Clear() {
+        items.Clear();
+    }
+
+    virtual public bool Contains(T item) {
+        throw new NotSupportedException("Provided only for compatibility");
+    }
+
+    virtual public void CopyTo(T[] array, int index) {
+        items.CopyTo(array, index);
+    }
+
+    virtual public bool Remove(T item) {
+        throw new NotSupportedException("Provided only for compatibility");
+    }
+
+    virtual public IEnumerator<T> GetEnumerator() {
+        return items.GetEnumerator();
+    }
+
+    IEnumerator System.Collections.IEnumerable.GetEnumerator() {
+       return this.GetEnumerator();
     }
 }
 
@@ -67,7 +115,7 @@ public class LoopTimeline : ExperimentTimeline {
     // TODO: don't serialize functions
 
     override public bool IncrementState() {
-        if(index < states.Count - 1 ) {
+        if(index < this.Count - 1 ) {
             index++;
         }
         else {
@@ -81,7 +129,7 @@ public class LoopTimeline : ExperimentTimeline {
             index--;
         }
         else {
-            index = states.Count - 1;
+            index = this.Count - 1;
         }
             return true;
     }

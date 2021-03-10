@@ -101,7 +101,7 @@ public abstract class ExperimentBase : EventLoop {
 
         DoIn(new EventBase(() => {
             Run();
-        }), manager.GetSetting("micTestDuration"));
+        }), manager.GetSetting("micTestDuration")*2);
     }
 
     protected void Encoding(WordStim word, int index) {
@@ -232,7 +232,7 @@ public abstract class ExperimentBase : EventLoop {
         SendHostPCMessage("RECALL", new Dictionary<string, object>() {{"duration", duration}});
 
         manager.DoIn(new EventBase(() => {
-                manager.recorder.StopRecording();
+                manager.recorder.StopRecording(); // FIXME: this call is SLOW
                 manager.lowBeep.Play(); // TODO: we should wait for this beep to finish
         }), duration );
 
@@ -286,7 +286,6 @@ public abstract class ExperimentBase : EventLoop {
     
     
     protected void QuitPrompt(StateMachine state) {
-        state.IncrementState();
         WaitForKey("subject/session confirmation", 
             "Running " + manager.GetSetting("participantCode") + " in session " 
             + (int)manager.GetSetting("session") + " of " + manager.GetSetting("experimentName") 
@@ -297,12 +296,10 @@ public abstract class ExperimentBase : EventLoop {
 
     protected void MicTestPrompt(StateMachine state) {
         manager.Do(new EventBase<string, string>(manager.ShowTitle, "microphone test title", "Microphone Test"));
-        state.IncrementState();
         WaitForKey("microphone test prompt", "Press any key to record a sound after the beep.", (KeyAction)AnyKey);
     }
 
     protected void ConfirmStart(StateMachine state) {
-        state.IncrementState();
         WaitForKey("confirm start", "Please let the experimenter know \n" +
                 "if you have any questions about \n" +
                 "what you just did.\n\n" +
@@ -344,6 +341,7 @@ public abstract class ExperimentBase : EventLoop {
             (handler, msg) => {
                 if(msg.down && msg.key == key) {
                     handler.active = false;
+                    stateMachine.IncrementState();
                     Do(new EventBase(Run));
                     return false;
                 }
@@ -362,6 +360,9 @@ public abstract class ExperimentBase : EventLoop {
     // Key Handling functions--register action to Input Handler, which then receives messages from
     // manager. Input may also be handled by registering another handler as a child of manager.
     //////////
+
+    // TODO: rather than accessing stateMachine, these should receive a closure on state from
+    // their caller
 
     // protected bool DistractorAnswer(InputHandler handler, KeyMsg msg) {
     //     // FIXME: this needs a different scratchpad than state with the new structure
@@ -518,7 +519,8 @@ public abstract class ExperimentBase : EventLoop {
     
     public virtual void SaveState() {
         string path = System.IO.Path.Combine(manager.fileManager.SessionPath(), "experiment_state.json");
-        JsonConvert.SerializeObject(stateMachine, path);
+        // TODO: StreamWriter to save
+        JsonConvert.SerializeObject(stateMachine);
     }
 
     public virtual StateMachine LoadState(string participant, int session) {

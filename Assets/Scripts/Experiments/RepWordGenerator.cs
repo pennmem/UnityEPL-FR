@@ -85,6 +85,15 @@ public class BoundedInt {
   }
 }
 
+public static class EnumeratorExtensions
+{
+    // Used to Copy StimWordList
+    public static IEnumerable<T> ToEnumerable<T>(this IEnumerator<T> enumerator)
+    {
+      while(enumerator.MoveNext())
+          yield return enumerator.Current;
+    }
+}
 
 // Provides random subsets of a word pool without replacement.
 public class RandomSubset {
@@ -108,9 +117,9 @@ public class RandomSubset {
 }
 
 // This class keeps a list of words associated with their stim states.
-public class StimWordList : ICollection<WordStim> {
+public class StimWordList : Timeline<WordStim> {
 
-  public bool IsReadOnly { get { return false; } }
+  public override bool IsReadOnly { get { return false; } }
   protected List<string> words_;
   public IList<string> words {
     get { return words_.AsReadOnly(); }
@@ -119,7 +128,7 @@ public class StimWordList : ICollection<WordStim> {
   public IList<bool> stims {
     get { return stims_.AsReadOnly(); }
   }
-  public int Count {
+  public override int Count {
     get { return words_.Count; }
   }
   protected double score_;
@@ -164,7 +173,7 @@ public class StimWordList : ICollection<WordStim> {
     stims_.Add(stim);
   }
 
-  public void Add(WordStim word_stim) {
+  public override void Add(WordStim word_stim) {
     Add(word_stim.word, word_stim.stim);
   }
 
@@ -173,39 +182,46 @@ public class StimWordList : ICollection<WordStim> {
     stims_.Insert(index, stim);
   }
 
-  public void Insert(int index, WordStim word_stim) {
+  public override void Insert(int index, WordStim word_stim) {
     Insert(index, word_stim.word, word_stim.stim);
   }
 
-  public IEnumerator<WordStim> GetEnumerator() {
+  public override IEnumerator<WordStim> GetEnumerator() {
     for (int i=0; i<words_.Count; i++) {
       yield return new WordStim(words_[i], stims_[i]);
     }
   }
-  IEnumerator System.Collections.IEnumerable.GetEnumerator() {
-    return GetEnumerator();
-  }
+
+  // override IEnumerator System.Collections.IEnumerable.GetEnumerator() {
+  //   return this.GetEnumerator();
+  // }
 
   // needed to allow writing to collection
   // when loading session in progress
-  public void Clear() {
+  public override void Clear() {
     throw new NotSupportedException("method included only for compatibility");
   }
 
-  public bool Contains(WordStim item) {
+  public override bool Contains(WordStim item) {
     throw new NotSupportedException("method included only for compatibility");
   }
 
-  public void CopyTo(WordStim[] array, int arrayIndex) {
-    throw new NotSupportedException("method included only for compatibility");
+  public override void CopyTo(WordStim[] array, int arrayIndex) {
+    if(array == null) throw new ArgumentNullException();
+
+    if(arrayIndex < 0) throw new ArgumentOutOfRangeException();
+
+    if(this.Count > array.Length - arrayIndex) throw new ArgumentException();
+
+    GetEnumerator().ToEnumerable().ToArray().CopyTo(array, arrayIndex);
   }
 
-  public bool Remove(WordStim item) {
+  public override bool Remove(WordStim item) {
     throw new NotSupportedException("method included only for compatibility");
   }
 
   // Read-only indexed access.
-  public WordStim this[int i] {
+  public override WordStim this[int i] {
     get { return new WordStim(words_[i], stims_[i]); }
   }
 
