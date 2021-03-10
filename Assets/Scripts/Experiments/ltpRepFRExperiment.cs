@@ -22,48 +22,49 @@ public class ltpRepFRExperiment : RepFRExperiment {
     // wrapper functions that add state machine information, please do.
     StateMachine stateMachine = base.GetStateMachine();
 
-    stateMachine["Run"] = new List<Action<StateMachine>> {IntroductionPrompt,
-                                            IntroductionVideo,
-                                            RepeatVideo,
-                                            MicrophoneTest, // runs MicrophoneTest states
-                                            RepeatMicTest,
-                                            QuitOrContinue,
-                                            Practice, // runs Practice states
-                                            ConfirmStart,
-                                            MainLoop, // runs MainLoop states
-                                            FinalRecallInstructions,
-                                            FinalRecallPrompt,
-                                            FinalRecall,
-                                            FinishExperiment};
+    // TODO: reformat
+    stateMachine["Run"] = new ExperimentTimeline(new List<Action<StateMachine>> {IntroductionPrompt,
+                                                                                IntroductionVideo,
+                                                                                RepeatVideo,
+                                                                                MicrophoneTest, // runs MicrophoneTest states
+                                                                                RepeatMicTest,
+                                                                                QuitPrompt,
+                                                                                Practice, // runs Practice states
+                                                                                ConfirmStart,
+                                                                                MainLoop, // runs MainLoop states
+                                                                                FinalRecallInstructions,
+                                                                                RecallPrompt,
+                                                                                FinalRecall,
+                                                                                FinishExperiment});
 
     // though it is largely the same as the main loop,
     // practice is a conceptually distinct state machine
     // that just happens to overlap with MainLoop
-    stateMachine["Practice"] = new List<Action<StateMachine>> {StartTrial,
-                                                 NextPracticeListPrompt,
-                                                 Rest,
-                                                 CountdownVideo,
-                                                 EncodingDelay,
-                                                 PracticeEncoding,
-                                                 Rest,
-                                                 RecallPrompt,
-                                                 Recall,
-                                                 EndTrial
-                                                };
+    stateMachine["Practice"] = new LoopTimeline(new List<Action<StateMachine>> {StartTrial,
+                                                                                NextPracticeListPrompt,
+                                                                                Rest,
+                                                                                CountdownVideo,
+                                                                                EncodingDelay,
+                                                                                Encoding,
+                                                                                Rest,
+                                                                                RecallPrompt,
+                                                                                Recall,
+                                                                                EndPracticeTrial});
 
-    stateMachine["MainLoop"] = new List<Action<StateMachine>> {StartTrial,
-                                                 NextListPrompt,
-                                                 Rest,
-                                                 CountdownVideo,
-                                                 EncodingDelay,
-                                                 Encoding,
-                                                 Rest,
-                                                 RecallPrompt,
-                                                 Recall,
-                                                 EndTrial};
+    stateMachine["MainLoop"] = new LoopTimeline(new List<Action<StateMachine>> {StartTrial,
+                                                                                NextListPrompt,
+                                                                                Rest,
+                                                                                CountdownVideo,
+                                                                                EncodingDelay,
+                                                                                Encoding,
+                                                                                Rest,
+                                                                                RecallPrompt,
+                                                                                Recall,
+                                                                                EndTrial});
 
-    stateMachine["MicrophoneTest"] = new List<Action<StateMachine>> {MicTestPrompt,
-                                                       RecordTest};
+    stateMachine["MicrophoneTest"] = new LoopTimeline(new List<Action<StateMachine>> {MicTestPrompt,
+                                                                                      RecordTest,
+                                                                                      RepeatMicTest});
 
     return stateMachine;
   }
@@ -79,14 +80,15 @@ public class ltpRepFRExperiment : RepFRExperiment {
 
     ReportEvent("start trial", data);
 
-    state.IncrementState();
     var restLists = manager.GetSetting("restLists");
 
     // check if this list exists in the configuration rest list
-    if(state.currentSession.GetList().restList) {
+    // if(state.currentSession.GetList().restList) {
+    if(Array.IndexOf(manager.GetSetting("restLists"), state.currentSession.GetListIndex()) != -1) {
       Do(new EventBase<StateMachine>(WaitForResearcher, state));
     } 
     else {
+      state.IncrementState();
       Run();
     }
   }
