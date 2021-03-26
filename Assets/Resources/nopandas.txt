@@ -18,7 +18,7 @@ def assign_list_numbers_from_word_list(all_words, number_of_lists, start=0):
     return all_words
 
 
-def assign_list_types_from_type_list(pool, num_baseline, stim_nonstim, num_ps=0):
+def assign_list_types_from_type_list(pool, num_baseline, stim_nonstim, num_ps=0, num_postbase=0):
     """Assign list types to a pool. The types are:
 
         * ``BASELINE``
@@ -32,6 +32,7 @@ def assign_list_types_from_type_list(pool, num_baseline, stim_nonstim, num_ps=0)
         :param list stim_nonstim:
             a list of "STIM" or "NON-STIM" strings indicating the order of stim and non-stim interleaved lists.
         :param int num_ps: Number of parameter search trials.
+        :param int num_postbase: Number of baseline trials at the end.
         :returns: pool with assigned types
         :rtype: list
 
@@ -39,7 +40,7 @@ def assign_list_types_from_type_list(pool, num_baseline, stim_nonstim, num_ps=0)
 
     # Check that the inputs match the number of lists
     last_listno = pool[-1]['listno']
-    parameters_list_count = num_baseline + len(stim_nonstim) + num_ps
+    parameters_list_count = num_baseline + len(stim_nonstim) + num_ps + num_postbase
     error_message = "I think there should be " + str(parameters_list_count) + " lists but I see " + str(last_listno+1) + "."
     assert last_listno+1 == parameters_list_count, error_message
 
@@ -50,6 +51,9 @@ def assign_list_types_from_type_list(pool, num_baseline, stim_nonstim, num_ps=0)
             pool[i]['stim_channels'] = None
         elif word['listno'] < num_baseline + num_ps:
             pool[i]['phase_type'] = "PS"
+            pool[i]['stim_channels'] = None
+        elif word['listno'] >= parameters_list_count - num_postbase
+            pool[i]['phase_type'] = "BASELINE"
             pool[i]['stim_channels'] = None
         else:
             stimtype = stim_nonstim[word['listno']-num_ps-num_baseline]

@@ -115,6 +115,29 @@ public class EditableExperiment : CoroutineExperiment
             SetRamulatorState("RETRIEVAL", true, new Dictionary<string, object>() { { "current_trial", i } });
             yield return DoRecall();
             SetRamulatorState("RETRIEVAL", false, new Dictionary<string, object>() { { "current_trial", i } });
+
+            if (currentSettings.pauseBetweenGroups > 0) {
+                if (currentSettings.listGroupSize == 0 ||
+                    ((i+1) % currentSettings.listGroupSize) == 0) {
+                    
+                    string state = "DELAYSHAM";
+                    if (currentSettings.experimentName == "TICCLSb") {
+                        if ((i+1) / currentSettings.listGroupSize >= 2) {
+                            state = "DELAY";
+                        }
+                    }
+                    else if (currentSettings.experimentName == "TICCLSb") {
+                        if (currentSettings.numberOfLists - i < currentSettings.listGroupSize) {
+                            state = "DELAY";
+                        }
+                    }
+
+                    SetRamulatorState(state, true, new Dictionary<string, object>() { { "current_trial", i } });
+                    textDisplayer.DisplayText("display wait message", "The next list will begin after the waiting period.");
+                    yield return PausableWait(currentSettings.pauseBetweenGroups);
+                    SetRamulatorState(state, false, new Dictionary<string, object>() { { "current_trial", i } });
+                }
+            }
         }
 
         ramulatorInterface.SendExitMessage();
@@ -396,7 +419,7 @@ public class EditableExperiment : CoroutineExperiment
         bool isEvenNumberSession = newSessionNumber % 2 == 0;
         bool isTwoParter = currentSettings.isTwoParter;
         if (words == null)
-            SetWords(currentSettings.wordListGenerator.GenerateListsAndWriteWordpool(currentSettings.numberOfLists, currentSettings.wordsPerList, currentSettings.isCategoryPool, isTwoParter, isEvenNumberSession, UnityEPL.GetParticipants()[0]));
+            SetWords(currentSettings.wordListGenerator.GenerateListsAndWriteWordpool(currentSettings.numberOfLists, currentSettings.wordsPerList, currentSettings.isCategoryPool, isTwoParter, isEvenNumberSession, UnityEPL.GetParticipants()[0]), currentSettings.wordpoolFilename);
         SaveState();
     }
 

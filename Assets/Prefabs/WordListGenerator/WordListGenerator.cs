@@ -6,29 +6,30 @@ using UnityEngine;
 
 public abstract class WordListGenerator
 {
-    public virtual IronPython.Runtime.List GenerateListsAndWriteWordpool(int numberOfLists, int lengthOfEachList, bool isCategoryPool, bool isTwoParter, bool isEvenNumberSession, string participantCode)
+    public virtual IronPython.Runtime.List GenerateListsAndWriteWordpool(int numberOfLists, int lengthOfEachList, bool isCategoryPool, bool isTwoParter, bool isEvenNumberSession, string participantCode, string wordpoolFilename)
     {
         WriteWordpoolToOutputFolder(isCategoryPool);
-        return GenerateLists(numberOfLists, lengthOfEachList, new System.Random(), isCategoryPool, isTwoParter, isEvenNumberSession, participantCode);
+        return GenerateLists(numberOfLists, lengthOfEachList, new System.Random(), isCategoryPool, isTwoParter, isEvenNumberSession, participantCode, wordpoolFilename);
     }
 
-    public abstract IronPython.Runtime.List GenerateLists(int numberOfLists, int lengthOfEachList, System.Random rng, bool isCategoryPool, bool isTwoParter, bool isEvenNumberSession, string participantCode);
+    public abstract IronPython.Runtime.List GenerateLists(int numberOfLists, int lengthOfEachList, System.Random rng, bool isCategoryPool, bool isTwoParter, bool isEvenNumberSession, string participantCode, string wordpoolFilename);
 
-    private void WriteWordpoolToOutputFolder(bool isCategoryPool)
+    private void WriteWordpoolToOutputFolder(bool isCategoryPool, string wordpoolFilename="")
     {
         string directory = UnityEPL.GetParticipantFolder();
-        string filename;
-        if (isCategoryPool)
-        {
-            filename = "ram_categorized_en";
-        }
-        else
-        {
-            filename = "ram_wordpool_en";
+        if (wordpoolFilename.Length() == 0) {
+            if (isCategoryPool)
+            {
+                wordpoolFilename = "ram_categorized_en";
+            }
+            else
+            {
+                wordpoolFilename = "ram_wordpool_en";
+            }
         }
 
-        string filePath = System.IO.Path.Combine(directory, filename);
-        string[] ram_wordpool_lines = GetWordpoolLines(filename);
+        string filePath = System.IO.Path.Combine(directory, wordpoolFilename);
+        string[] ram_wordpool_lines = GetWordpoolLines(wordpoolFilename);
 
         if (isCategoryPool)
         {
@@ -283,6 +284,7 @@ public class FRListGenerator : WordListGenerator
     private int NONSTIM_LIST_COUNT;
     private int BASELINE_LIST_COUNT;
     private int PS_LIST_COUNT;
+    private int POSTBASE_LIST_COUNT;
 
     private int A_STIM_COUNT;
     private int B_STIM_COUNT;
@@ -301,24 +303,26 @@ public class FRListGenerator : WordListGenerator
     /// <param name="NEW_AB_STIM_COUNT">Of stim lists, how many should be at stim site A and B simultaneously. </param>
     /// <param name="NEW_AMPLITUDE_COUNT">How many different amplitudes to use.  (For example, 1 for all the same amplitude, two if we want stim lists to be evenly divided between two different amplitudes.  Note the actual amplitude values are not set here.  We don't want to be responsible for that!</param>
     /// <param name="NEW_PS_LIST_COUNT">How many lists to label as "PS" when communicating with ramulator.  These will come after baseline and before stim/nonstim, but no experiments include both stim/nonstim and PS lists.</param>
-    public FRListGenerator(int NEW_STIM_LIST_COUNT, int NEW_NONSTIM_LIST_COUNT, int NEW_BASELINE_LIST_COUNT, int NEW_A_STIM_COUNT, int NEW_B_STIM_COUNT, int NEW_AB_STIM_COUNT, int NEW_AMPLITUDE_COUNT, int NEW_PS_LIST_COUNT = 0)
+    /// <param name="NEW_POSTBASE_LIST_COUNT">How many baseline lists to run after stim and nonstim lists finish.</param>
+    public FRListGenerator(int NEW_STIM_LIST_COUNT, int NEW_NONSTIM_LIST_COUNT, int NEW_BASELINE_LIST_COUNT, int NEW_A_STIM_COUNT, int NEW_B_STIM_COUNT, int NEW_AB_STIM_COUNT, int NEW_AMPLITUDE_COUNT, int NEW_PS_LIST_COUNT = 0, int NEW_POSTBASE_LIST_COUNT)
     {
         STIM_LIST_COUNT = NEW_STIM_LIST_COUNT;
         NONSTIM_LIST_COUNT = NEW_NONSTIM_LIST_COUNT;
         BASELINE_LIST_COUNT = NEW_BASELINE_LIST_COUNT;
         PS_LIST_COUNT = NEW_PS_LIST_COUNT;
+        POSTBASE_LIST_COUNT = NEW_POSTBASE_LIST_COUNT;
         A_STIM_COUNT = NEW_A_STIM_COUNT;
         B_STIM_COUNT = NEW_B_STIM_COUNT;
         AB_STIM_COUNT = NEW_AB_STIM_COUNT;
         AMPLITUDE_COUNT = NEW_AMPLITUDE_COUNT;
     }
 
-    public override IronPython.Runtime.List GenerateLists(int numberOfLists, int lengthOfEachList, System.Random rng, bool isCategoryPool, bool isTwoParter, bool isEvenNumberSession, string participantCode)
+    public override IronPython.Runtime.List GenerateLists(int numberOfLists, int lengthOfEachList, System.Random rng, bool isCategoryPool, bool isTwoParter, bool isEvenNumberSession, string participantCode, string wordpoolFilename)
     {
-        return GenerateListsOptionalCategory(numberOfLists, lengthOfEachList, isCategoryPool, rng, isTwoParter, isEvenNumberSession, participantCode);
+        return GenerateListsOptionalCategory(numberOfLists, lengthOfEachList, isCategoryPool, rng, isTwoParter, isEvenNumberSession, participantCode, wordpoolFilename);
     }
 
-    public IronPython.Runtime.List GenerateListsOptionalCategory(int numberOfLists, int lengthOfEachList, bool isCategoryPool, System.Random rng, bool isTwoParter, bool isEvenNumberSession, string participantCode)
+    public IronPython.Runtime.List GenerateListsOptionalCategory(int numberOfLists, int lengthOfEachList, bool isCategoryPool, System.Random rng, bool isTwoParter, bool isEvenNumberSession, string participantCode, string wordpoolFilename)
     {
         //////////////////////Load the python wordpool code
         Microsoft.Scripting.Hosting.ScriptScope scope = BuildPythonScope();
@@ -326,13 +330,15 @@ public class FRListGenerator : WordListGenerator
 
         //////////////////////Load the word pool
         IronPython.Runtime.List all_words;
-        if (isCategoryPool)
-        {
-            all_words = ReadWordsFromPoolTxt("ram_categorized_en", isCategoryPool);
-        }
-        else
-        {
-            all_words = ReadWordsFromPoolTxt("ram_wordpool_en", isCategoryPool);
+        if (wordpoolFilename.Length() == 0) {
+            if (isCategoryPool)
+            {
+                all_words = ReadWordsFromPoolTxt("ram_categorized_en", isCategoryPool);
+            }
+            else
+            {
+                all_words = ReadWordsFromPoolTxt("ram_wordpool_en", isCategoryPool);
+            }
         }
 
         //////////////////////For two part experiments, reliably shuffle according to participant name and construct halves, then shuffle again
@@ -382,7 +388,7 @@ public class FRListGenerator : WordListGenerator
         stim_nostim_list = Shuffled(rng, stim_nostim_list);
 
         var assign_list_types_from_type_list = scope.GetVariable("assign_list_types_from_type_list");
-        var words_with_types = assign_list_types_from_type_list(words_with_listnos, BASELINE_LIST_COUNT, stim_nostim_list, num_ps: PS_LIST_COUNT);
+        var words_with_types = assign_list_types_from_type_list(words_with_listnos, BASELINE_LIST_COUNT, stim_nostim_list, num_ps: PS_LIST_COUNT, num_postbase: POSTBASE_LIST_COUNT);
 
 
         //////////////////////Build stim channel lists and assign stim channels

@@ -29,6 +29,9 @@ public struct ExperimentSettings
     public bool isTwoParter; //whether or not the experiment should divide the word pool in two and alternative halves between sessions.
     public bool isCategoryPool; //whether or not the catFR wordpool is used.
     public bool useSessionListSelection; //whether or not the list to begin from can be chosen in the start screen.
+    public int listGroupSize = 0; //if > 0, insert pauseBetweenGroups record-only pause between this many lists.
+    public float pauseBetweenGroups = 0; //seconds to pause between groupings of listGroupSize lists.
+    public string wordpoolFilename = ""; //if set, override wordpool with this one.
 }
 
 public static class FRExperimentSettings
@@ -43,6 +46,8 @@ public static class FRExperimentSettings
                                                                      GetCatPS4Settings(),
                                                                      GetTICLFRSettings(),
                                                                      GetTICLCatFRSettings(),
+                                                                     GetTICCLSSettings(),
+                                                                     GetTICCLSbSettings(),
                                                                      GetTestFR1Settings() };
 
     /// <summary>
@@ -265,6 +270,38 @@ public static class FRExperimentSettings
         TICLCatFRSettings.experimentName = "TICL_CatFR";
         TICLCatFRSettings.isCategoryPool = true;
         return TICLCatFRSettings;
+    }
+
+    /// <summary>
+    /// Gets the TICCLS settings.
+    /// 
+    /// This is the same as TICL_CatFR, but with a different word list.
+    /// </summary>
+    /// <returns>The PS5 settings.</returns>
+    public static ExperimentSettings GetTICCLSSettings()
+    {
+        ExperimentSettings TICCLSSettings = GetTICLCatFRSettings();
+        TICCLSSettings.experimentName = "TICCLS";
+        TICCLSSettings.wordListGenerator = new FRListGenerator(15, 0, 5, 15, 0, 0, 1, 0, 5);
+        TICCLSSettings.wordpoolFilename = "ram_categorized_300_en";
+        TICCLSSettings.listGroupSize = 5;
+        TICCLSSettings.pauseBetweenGroups = 50*60;
+        return TICCLSSettings;
+    }
+
+    /// <summary>
+    /// Gets the TICCLSb settings.
+    /// 
+    /// This is the same as TICCLS, but the first delay and subsequent list
+    /// are the sham periods, rather than the last.
+    /// </summary>
+    /// <returns>The PS5 settings.</returns>
+    public static ExperimentSettings GetTICCLSbSettings()
+    {
+        ExperimentSettings TICCLSbSettings = GetTICCLSSettings();
+        TICCLSbSettings.wordListGenerator = new FRListGenerator(15, 0, 10, 15, 0, 0, 1, 0, 0);
+        TICCLSbSettings.experimentName = "TICCLSb";
+        return TICCLSbSettings;
     }
 
     /// <summary>
