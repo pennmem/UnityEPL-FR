@@ -118,15 +118,15 @@ public class EditableExperiment : CoroutineExperiment
 
             if (currentSettings.pauseBetweenGroups > 0) {
                 if (currentSettings.listGroupSize == 0 ||
-                    ((i+1) % currentSettings.listGroupSize) == 0) {
+                    (i>0 && (i % currentSettings.listGroupSize) == 0)) {
                     
                     string state = "DELAYSHAM";
                     if (currentSettings.experimentName == "TICCLSb") {
-                        if ((i+1) / currentSettings.listGroupSize >= 2) {
+                        if (i / currentSettings.listGroupSize >= 2) {
                             state = "DELAY";
                         }
                     }
-                    else if (currentSettings.experimentName == "TICCLSb") {
+                    else if (currentSettings.experimentName == "TICCLS") {
                         if (currentSettings.numberOfLists - i < currentSettings.listGroupSize) {
                             state = "DELAY";
                         }
@@ -419,7 +419,7 @@ public class EditableExperiment : CoroutineExperiment
         bool isEvenNumberSession = newSessionNumber % 2 == 0;
         bool isTwoParter = currentSettings.isTwoParter;
         if (words == null)
-            SetWords(currentSettings.wordListGenerator.GenerateListsAndWriteWordpool(currentSettings.numberOfLists, currentSettings.wordsPerList, currentSettings.isCategoryPool, isTwoParter, isEvenNumberSession, UnityEPL.GetParticipants()[0]), currentSettings.wordpoolFilename);
+            SetWords(currentSettings.wordListGenerator.GenerateListsAndWriteWordpool(currentSettings.numberOfLists, currentSettings.wordsPerList, currentSettings.isCategoryPool, isTwoParter, isEvenNumberSession, UnityEPL.GetParticipants()[0], currentSettings.wordpoolFilename));
         SaveState();
     }
 

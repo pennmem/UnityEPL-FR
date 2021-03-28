@@ -8,7 +8,7 @@ public abstract class WordListGenerator
 {
     public virtual IronPython.Runtime.List GenerateListsAndWriteWordpool(int numberOfLists, int lengthOfEachList, bool isCategoryPool, bool isTwoParter, bool isEvenNumberSession, string participantCode, string wordpoolFilename)
     {
-        WriteWordpoolToOutputFolder(isCategoryPool);
+        WriteWordpoolToOutputFolder(isCategoryPool, wordpoolFilename);
         return GenerateLists(numberOfLists, lengthOfEachList, new System.Random(), isCategoryPool, isTwoParter, isEvenNumberSession, participantCode, wordpoolFilename);
     }
 
@@ -17,7 +17,7 @@ public abstract class WordListGenerator
     private void WriteWordpoolToOutputFolder(bool isCategoryPool, string wordpoolFilename="")
     {
         string directory = UnityEPL.GetParticipantFolder();
-        if (wordpoolFilename.Length() == 0) {
+        if (wordpoolFilename.Length == 0) {
             if (isCategoryPool)
             {
                 wordpoolFilename = "ram_categorized_en";
@@ -304,7 +304,7 @@ public class FRListGenerator : WordListGenerator
     /// <param name="NEW_AMPLITUDE_COUNT">How many different amplitudes to use.  (For example, 1 for all the same amplitude, two if we want stim lists to be evenly divided between two different amplitudes.  Note the actual amplitude values are not set here.  We don't want to be responsible for that!</param>
     /// <param name="NEW_PS_LIST_COUNT">How many lists to label as "PS" when communicating with ramulator.  These will come after baseline and before stim/nonstim, but no experiments include both stim/nonstim and PS lists.</param>
     /// <param name="NEW_POSTBASE_LIST_COUNT">How many baseline lists to run after stim and nonstim lists finish.</param>
-    public FRListGenerator(int NEW_STIM_LIST_COUNT, int NEW_NONSTIM_LIST_COUNT, int NEW_BASELINE_LIST_COUNT, int NEW_A_STIM_COUNT, int NEW_B_STIM_COUNT, int NEW_AB_STIM_COUNT, int NEW_AMPLITUDE_COUNT, int NEW_PS_LIST_COUNT = 0, int NEW_POSTBASE_LIST_COUNT)
+    public FRListGenerator(int NEW_STIM_LIST_COUNT, int NEW_NONSTIM_LIST_COUNT, int NEW_BASELINE_LIST_COUNT, int NEW_A_STIM_COUNT, int NEW_B_STIM_COUNT, int NEW_AB_STIM_COUNT, int NEW_AMPLITUDE_COUNT, int NEW_PS_LIST_COUNT = 0, int NEW_POSTBASE_LIST_COUNT=0)
     {
         STIM_LIST_COUNT = NEW_STIM_LIST_COUNT;
         NONSTIM_LIST_COUNT = NEW_NONSTIM_LIST_COUNT;
@@ -330,16 +330,18 @@ public class FRListGenerator : WordListGenerator
 
         //////////////////////Load the word pool
         IronPython.Runtime.List all_words;
-        if (wordpoolFilename.Length() == 0) {
+        if (wordpoolFilename.Length == 0) {
             if (isCategoryPool)
             {
-                all_words = ReadWordsFromPoolTxt("ram_categorized_en", isCategoryPool);
+                wordpoolFilename = "ram_categorized_en";
             }
             else
             {
-                all_words = ReadWordsFromPoolTxt("ram_wordpool_en", isCategoryPool);
+                wordpoolFilename = "ram_wordpool_en";
             }
         }
+        all_words = ReadWordsFromPoolTxt(wordpoolFilename, isCategoryPool);
+
 
         //////////////////////For two part experiments, reliably shuffle according to participant name and construct halves, then shuffle again
         /// Otherwise, just shuffle

@@ -29,9 +29,9 @@ public struct ExperimentSettings
     public bool isTwoParter; //whether or not the experiment should divide the word pool in two and alternative halves between sessions.
     public bool isCategoryPool; //whether or not the catFR wordpool is used.
     public bool useSessionListSelection; //whether or not the list to begin from can be chosen in the start screen.
-    public int listGroupSize = 0; //if > 0, insert pauseBetweenGroups record-only pause between this many lists.
-    public float pauseBetweenGroups = 0; //seconds to pause between groupings of listGroupSize lists.
-    public string wordpoolFilename = ""; //if set, override wordpool with this one.
+    public int listGroupSize; //if > 0, insert pauseBetweenGroups record-only pause between this many lists.
+    public float pauseBetweenGroups; //seconds to pause between groupings of listGroupSize lists.
+    public string wordpoolFilename; //if set, override wordpool with this one.
 }
 
 public static class FRExperimentSettings
@@ -107,6 +107,11 @@ public static class FRExperimentSettings
         FR1Settings.useRamulator = true;
         FR1Settings.isTwoParter = true;
         FR1Settings.useSessionListSelection = true;
+
+        FR1Settings.listGroupSize = 0;
+        FR1Settings.pauseBetweenGroups = 0;
+        FR1Settings.wordpoolFilename = "";
+
         return FR1Settings;
     }
 
@@ -167,6 +172,11 @@ public static class FRExperimentSettings
         FR6Settings.useRamulator = true;
         FR6Settings.isTwoParter = false;
         FR6Settings.useSessionListSelection = false;
+
+        FR6Settings.listGroupSize = 0;
+        FR6Settings.pauseBetweenGroups = 0;
+        FR6Settings.wordpoolFilename = "";
+
         return FR6Settings;
     }
 
@@ -282,8 +292,10 @@ public static class FRExperimentSettings
     {
         ExperimentSettings TICCLSSettings = GetTICLCatFRSettings();
         TICCLSSettings.experimentName = "TICCLS";
-        TICCLSSettings.wordListGenerator = new FRListGenerator(15, 0, 5, 15, 0, 0, 1, 0, 5);
-        TICCLSSettings.wordpoolFilename = "ram_categorized_300_en";
+        TICCLSSettings.version = "1.0";
+        TICCLSSettings.numberOfLists = 26;
+        TICCLSSettings.wordListGenerator = new FRListGenerator(15, 0, 6, 15, 0, 0, 1, 0, 5);
+        //TICCLSSettings.wordpoolFilename = "ram_categorized_300_en";
         TICCLSSettings.listGroupSize = 5;
         TICCLSSettings.pauseBetweenGroups = 50*60;
         return TICCLSSettings;
@@ -299,7 +311,7 @@ public static class FRExperimentSettings
     public static ExperimentSettings GetTICCLSbSettings()
     {
         ExperimentSettings TICCLSbSettings = GetTICCLSSettings();
-        TICCLSbSettings.wordListGenerator = new FRListGenerator(15, 0, 10, 15, 0, 0, 1, 0, 0);
+        TICCLSbSettings.wordListGenerator = new FRListGenerator(15, 0, 11, 15, 0, 0, 1, 0, 0);
         TICCLSbSettings.experimentName = "TICCLSb";
         return TICCLSbSettings;
     }
