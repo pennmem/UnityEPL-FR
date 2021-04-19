@@ -2,20 +2,26 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-public class Timeline<T> {
-    // Could also do this functional style, with Func<StateMachine, StateMachine>>
-    protected IList<T> states; 
+[Serializable]
+public class Timeline<T> : IList<T> { //: IDeserializationCallback {
+    protected List<T> items = new List<T>();
     protected bool reset_on_load;
-    protected int index;
+    public virtual bool IsReadOnly { get { return false; } }
+    public int index;
+    public virtual int Count {get { return items.Count; } }
 
-    public Timeline(IList<T> states, 
+    public Timeline(IEnumerable<T> states, 
                     bool reset_on_load = false) {
-        this.states = states;
+        this.AddRange(states);
+        this.reset_on_load = reset_on_load;
+    }
+
+    public Timeline(bool reset_on_load = false) {
         this.reset_on_load = reset_on_load;
     }
 
     virtual public bool IncrementState() {
-        if(index < states.Count() - 1 ) {
+        if(index < this.Count - 1 ) {
             index++;
             return true;
         }
@@ -34,37 +40,82 @@ public class Timeline<T> {
         }
     }
 
-    public void GetState() {
-        return states[index];
+    // void IDeserializationCallback.OnDeserialization(Object sender)
+    // {
+    //     // if reset is set, reset when the object is deserialized
+    //     if(reset_on_load) {
+    //         index = 0;
+    //     }
+    // }
+
+    public virtual T this[int i] {
+        get { return items[i]; }
+        set { throw new NotSupportedException("Indexing is read only"); }
     }
 
-    public void LoadInternalState(dynamic state) {
-        if(!reset_on_load) {
-            index = state;
-        }
-        else {
-            index = 0;
-        }
+    public T GetState() {
+        return this[index];
     }
-    
-    public dynamic GetInternalState() {
-        return index;
+
+    virtual public int IndexOf(T item) {
+        throw new NotSupportedException("Provided only for compatibility");
+    }
+
+    virtual public void Insert(int index, T item) {
+        items.Insert(index, item);
+    }
+
+    virtual public void RemoveAt(int index) {
+        items.RemoveAt(index);
+    }
+
+    virtual public void Add(T item) {
+        items.Add(item);
+    }
+
+    virtual public void AddRange(IEnumerable<T> new_items) {
+        items.AddRange(new_items);
+    }
+
+    virtual public void Clear() {
+        items.Clear();
+    }
+
+    virtual public bool Contains(T item) {
+        throw new NotSupportedException("Provided only for compatibility");
+    }
+
+    virtual public void CopyTo(T[] array, int index) {
+        items.CopyTo(array, index);
+    }
+
+    virtual public bool Remove(T item) {
+        throw new NotSupportedException("Provided only for compatibility");
+    }
+
+    virtual public IEnumerator<T> GetEnumerator() {
+        return items.GetEnumerator();
+    }
+
+    IEnumerator System.Collections.IEnumerable.GetEnumerator() {
+       return this.GetEnumerator();
     }
 }
 
-public class DataTimeline<T> : Timeline<T> {
-    public DateTimeline(IList<T> states, bool reset_on_load = false) : base(states, reset_on_load) {}
-}
-
+[Serializable]
 public class ExperimentTimeline : Timeline<Action<StateMachine>> {
-    public DateTimeline(IList<Action<StateMachine>> states, bool reset_on_load = false) : base(states, reset_on_load) {}
+    public ExperimentTimeline(List<Action<StateMachine>> states, bool reset_on_load = false) : base(states, reset_on_load) {}
+    // TODO: don't serialize functions
 }
 
+[Serializable]
 public class LoopTimeline : ExperimentTimeline {
-    public DateTimeline(IList<Action<StateMachine>> states, bool reset_on_load = false) : base(states, reset_on_load) {}
+    public LoopTimeline(List<Action<StateMachine>> states, bool reset_on_load = false) : base(states, reset_on_load) {}
+
+    // TODO: don't serialize functions
 
     override public bool IncrementState() {
-        if(index < states.Count - 1 ) {
+        if(index < this.Count - 1 ) {
             index++;
         }
         else {
@@ -78,22 +129,23 @@ public class LoopTimeline : ExperimentTimeline {
             index--;
         }
         else {
-            index = states.Count - 1;
+            index = this.Count - 1;
         }
             return true;
     }
 }
 
+public class StateMachine : Dictionary<string, ExperimentTimeline> {
+    // Must be a serializable type
+    public dynamic currentSession;
+    public bool isComplete {get; set; } = false;
 
-public class StateMachine<T> : Dictionary<string, ExperimentTimeline> {
-    public T sessionData;
-
-    public StateMachine(T sessionData) : base() {
-        this.sessionData = sessionData;
+    public StateMachine(dynamic currentSession) : base() {
+        this.currentSession = currentSession;
     }
 
-    public void Run() {
-        GetTimeline(timelines.Peek()).GetState().Invoke(this);
+    public Action<StateMachine> GetState() {
+        return GetTimeline(timelines.Peek()).GetState();
     }
 
     // LIFO queue describing state machine timelines,
@@ -113,7 +165,7 @@ public class StateMachine<T> : Dictionary<string, ExperimentTimeline> {
     }
 
     public void PushTimeline(string timeline) {
-        if(self.Contains(timeline)) {
+        if(this.ContainsKey(timeline)) {
             timelines.Push(timeline);
         }
         else {
@@ -124,12 +176,6 @@ public class StateMachine<T> : Dictionary<string, ExperimentTimeline> {
     public void PopTimeline() {
         timelines.Pop();
     }
-
-    //     public void SaveState(string path) {
-    //          iterate over all timelines and save their GetInternalState
-    //     }
-    //     public void LoadState(string path) {
-    //     }
 
     private ExperimentTimeline GetTimeline(string timeline) {
         // this throws a keyerror if not existing, which
