@@ -11,7 +11,7 @@
     "encodingAndRetrievalLists": 0,
     "noStimLists": 20,
     "wordRepeats": [3, 2, 1],
-    "wordCounts": [6, 3, 3], 
+    "wordCounts": [6, 3, 3],
     "stimulusDuration": 1600,
     "stimulusInterval": [750, 1000],
     "restDuration": 7000,
