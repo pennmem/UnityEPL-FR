@@ -23,7 +23,7 @@
     "recallDelay": [1000, 1400],
     "recallPromptDuration": 1000,
     "recallDuration": 30000,
-    "elemem": false,
+    "elemem": true,
     "ramulator": false,
     "stimMode": "none",
     "heartbeatInterval": 1000,
