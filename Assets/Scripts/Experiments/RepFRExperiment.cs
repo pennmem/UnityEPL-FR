@@ -295,7 +295,7 @@ public class RepFRExperiment : ExperimentBase {
     var enclist = RepWordGenerator.Generate(rep_counts,
         subset_gen.Get(unique_words_per_list), enc_stim);
     var reclist = RepWordGenerator.Generate(rep_counts, blank_words, rec_stim);
-    return new RepFRRun(enclist, reclist, enc_stim, rec_stim);
+    return new RepFRRun(enclist, reclist);
   }
 
 
@@ -354,10 +354,9 @@ public class RepFRRun {
   public StimWordList encoding;
   public StimWordList recall;
 
-  public RepFRRun(StimWordList encoding_list, StimWordList recall_list,
-      bool set_encoding_stim=false, bool set_recall_stim=false) {
+  public RepFRRun(StimWordList encoding_list, StimWordList recall_list) {
     encoding = encoding_list;
-    recall = recall_list; 
+    recall = recall_list;
   }
 }
 
