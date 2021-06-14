@@ -86,7 +86,7 @@ public class DataPoint
             }
         }
         else {
-            throw new Exception("Data logging type not supported");
+            throw new Exception("Data logging type not supported: (" + value.GetType() + ") " + value);
         }
     }
 
