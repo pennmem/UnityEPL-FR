@@ -54,7 +54,7 @@ public class DataPoint
         }
         if (dataDict.Count > 0) JSONString = JSONString.Substring(0, JSONString.Length - 1);
         JSONString = JSONString + "},\"time\":" + unixTimestamp.ToString() + ",";
-        JSONString = JSONString + "\"id\":" + thisID.ToString() + "}\n";
+        JSONString = JSONString + "\"id\":" + thisID.ToString() + "}";
         return JSONString;
     }
 
