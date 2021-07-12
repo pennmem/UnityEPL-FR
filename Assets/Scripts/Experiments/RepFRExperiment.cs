@@ -238,11 +238,43 @@ public class RepFRExperiment : ExperimentBase {
     }
   }
 
+  protected void RecallStim() {
+    Dictionary<string, object> data = new Dictionary<string, object>();
+    ReportEvent("recall stimulus info", data);
+
+    SendHostPCMessage("STIM", data);
+  }
 
   protected void Recall(StateMachine state) {
     string wavPath = System.IO.Path.Combine(manager.fileManager.SessionPath(), 
                                             state.currentSession.GetListIndex().ToString() + ".wav");
+
     state.IncrementState();
+
+    // Pre-queue timed events for recall stim during the base Recall state.
+    ulong stim_time = 0;
+    do {
+      WordStim rec_wordstim = state.currentSession.GetRecStim();
+      bool stim = rec_wordstim.stim;
+      int[] limits = manager.GetSetting("stimulusInterval");
+      int interval = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
+      int duration = manager.GetSetting("stimulusDuration");
+      stim_time += duration + interval;
+
+      if (stim) {
+        // Calculated as past end of recall period.
+        // Stop pre-arranging stim sequence here.
+        if (stim_time + interval > manager.GetSetting("recallDuration")) {
+          break;
+        }
+
+        DoIn(new EventBase(() => {
+          RecallStim();
+        }), stim_time);
+      }
+    } while (state.currentSession.NextRecStim());
+
+
     base.Recall(wavPath);
   }
 
@@ -367,8 +399,16 @@ public class RepFRSession : Timeline<RepFRRun> {
       return GetState().encoding.IncrementState();
   }
 
+  public bool NextRecStim() {
+      return GetState().recall.IncrementState();
+  }
+
   public WordStim GetWord() {
     return GetState().encoding.GetState();
+  }
+
+  public WordStim GetRecStim() {
+    return GetState().recall.GetState();
   }
 
   public bool NextList() {
