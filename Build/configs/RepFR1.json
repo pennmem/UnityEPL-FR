@@ -26,5 +26,5 @@
     "elemem": true,
     "ramulator": false,
     "stimMode": "none",
-    "heartbeatInterval": 1000,
+    "heartbeatInterval": 1000
 }
