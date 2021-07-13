@@ -252,7 +252,7 @@ public class RepFRExperiment : ExperimentBase {
     state.IncrementState();
 
     // Pre-queue timed events for recall stim during the base Recall state.
-    ulong stim_time = 0;
+    int stim_time = 0;  // Note for the wild future, 596.5 hour limit here, imposed by DoIn interface.
     do {
       WordStim rec_wordstim = state.currentSession.GetRecStim();
       bool stim = rec_wordstim.stim;
