@@ -1,7 +1,7 @@
 {
     "isTest": true,
     "isLegacyExperiment": false,
-    "launcherScene": "UpdatedSetup",
+    "launcherScene": "Startup",
     "eventsPerFrame": 5,
     "frameRate": 300,
     "vSync": 1,
