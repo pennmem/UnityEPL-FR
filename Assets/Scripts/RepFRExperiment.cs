@@ -347,11 +347,11 @@ public class RepFRExperiment : ExperimentBase {
 
     StimWordList dummyList = currentSession[state.listIndex].recalls;
     // Pre-queue timed events for recall stim during the base Recall state.
-    ulong stim_time = 0;
+    int stim_time = 0;
     foreach (var rec_wordstim in dummyList) {
       bool stim = rec_wordstim.stim;
       int[] limits = manager.GetSetting("stimulusInterval");
-      int interval = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
+      int interval = InterfaceManager.rnd.Next(limits[0], limits[1]);
       int duration = manager.GetSetting("stimulusDuration");
       stim_time += duration + interval;
 
