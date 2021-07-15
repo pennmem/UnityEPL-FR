@@ -273,7 +273,7 @@ public class ElememInterface : IHostPC
         UnityEngine.Debug.Log("Sent Message");
         UnityEngine.Debug.Log(message);
 
-        Byte[] bytes = System.Text.Encoding.UTF8.GetBytes(message);
+        Byte[] bytes = System.Text.Encoding.UTF8.GetBytes(message+"\n");
 
         NetworkStream stream = GetWriteStream();
         stream.Write(bytes, 0, bytes.Length);
