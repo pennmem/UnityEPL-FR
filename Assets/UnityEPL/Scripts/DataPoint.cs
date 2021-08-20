@@ -85,6 +85,9 @@ public class DataPoint
                 return "\"" + valueString + "\"";
             }
         }
+        else if (value is DateTime) {
+            return value.ToString();
+        }
         else {
             throw new Exception("Data logging type not supported: (" + value.GetType() + ") " + value);
         }

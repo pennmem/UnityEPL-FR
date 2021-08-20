@@ -345,20 +345,20 @@ public class RepFRExperiment : ExperimentBase {
   protected void DoRecall() {
     state.mainLoopIndex++;
 
-    StimWordList dummyList = currentSession[state.listIndex].recalls;
+    StimWordList dummyList = currentSession[state.listIndex].recall;
     // Pre-queue timed events for recall stim during the base Recall state.
     int stim_time = 0;
     foreach (var rec_wordstim in dummyList) {
       bool stim = rec_wordstim.stim;
-      int[] limits = manager.GetSetting("stimulusInterval");
+      int[] limits = manager.GetSetting("stimulusInterval").ToObject<int[]>(); 
       int interval = InterfaceManager.rnd.Next(limits[0], limits[1]);
-      int duration = manager.GetSetting("stimulusDuration");
+      int duration = manager.GetSetting("stimulusDuration").ToObject<int>();
       stim_time += duration + interval;
 
       if (stim) {
         // Calculated as past end of recall period.
         // Stop pre-arranging stim sequence here.
-        if (stim_time + interval > manager.GetSetting("recallDuration")) {
+        if (stim_time + interval > manager.GetSetting("recallDuration").ToObject<int>()) {
           break;
         }
 
