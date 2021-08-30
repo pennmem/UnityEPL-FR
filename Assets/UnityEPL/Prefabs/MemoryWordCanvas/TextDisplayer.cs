@@ -48,6 +48,8 @@ public class TextDisplayer : MonoBehaviour
     /// First argument is a description of the text to be displayed.  This is logged if the wordEventReporter field is populated in the editor.
     /// 
     /// Second argument is the text to be displayed.  All elements in the textElements field will be updated.  This is logged in the "data" field under "displayed text" if the wordEventReporter field is populated in the editor.
+    /// Note:  As of 2021-08-25, Words for FR experiments are being displayed with the Verdana font, all caps, 15mm high,
+    /// 131 pixels high, on 2800x1800 15.4" displays.
     /// </summary>
     /// <param name="description">Description.</param>
     /// <param name="text">Text.</param>
