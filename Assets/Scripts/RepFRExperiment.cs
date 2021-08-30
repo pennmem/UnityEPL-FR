@@ -345,28 +345,47 @@ public class RepFRExperiment : ExperimentBase {
   protected void DoRecall() {
     state.mainLoopIndex++;
 
-    StimWordList dummyList = currentSession[state.listIndex].recall;
-    // Pre-queue timed events for recall stim during the base Recall state.
-    int stim_time = 0;
-    foreach (var rec_wordstim in dummyList) {
-      bool stim = rec_wordstim.stim;
-      int[] limits = manager.GetSetting("stimulusInterval").ToObject<int[]>(); 
-      int interval = InterfaceManager.rnd.Next(limits[0], limits[1]);
-      int duration = manager.GetSetting("stimulusDuration").ToObject<int>();
-      stim_time += duration + interval;
+    bool stim = currentSession[state.listIndex].recall_stim;
 
-      if (stim) {
-        // Calculated as past end of recall period.
-        // Stop pre-arranging stim sequence here.
-        if (stim_time + interval > manager.GetSetting("recallDuration").ToObject<int>()) {
-          break;
-        }
+    // Uniform stim.
+    if (stim) {
+      int recstim_interval = manager.GetSetting("recStimulusInterval").ToObject<int>();
+      int stim_duration = manager.GetSetting("stimulusDuration").ToObject<int>();
+      int rec_period = manager.GetSetting("recallDuration").ToObject<int>();
+      int stim_reps = rec_period / (stim_duration + recstim_interval);
 
+      int stim_time = 0;
+      for (int i=0; i<stim_reps; i++) {
         DoIn(new EventBase(() => {
           RecallStim();
         }), stim_time);
+        stim_time += stim_duration + recstim_interval;
       }
     }
+
+    //// Match stim distribution to encoding period.
+    //StimWordList dummyList = currentSession[state.listIndex].recall;
+    //// Pre-queue timed events for recall stim during the base Recall state.
+    //int stim_time = 0;
+    //foreach (var rec_wordstim in dummyList) {
+    //  bool stim = rec_wordstim.stim;
+    //  int[] limits = manager.GetSetting("stimulusInterval").ToObject<int[]>(); 
+    //  int interval = InterfaceManager.rnd.Next(limits[0], limits[1]);
+    //  int duration = manager.GetSetting("stimulusDuration").ToObject<int>();
+    //  stim_time += duration + interval;
+    //
+    //  if (stim) {
+    //    // Calculated as past end of recall period.
+    //    // Stop pre-arranging stim sequence here.
+    //    if (stim_time + interval > manager.GetSetting("recallDuration").ToObject<int>()) {
+    //      break;
+    //    }
+    //
+    //    DoIn(new EventBase(() => {
+    //      RecallStim();
+    //    }), stim_time);
+    //  }
+    //}
 
     string path = System.IO.Path.Combine(manager.fileManager.SessionPath(), state.listIndex.ToString() + ".wav");
     Recall(path);
