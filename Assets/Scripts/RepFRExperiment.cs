@@ -346,20 +346,22 @@ public class RepFRExperiment : ExperimentBase {
     state.mainLoopIndex++;
 
     bool stim = currentSession[state.listIndex].recall_stim;
+    int stim_reps = 0;
 
     // Uniform stim.
     if (stim) {
       int recstim_interval = manager.GetSetting("recStimulusInterval").ToObject<int>();
       int stim_duration = manager.GetSetting("stimulusDuration").ToObject<int>();
       int rec_period = manager.GetSetting("recallDuration").ToObject<int>();
-      int stim_reps = rec_period / (stim_duration + recstim_interval);
+      stim_reps = rec_period / (stim_duration + recstim_interval);
 
-      int stim_time = 0;
-      for (int i=0; i<stim_reps; i++) {
+      int total_interval = stim_duration + recstim_interval;
+      int stim_time = total_interval;  // We'll do the first one directly at the end of this function.
+      for (int i=1; i<stim_reps; i++) {
         DoIn(new EventBase(() => {
           RecallStim();
         }), stim_time);
-        stim_time += stim_duration + recstim_interval;
+        stim_time += total_interval;
       }
     }
 
@@ -389,6 +391,11 @@ public class RepFRExperiment : ExperimentBase {
 
     string path = System.IO.Path.Combine(manager.fileManager.SessionPath(), state.listIndex.ToString() + ".wav");
     Recall(path);
+
+    // Make sure the first stim happens before other events delay this.
+    if (stim && stim_reps > 0) {
+      RecallStim();
+    }
   }
 
   //////////
