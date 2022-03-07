@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+using System.Linq;
 
 
 public class EditableExperiment : CoroutineExperiment
@@ -15,6 +16,7 @@ public class EditableExperiment : CoroutineExperiment
     private static ExperimentSettings currentSettings;
 
     public RamulatorInterface ramulatorInterface;
+    public ElememInterface elememInterface;
     public VideoControl countdownVideoPlayer;
     public KeyCode pauseKey = KeyCode.P;
     public GameObject pauseIndicator;
@@ -23,6 +25,8 @@ public class EditableExperiment : CoroutineExperiment
 
     private bool paused = false;
     private string current_phase_type;
+
+    List<int> stimListTypes;
 
     //use update to collect user input every frame
     void Update()
@@ -64,6 +68,16 @@ public class EditableExperiment : CoroutineExperiment
         if (currentSettings.useRamulator)
             yield return ramulatorInterface.BeginNewSession(session);
 
+        yield return elememInterface.BeginNewSession(session, !currentSettings.useElemem);
+
+        elememInterface.SendMessage("CLNORMALIZE", new Dictionary<string, object>() { { "duration", currentSettings.clDuration }, { "id", 420 } });
+        yield return new WaitForSeconds(3);
+        elememInterface.SendMessage("CLNORMALIZE", new Dictionary<string, object>() { { "duration", currentSettings.clDuration }, { "id", 420 } });
+        yield return new WaitForSeconds(3);
+        elememInterface.SendMessage("CLSTIM", new Dictionary<string, object>() { { "classifyms", currentSettings.clDuration }, { "id", 420 } });
+
+        stimListTypes = GenStimLists();
+
         VAD.DoVAD(false);
 
         //starting from the beginning of the latest uncompleted list, do lists until the experiment is finished or stopped
@@ -103,7 +117,7 @@ public class EditableExperiment : CoroutineExperiment
             SetRamulatorState("COUNTDOWN", false, new Dictionary<string, object>() { { "current_trial", i } });
 
             SetRamulatorState("ENCODING", true, new Dictionary<string, object>() { { "current_trial", i } });
-            yield return DoEncoding();
+            yield return DoEncoding(i);
             SetRamulatorState("ENCODING", false, new Dictionary<string, object>() { { "current_trial", i } });
 
             SetRamulatorState("DISTRACT", true, new Dictionary<string, object>() { { "current_trial", i } });
@@ -118,15 +132,15 @@ public class EditableExperiment : CoroutineExperiment
 
             if (currentSettings.pauseBetweenGroups > 0) {
                 if (currentSettings.listGroupSize == 0 ||
-                    ((i+1) % currentSettings.listGroupSize) == 0) {
+                    (i>0 && (i % currentSettings.listGroupSize) == 0)) {
                     
                     string state = "DELAYSHAM";
                     if (currentSettings.experimentName == "TICCLSb") {
-                        if ((i+1) / currentSettings.listGroupSize >= 2) {
+                        if (i / currentSettings.listGroupSize >= 2) {
                             state = "DELAY";
                         }
                     }
-                    else if (currentSettings.experimentName == "TICCLSb") {
+                    else if (currentSettings.experimentName == "TICCLS") {
                         if (currentSettings.numberOfLists - i < currentSettings.listGroupSize) {
                             state = "DELAY";
                         }
@@ -157,7 +171,19 @@ public class EditableExperiment : CoroutineExperiment
 
     }
 
-    private IEnumerator DoEncoding()
+    private List<int> GenStimLists() {
+        List<int> subList = Enumerable.Repeat(1, ((FRListGenerator)currentSettings.wordListGenerator).STIM_LIST_COUNT)
+                                      .Concat(Enumerable.Repeat(2, ((FRListGenerator)currentSettings.wordListGenerator).NONSTIM_LIST_COUNT))
+                                      .ToList();
+        subList.Shuffle(new System.Random());
+
+        return Enumerable.Repeat(-1, 1)
+                         .Concat(Enumerable.Repeat(0, ((FRListGenerator)currentSettings.wordListGenerator).BASELINE_LIST_COUNT))
+                         .Concat(subList).ToList();
+    }
+
+
+    private IEnumerator DoEncoding(int listNum)
     {
         int currentList = wordsSeen / currentSettings.wordsPerList;
         wordsSeen = (ushort)(currentList * currentSettings.wordsPerList);
@@ -174,6 +200,21 @@ public class EditableExperiment : CoroutineExperiment
             yield return PausableWait(Random.Range(currentSettings.minISI, currentSettings.maxISI));
             string word = (string)words[wordsSeen]["word"];
             textDisplayer.DisplayText("word stimulus", word);
+
+            if (UnityEPL.GetExperimentName() == "FR5") {
+                if (stimListTypes[listNum] == 0) {
+                    elememInterface.SendMessage("CLNORMALIZE", new Dictionary<string, object>() { { "duration", currentSettings.clDuration }, { "id", listNum * currentSettings.wordsPerList + i } });
+                }
+                else if (stimListTypes[listNum] == 1)
+                {
+                    elememInterface.SendMessage("CLSTIM", new Dictionary<string, object>() { { "classifyms", currentSettings.clDuration }, { "id", listNum * currentSettings.wordsPerList + i } });
+                }
+                else if (stimListTypes[listNum] == 2)
+                {
+                    elememInterface.SendMessage("CLSHAM", new Dictionary<string, object>() { { "classifyms", currentSettings.clDuration }, { "id", listNum * currentSettings.wordsPerList + i } });
+                }
+            }
+
             SetRamulatorWordState(true, words[wordsSeen]);
             yield return PausableWait(currentSettings.wordPresentationLength);
             textDisplayer.ClearText();
@@ -266,7 +307,9 @@ public class EditableExperiment : CoroutineExperiment
                     ReportDistractorAnswered(correct, distractor, answer);
                     answerTime = Time.time;
 
-                    ramulatorInterface.SendMathMessage(distractor, answer, (int)((answerTime - displayTime) * 1000), correct);
+                    int responseTime = (int)((answerTime - displayTime) * 1000);
+                    ramulatorInterface.SendMathMessage(distractor, answer, responseTime, correct);
+                    elememInterface.SendMathMessage(distractor, answer, responseTime, correct);
                 }
             }
             yield return null;
@@ -418,9 +461,13 @@ public class EditableExperiment : CoroutineExperiment
         currentSettings = FRExperimentSettings.GetSettingsByName(UnityEPL.GetExperimentName());
         bool isEvenNumberSession = newSessionNumber % 2 == 0;
         bool isTwoParter = currentSettings.isTwoParter;
-        if (words == null)
-            SetWords(currentSettings.wordListGenerator.GenerateListsAndWriteWordpool(currentSettings.numberOfLists, currentSettings.wordsPerList, currentSettings.isCategoryPool, isTwoParter, isEvenNumberSession, UnityEPL.GetParticipants()[0]), currentSettings.wordpoolFilename);
+        if (words == null) {
+            Debug.Log("Setting Words");
+            SetWords(currentSettings.wordListGenerator.GenerateListsAndWriteWordpool(currentSettings.numberOfLists, currentSettings.wordsPerList, currentSettings.isCategoryPool, isTwoParter, isEvenNumberSession, UnityEPL.GetParticipants()[0], currentSettings.wordpoolFilename));
+            Debug.Log("Words were set.");
+        }
         SaveState();
+        Debug.Log("State saved.");
     }
 
     private static void SetWords(IronPython.Runtime.List newWords)

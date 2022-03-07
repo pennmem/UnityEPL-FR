@@ -52,7 +52,7 @@ def assign_list_types_from_type_list(pool, num_baseline, stim_nonstim, num_ps=0,
         elif word['listno'] < num_baseline + num_ps:
             pool[i]['phase_type'] = "PS"
             pool[i]['stim_channels'] = None
-        elif word['listno'] >= parameters_list_count - num_postbase
+        elif word['listno'] >= parameters_list_count - num_postbase:
             pool[i]['phase_type'] = "BASELINE"
             pool[i]['stim_channels'] = None
         else:

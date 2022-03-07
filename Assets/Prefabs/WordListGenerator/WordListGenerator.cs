@@ -8,7 +8,7 @@ public abstract class WordListGenerator
 {
     public virtual IronPython.Runtime.List GenerateListsAndWriteWordpool(int numberOfLists, int lengthOfEachList, bool isCategoryPool, bool isTwoParter, bool isEvenNumberSession, string participantCode, string wordpoolFilename)
     {
-        WriteWordpoolToOutputFolder(isCategoryPool);
+        WriteWordpoolToOutputFolder(isCategoryPool, wordpoolFilename);
         return GenerateLists(numberOfLists, lengthOfEachList, new System.Random(), isCategoryPool, isTwoParter, isEvenNumberSession, participantCode, wordpoolFilename);
     }
 
@@ -17,7 +17,7 @@ public abstract class WordListGenerator
     private void WriteWordpoolToOutputFolder(bool isCategoryPool, string wordpoolFilename="")
     {
         string directory = UnityEPL.GetParticipantFolder();
-        if (wordpoolFilename.Length() == 0) {
+        if (wordpoolFilename.Length == 0) {
             if (isCategoryPool)
             {
                 wordpoolFilename = "ram_categorized_en";
@@ -266,13 +266,18 @@ public abstract class WordListGenerator
 
     protected Microsoft.Scripting.Hosting.ScriptScope BuildPythonScope()
     {
+        Debug.Log("Building Python Scope");
         var engine = IronPython.Hosting.Python.CreateEngine();
         Microsoft.Scripting.Hosting.ScriptScope scope = engine.CreateScope();
+        Debug.Log("Scope created");
 
         string wordpool_text = Resources.Load<TextAsset>("nopandas").text;
+        Debug.Log("nopandas.txt loaded");
         var source = engine.CreateScriptSourceFromString(wordpool_text);
+        Debug.Log("Created script from nopandas.txt");
 
         source.Execute(scope);
+        Debug.Log("Executed Python scope");
 
         return scope;
     }
@@ -280,17 +285,17 @@ public abstract class WordListGenerator
 
 public class FRListGenerator : WordListGenerator
 {
-    private int STIM_LIST_COUNT;
-    private int NONSTIM_LIST_COUNT;
-    private int BASELINE_LIST_COUNT;
-    private int PS_LIST_COUNT;
-    private int POSTBASE_LIST_COUNT;
+    public int STIM_LIST_COUNT;
+    public int NONSTIM_LIST_COUNT;
+    public int BASELINE_LIST_COUNT;
+    public int PS_LIST_COUNT;
+    public int POSTBASE_LIST_COUNT;
 
-    private int A_STIM_COUNT;
-    private int B_STIM_COUNT;
-    private int AB_STIM_COUNT;
+    public int A_STIM_COUNT;
+    public int B_STIM_COUNT;
+    public int AB_STIM_COUNT;
 
-    private int AMPLITUDE_COUNT;
+    public int AMPLITUDE_COUNT;
 
     /// <summary>
     /// One of these should be attached to the ExperimentSettings scruct.
@@ -304,7 +309,7 @@ public class FRListGenerator : WordListGenerator
     /// <param name="NEW_AMPLITUDE_COUNT">How many different amplitudes to use.  (For example, 1 for all the same amplitude, two if we want stim lists to be evenly divided between two different amplitudes.  Note the actual amplitude values are not set here.  We don't want to be responsible for that!</param>
     /// <param name="NEW_PS_LIST_COUNT">How many lists to label as "PS" when communicating with ramulator.  These will come after baseline and before stim/nonstim, but no experiments include both stim/nonstim and PS lists.</param>
     /// <param name="NEW_POSTBASE_LIST_COUNT">How many baseline lists to run after stim and nonstim lists finish.</param>
-    public FRListGenerator(int NEW_STIM_LIST_COUNT, int NEW_NONSTIM_LIST_COUNT, int NEW_BASELINE_LIST_COUNT, int NEW_A_STIM_COUNT, int NEW_B_STIM_COUNT, int NEW_AB_STIM_COUNT, int NEW_AMPLITUDE_COUNT, int NEW_PS_LIST_COUNT = 0, int NEW_POSTBASE_LIST_COUNT)
+    public FRListGenerator(int NEW_STIM_LIST_COUNT, int NEW_NONSTIM_LIST_COUNT, int NEW_BASELINE_LIST_COUNT, int NEW_A_STIM_COUNT, int NEW_B_STIM_COUNT, int NEW_AB_STIM_COUNT, int NEW_AMPLITUDE_COUNT, int NEW_PS_LIST_COUNT = 0, int NEW_POSTBASE_LIST_COUNT=0)
     {
         STIM_LIST_COUNT = NEW_STIM_LIST_COUNT;
         NONSTIM_LIST_COUNT = NEW_NONSTIM_LIST_COUNT;
@@ -324,22 +329,29 @@ public class FRListGenerator : WordListGenerator
 
     public IronPython.Runtime.List GenerateListsOptionalCategory(int numberOfLists, int lengthOfEachList, bool isCategoryPool, System.Random rng, bool isTwoParter, bool isEvenNumberSession, string participantCode, string wordpoolFilename)
     {
+        Debug.Log("In GenerateListsOptionalCategory.");
         //////////////////////Load the python wordpool code
         Microsoft.Scripting.Hosting.ScriptScope scope = BuildPythonScope();
+        Debug.Log("Built Python Scope.");
 
 
         //////////////////////Load the word pool
         IronPython.Runtime.List all_words;
-        if (wordpoolFilename.Length() == 0) {
+        if (wordpoolFilename.Length == 0) {
             if (isCategoryPool)
             {
-                all_words = ReadWordsFromPoolTxt("ram_categorized_en", isCategoryPool);
+                wordpoolFilename = "ram_categorized_en";
             }
             else
             {
-                all_words = ReadWordsFromPoolTxt("ram_wordpool_en", isCategoryPool);
+                wordpoolFilename = "ram_wordpool_en";
             }
         }
+        Debug.Log("Reading words from wordpool:");
+        Debug.Log(wordpoolFilename);
+        all_words = ReadWordsFromPoolTxt(wordpoolFilename, isCategoryPool);
+        Debug.Log("Read words from wordpool.");
+
 
         //////////////////////For two part experiments, reliably shuffle according to participant name and construct halves, then shuffle again
         /// Otherwise, just shuffle
@@ -372,12 +384,14 @@ public class FRListGenerator : WordListGenerator
         {
             all_words = Shuffled(rng, all_words);
         }
+        Debug.Log("Shuffle done.");
 
         ////////////////////////////////////////////Call list creation functions from python
         //////////////////////Concatenate into lists with numbers
         var assign_list_numbers_from_word_list = scope.GetVariable("assign_list_numbers_from_word_list");
         var words_with_listnos = assign_list_numbers_from_word_list(all_words, numberOfLists);
 
+        Debug.Log("Word Mark 1.");
 
         //////////////////////Build type lists and assign tpyes
         IronPython.Runtime.List stim_nostim_list = new IronPython.Runtime.List();
@@ -387,10 +401,12 @@ public class FRListGenerator : WordListGenerator
             stim_nostim_list.Add("NON-STIM");
         stim_nostim_list = Shuffled(rng, stim_nostim_list);
 
+        Debug.Log("Word Mark 2.");
         var assign_list_types_from_type_list = scope.GetVariable("assign_list_types_from_type_list");
         var words_with_types = assign_list_types_from_type_list(words_with_listnos, BASELINE_LIST_COUNT, stim_nostim_list, num_ps: PS_LIST_COUNT, num_postbase: POSTBASE_LIST_COUNT);
 
 
+        Debug.Log("Word Mark 3.");
         //////////////////////Build stim channel lists and assign stim channels
         IronPython.Runtime.List stim_channels_list = new IronPython.Runtime.List();
         for (int i = 0; i < A_STIM_COUNT; i++)
@@ -401,26 +417,34 @@ public class FRListGenerator : WordListGenerator
             stim_channels_list.Add(new IronPython.Runtime.PythonTuple(new int[] { 0, 1 }));
         stim_channels_list = Shuffled(rng, stim_channels_list);
 
+        Debug.Log("Word Mark 4.");
         var assign_multistim_from_stim_channels_list = scope.GetVariable("assign_multistim_from_stim_channels_list");
+        Debug.Log("Word Mark 5.");
         var words_with_stim_channels = assign_multistim_from_stim_channels_list(words_with_types, stim_channels_list);
+        Debug.Log("Word Mark 6.");
 
 
         ////////////////////Build amplitude index list and assign amplitude indeces
         IronPython.Runtime.List amplitude_index_list = new IronPython.Runtime.List();
+        Debug.Log("Word Mark 7.");
         int lists_per_amplitude_index = 0;
         if (AMPLITUDE_COUNT != 0)
             lists_per_amplitude_index = STIM_LIST_COUNT / AMPLITUDE_COUNT;
+        Debug.Log("Word Mark 8.");
         for (int amplitude_index = 0; amplitude_index < AMPLITUDE_COUNT; amplitude_index++)
         {
             for (int i = 0; i < lists_per_amplitude_index; i++)
                 amplitude_index_list.Add(amplitude_index);
         }
+        Debug.Log("Word Mark 9.");
         amplitude_index_list = Shuffled(rng, amplitude_index_list);
+        Debug.Log("Word Mark 10.");
 
         var assign_amplitudes_from_amplitude_index_list = scope.GetVariable("assign_amplitudes_from_amplitude_index_list");
         var words_with_amplitude_indices = assign_amplitudes_from_amplitude_index_list(words_with_stim_channels, amplitude_index_list);
 
 
+        Debug.Log("Returning words.");
         return words_with_amplitude_indices;
     }
 }

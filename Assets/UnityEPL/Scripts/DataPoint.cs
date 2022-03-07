@@ -77,7 +77,7 @@ public class DataPoint
             }
             else if (bool.TryParse(value, out valueBool)) //bools
             {
-                valueJSONString = value.ToLower();
+                valueJSONString = "\"" + value.ToLower() + "\"";
             }
             else //everything else is a string
             {
