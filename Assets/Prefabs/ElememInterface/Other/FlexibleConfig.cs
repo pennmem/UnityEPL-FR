@@ -130,7 +130,7 @@ public class Config
                 string configPath = System.IO.Path.Combine(
                     Directory.GetParent(Directory.GetParent(UnityEPL.GetParticipantFolder()).FullName).FullName,
                     "Configs");
-                string text = File.ReadAllText(Path.Combine(configPath, experimentConfigName + ".json"));
+                string text = File.ReadAllText(Path.Combine(configPath, UnityEPL.GetExperimentName() + ".json"));
                 experimentConfig = FlexibleConfig.LoadFromText(text);
             #else
                 if (onlineExperimentConfigText == null)

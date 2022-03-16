@@ -198,12 +198,6 @@ public class ElememInterfaceHelper : IHostPC
         SendMessage("READY");
         WaitForMessage("START", messageTimeout);
         //im.Do(new EventBase<string>(im.SetHostPCStatus, "READY"));
-
-        //SendMessage("CLNORMALIZE", new Dictionary<string, object>() { { "duration", 1000u }, { "id", 420 } });
-        //Thread.Sleep(3000);
-        //SendMessage("CLNORMALIZE", new Dictionary<string, object>() { { "duration", 1000u }, { "id", 421 } });
-        //Thread.Sleep(3000);
-        //SendMessage("CLSTIM", new Dictionary<string, object>() { { "classifyms", 1000u }, { "id", 422 } });
     }
 
     private void DoLatencyCheck() {
@@ -369,10 +363,11 @@ public class ElememInterface : MonoBehaviour
     //This will be used to log messages
     public ScriptedEventReporter scriptedEventReporter;
 
-    private ElememInterfaceHelper ElememInterfaceHelper = null;
+    private ElememInterfaceHelper elememInterfaceHelper = null;
 
     private bool interfaceDisabled = false;
 
+    // CONNECTED, CONFIGURE, READY, and HEARTBEAT
     public IEnumerator BeginNewSession(int sessionNum, bool disableInterface = false)
     {
         interfaceDisabled = disableInterface;
@@ -380,49 +375,92 @@ public class ElememInterface : MonoBehaviour
             yield break;
 
         yield return new WaitForSeconds(1);
-        ElememInterfaceHelper = new ElememInterfaceHelper(scriptedEventReporter);
+        elememInterfaceHelper = new ElememInterfaceHelper(scriptedEventReporter);
         UnityEngine.Debug.Log("Started Elemem Interface");
     }
 
-    public void SendMessage(string type, Dictionary<string, object> data = null)
-    {
-        if (interfaceDisabled) return;
-        ElememInterfaceHelper.SendMessage(type, data);
-    }
-
+        // MATH
     public void SendMathMessage(string problem, string response, int responseTimeMs, bool correct)
     {
-        if (interfaceDisabled) return;
-        Dictionary<string, object> mathData = new Dictionary<string, object>();
-        mathData.Add("problem", problem);
-        mathData.Add("response", response);
-        mathData.Add("response_time_ms", responseTimeMs.ToString());
-        mathData.Add("correct", correct.ToString());
-        ElememInterfaceHelper.SendMessage("MATH", mathData);
+        var data = new Dictionary<string, object>();
+        data.Add("problem", problem);
+        data.Add("response", response);
+        data.Add("response_time_ms", responseTimeMs.ToString());
+        data.Add("correct", correct.ToString());
+        SendMessage("MATH", data);
     }
 
-    public void SendEncoding(int enable)
+    // STIM
+    public void SendStimMessage()
+    {
+        SendMessage("STIM");
+    }
+
+    // CLSTIM, CLSHAM, CLNORMALIZE
+    public void SendCLMessage(string type, uint classifyMs)
+    {
+        // TODO: JPB: Turn CLMessage "type" from string to enum
+        var data = new Dictionary<string, object>();
+        data.Add("classifyms", classifyMs);
+        SendMessage(type, data);
+    }
+
+    // STIMSELECT
+    public void SendStimSelectMessage(string tag)
+    {
+        var data = new Dictionary<string, object>();
+        data.Add("tag", tag);
+        SendMessage("STIMSELECT", data);
+    }
+
+    // SESSION
+    public void SendSessionMessage(int session)
+    {
+        var data = new Dictionary<string, object>();
+        data.Add("session", session);
+        SendMessage("SESSION", data);
+    }
+
+    // NO INPUT:  REST, ORIENT, COUNTDOWN, TRIALEND, DISTRACT, INSTRUCT, WAITING, SYNC, VOCALIZATION
+    // INPUT:     ISI (float duration), RECALL (float duration)
+    // RAMULATOR: ENCODING, RETRIEVAL
+    public void SendStateMessage(string state, Dictionary<string, object> extraData = null)
+    {
+        SendMessage(state, extraData);
+    }
+
+    // TRIAL
+    public void SendTrialMessage(int trial, bool stim)
+    {
+        var data = new Dictionary<string, object>();
+        data.Add("trial", trial);
+        data.Add("stim", stim);
+        SendMessage("TRIAL", data);
+    }
+
+    // WORD
+    public void SendWordMessage(string word, int serialPos, bool stim, Dictionary<string, object> extraData)
+    {
+        var data = new Dictionary<string, object>();
+        data.Add("word", word);
+        data.Add("serialPos", serialPos);
+        data.Add("stim", stim);
+        foreach (string key in extraData.Keys)
+            if (!data.ContainsKey(key))
+                data.Add(key, extraData[key]);
+        SendMessage("WORD", data);
+    }
+
+    // EXIT
+    public void SendExitMessage()
+    {
+        SendMessage("EXIT");
+    }
+
+    private void SendMessage(string type, Dictionary<string, object> data = null)
     {
         if (interfaceDisabled) return;
-        var enableDict = new Dictionary<string, object> { { "enable", enable } };
-        ElememInterfaceHelper.SendMessage("ENCODING", enableDict);
-    }
-
-    public void SendReadOnlyState(int enable)
-    {
-        if (interfaceDisabled) return;
-        var enableDict = new Dictionary<string, object> { { "enable", enable } };
-        ElememInterfaceHelper.SendMessage("READ_ONLY_STATE", enableDict);
-    }
-
-    public bool classifierInPosState()
-    {
-        return ElememInterfaceHelper.classifierResult == 1;
-    }
-
-    public bool classifierInNegState()
-    {
-        return ElememInterfaceHelper.classifierResult == 0;
+        elememInterfaceHelper.SendMessage(type, data);
     }
 }
 #endif // !UNITY_WEBGL

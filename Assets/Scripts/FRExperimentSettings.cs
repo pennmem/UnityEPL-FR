@@ -39,10 +39,14 @@ public struct ExperimentSettings
 
 public static class FRExperimentSettings
 {
-    private static ExperimentSettings[] activeExperimentSettings = { GetFR1Settings(),                              // IF YOU WANT TO ADD OR REMOVE AN EXPERIMENT
-                                                                     GetCatFR1Settings(),                          // CREATE A NEW SETTINGS FETCHER IF NEEDED
-                                                                     GetFR6Settings(),                              // AND THEN ADD OR REMOVE THE EXPERIMENT
-                                                                     GetCatFR6Settings(),                           // SETTINGS FROM THIS ARRAY.
+    private static ExperimentSettings[] activeExperimentSettings = { //GetFR1Settings(),                              // IF YOU WANT TO ADD OR REMOVE AN EXPERIMENT
+                                                                     //GetCatFR1Settings(),                          // CREATE A NEW SETTINGS FETCHER IF NEEDED
+                                                                     //GetFR6Settings(),                              // AND THEN ADD OR REMOVE THE EXPERIMENT
+                                                                     //GetCatFR6Settings(),                           // SETTINGS FROM THIS ARRAY.
+                                                                     GetElememFR1Settings(),
+                                                                     GetElememCatFR1Settings(),
+                                                                     GetElememFR5Settings(),
+                                                                     GetElememCatFR5Settings(),
                                                                      GetPS5Settings(),
                                                                      GetCatPS5Settings(),
                                                                      GetPS4Settings(),
@@ -51,9 +55,6 @@ public static class FRExperimentSettings
                                                                      GetTICLCatFRSettings(),
                                                                      GetTICCLSSettings(),
                                                                      GetTICCLSbSettings(),
-                                                                     GetFR1ElememSettings(),
-                                                                     GetFR6ElememSettings(),
-                                                                     GetFR6Settings(),
                                                                      GetTestFR1Settings() };
 
     /// <summary>
@@ -328,58 +329,92 @@ public static class FRExperimentSettings
     }
 
     /// <summary>
-    /// Gets the FR1Elemem settings.
+    /// Gets the ElememFR1 settings.
     ///
     /// This is the same as FR1, but uses elemem.
     /// </summary>
-    /// <returns>The FR1Elemem settings.</returns>
-    public static ExperimentSettings GetFR1ElememSettings()
+    /// <returns>The ElememFR1 settings.</returns>
+    public static ExperimentSettings GetElememFR1Settings()
     {
-        Config.experimentConfigName = "FR1Elemem";
-        ExperimentSettings FR1ElememSettings = GetFR1Settings();
-        FR1ElememSettings.experimentName = "FR1";
-        FR1ElememSettings.version = "1.0";
-        FR1ElememSettings.useRamulator = false;
-        FR1ElememSettings.useElemem = true;
-        FR1ElememSettings.stimMode = "none";
-        return FR1ElememSettings;
+        Config.experimentConfigName = "ElememFR1";
+        ExperimentSettings ElememFR1Settings = GetFR1Settings();
+        ElememFR1Settings.experimentName = "FR1";
+        ElememFR1Settings.version = "1.0";
+        ElememFR1Settings.useRamulator = false;
+        ElememFR1Settings.useElemem = true;
+        ElememFR1Settings.stimMode = "none";
+        return ElememFR1Settings;
     }
 
     /// <summary>
-    /// Gets the FR5Elemem settings.
+    /// Gets the ElememFR5 settings.
     /// 
-    /// FR5 consist of 25 EMBEDDED lists.
+    /// This is the same as FR5, but uses elemem.
     /// </summary>
-    /// <returns>The FR5Elemem settings.</returns>
-    public static ExperimentSettings GetFR5ElememSettings()
+    /// <returns>The ElememFR5 settings.</returns>
+    public static ExperimentSettings GetElememFR5Settings()
     {
-        Config.experimentConfigName = "FR5:w" +
-            "Elemem";
-        ExperimentSettings FR5ElememSettings = GetFR6Settings();
-        FR5ElememSettings.wordListGenerator = new FRListGenerator(11, 11, 4, 11, 0, 0, 1);
-        FR5ElememSettings.experimentName = "FR5";
-        FR5ElememSettings.useRamulator = false;
-        FR5ElememSettings.useElemem = true;
-        FR5ElememSettings.stimMode = "closed";
-        return FR5ElememSettings;
+        ExperimentSettings ElememFR5Settings = GetFR6Settings();
+        //ElememFR5Settings.wordListGenerator = new FRListGenerator(11, 11, 4, 11, 0, 0, 1);
+        ElememFR5Settings.wordListGenerator = new FRListGenerator(12, 13, 1, 12, 0, 0, 1);
+        ElememFR5Settings.experimentName = "FR5";
+        ElememFR5Settings.version = "1.0";
+        ElememFR5Settings.useRamulator = false;
+        ElememFR5Settings.useElemem = true;
+        ElememFR5Settings.stimMode = "closed";
+        return ElememFR5Settings;
     }
 
     /// <summary>
-    /// Gets the FR6Elemem settings.
+    /// Gets the ElememFR6 settings.
     ///
     /// This is the same as FR6, but uses elemem.
     /// </summary>
-    /// <returns>The FR6Elemem settings.</returns>
-    public static ExperimentSettings GetFR6ElememSettings()
+    /// <returns>The ElememFR6 settings.</returns>
+    public static ExperimentSettings GetElememFR6Settings()
     {
-        Config.experimentConfigName = "FR6Elemem";
-        ExperimentSettings FR6ElememSettings = GetFR6Settings();
-        FR6ElememSettings.experimentName = "FR5";
-        FR6ElememSettings.version = "1.0";
-        FR6ElememSettings.useRamulator = false;
-        FR6ElememSettings.useElemem = true;
-        FR6ElememSettings.stimMode = "closed";
-        return FR6ElememSettings;
+        ExperimentSettings ElememFR6Settings = GetFR6Settings();
+        ElememFR6Settings.experimentName = "FR6";
+        ElememFR6Settings.version = "1.0";
+        ElememFR6Settings.useRamulator = false;
+        ElememFR6Settings.useElemem = true;
+        ElememFR6Settings.stimMode = "closed";
+        return ElememFR6Settings;
+    }
+
+    /// <summary>
+    /// Gets the ElememCatFR1 settings.
+    ///
+    /// This is the same as CatFR1, but uses elemem.
+    /// </summary>
+    /// <returns>The ElememCatFR1 settings.</returns>
+    public static ExperimentSettings GetElememCatFR1Settings()
+    {
+        ExperimentSettings ElememCatFR1Settings = GetCatFR1Settings();
+        ElememCatFR1Settings.experimentName = "CatFR1";
+        ElememCatFR1Settings.version = "1.0";
+        ElememCatFR1Settings.useRamulator = false;
+        ElememCatFR1Settings.useElemem = true;
+        ElememCatFR1Settings.stimMode = "none";
+        return ElememCatFR1Settings;
+    }
+
+    /// <summary>
+    /// Gets the ElememCatFR5 settings.
+    /// 
+    /// This is the same as CatFR5, but uses elemem.
+    /// </summary>
+    /// <returns>The ElememCatFR5 settings.</returns>
+    public static ExperimentSettings GetElememCatFR5Settings()
+    {
+        ExperimentSettings ElememCatFR5Settings = GetCatFR6Settings();
+        ElememCatFR5Settings.wordListGenerator = new FRListGenerator(11, 11, 4, 11, 0, 0, 1);
+        ElememCatFR5Settings.experimentName = "CatFR5";
+        ElememCatFR5Settings.version = "1.0";
+        ElememCatFR5Settings.useRamulator = false;
+        ElememCatFR5Settings.useElemem = true;
+        ElememCatFR5Settings.stimMode = "closed";
+        return ElememCatFR5Settings;
     }
 
     /// <summary>

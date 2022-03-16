@@ -26,7 +26,7 @@ public class EditableExperiment : CoroutineExperiment
     private bool paused = false;
     private string current_phase_type;
 
-    List<int> stimListTypes;
+    //List<int> stimListTypes;
 
     //use update to collect user input every frame
     void Update()
@@ -70,13 +70,14 @@ public class EditableExperiment : CoroutineExperiment
 
         yield return elememInterface.BeginNewSession(session, !currentSettings.useElemem);
 
-        elememInterface.SendMessage("CLNORMALIZE", new Dictionary<string, object>() { { "duration", currentSettings.clDuration }, { "id", 420 } });
-        yield return new WaitForSeconds(3);
-        elememInterface.SendMessage("CLNORMALIZE", new Dictionary<string, object>() { { "duration", currentSettings.clDuration }, { "id", 420 } });
-        yield return new WaitForSeconds(3);
-        elememInterface.SendMessage("CLSTIM", new Dictionary<string, object>() { { "classifyms", currentSettings.clDuration }, { "id", 420 } });
+        // TESTING CODE
+        //elememInterface.SendCLMessage("CLNORMALIZE", currentSettings.clDuration);
+        //yield return new WaitForSeconds(7);
+        //elememInterface.SendCLMessage("CLNORMALIZE", currentSettings.clDuration);
+        //yield return new WaitForSeconds(7);
+        //elememInterface.SendCLMessage("CLSTIM", currentSettings.clDuration);
 
-        stimListTypes = GenStimLists();
+        //stimListTypes = GenStimLists();
 
         VAD.DoVAD(false);
 
@@ -88,6 +89,8 @@ public class EditableExperiment : CoroutineExperiment
             current_phase_type = (string)words[wordsSeen]["phase_type"];
 
             ramulatorInterface.BeginNewTrial(i);
+            elememInterface.SendTrialMessage(i, current_phase_type == "STIM");
+            //elememInterface.SendTrialMessage(i, stimListTypes[i] == 1);
 
             if (startList == 0 && i == 0)
             {
@@ -113,20 +116,24 @@ public class EditableExperiment : CoroutineExperiment
                 yield return PressAnyKey("Press any key for trial " + i.ToString() + ".");
 
             SetRamulatorState("COUNTDOWN", true, new Dictionary<string, object>() { { "current_trial", i } });
+            SetElememState("COUNTDOWN");
             yield return DoCountdown();
             SetRamulatorState("COUNTDOWN", false, new Dictionary<string, object>() { { "current_trial", i } });
 
             SetRamulatorState("ENCODING", true, new Dictionary<string, object>() { { "current_trial", i } });
+            SetElememState("ENCODING");
             yield return DoEncoding(i);
             SetRamulatorState("ENCODING", false, new Dictionary<string, object>() { { "current_trial", i } });
 
             SetRamulatorState("DISTRACT", true, new Dictionary<string, object>() { { "current_trial", i } });
+            SetElememState("DISTRACT");
             yield return DoDistractor();
             SetRamulatorState("DISTRACT", false, new Dictionary<string, object>() { { "current_trial", i } });
 
             yield return PausableWait(Random.Range(currentSettings.minPauseBeforeRecall, currentSettings.maxPauseBeforeRecall));
 
             SetRamulatorState("RETRIEVAL", true, new Dictionary<string, object>() { { "current_trial", i } });
+            SetElememState("RETRIEVAL");
             yield return DoRecall();
             SetRamulatorState("RETRIEVAL", false, new Dictionary<string, object>() { { "current_trial", i } });
 
@@ -155,6 +162,7 @@ public class EditableExperiment : CoroutineExperiment
         }
 
         ramulatorInterface.SendExitMessage();
+        elememInterface.SendExitMessage();
         textDisplayer.DisplayText("display end message", "Woo!  The experiment is over.");
     }
 
@@ -180,6 +188,8 @@ public class EditableExperiment : CoroutineExperiment
         return Enumerable.Repeat(-1, 1)
                          .Concat(Enumerable.Repeat(0, ((FRListGenerator)currentSettings.wordListGenerator).BASELINE_LIST_COUNT))
                          .Concat(subList).ToList();
+
+        //elememInterface.SendStimSelectMessage(); // TODO: JPB: (need) Fill in StimSelectMessage
     }
 
 
@@ -190,6 +200,7 @@ public class EditableExperiment : CoroutineExperiment
         Debug.Log("Beginning list index " + currentList.ToString());
 
         SetRamulatorState("ORIENT", true, new Dictionary<string, object>());
+        SetElememState("ORIENT");
         textDisplayer.DisplayText("orientation stimulus", "+");
         yield return PausableWait(Random.Range(currentSettings.minOrientationStimulusLength, currentSettings.maxOrientationStimulusLength));
         textDisplayer.ClearText();
@@ -201,21 +212,33 @@ public class EditableExperiment : CoroutineExperiment
             string word = (string)words[wordsSeen]["word"];
             textDisplayer.DisplayText("word stimulus", word);
 
-            if (UnityEPL.GetExperimentName() == "FR5") {
-                if (stimListTypes[listNum] == 0) {
-                    elememInterface.SendMessage("CLNORMALIZE", new Dictionary<string, object>() { { "duration", currentSettings.clDuration }, { "id", listNum * currentSettings.wordsPerList + i } });
-                }
-                else if (stimListTypes[listNum] == 1)
+            string expName = UnityEPL.GetExperimentName();
+            if (expName == "FR5" || expName == "FR6" || expName == "CatFR5") {
+                if (current_phase_type == "STIM")
                 {
-                    elememInterface.SendMessage("CLSTIM", new Dictionary<string, object>() { { "classifyms", currentSettings.clDuration }, { "id", listNum * currentSettings.wordsPerList + i } });
+                    elememInterface.SendCLMessage("CLSTIM", currentSettings.clDuration);
                 }
-                else if (stimListTypes[listNum] == 2)
+                else
                 {
-                    elememInterface.SendMessage("CLSHAM", new Dictionary<string, object>() { { "classifyms", currentSettings.clDuration }, { "id", listNum * currentSettings.wordsPerList + i } });
+                    elememInterface.SendCLMessage("CLNORMALIZE", currentSettings.clDuration);
                 }
+
+                //if (stimListTypes[listNum] == 0)
+                //{
+                //    elememInterface.SendCLMessage("CLNORMALIZE", currentSettings.clDuration);
+                //}
+                //else if (stimListTypes[listNum] == 1)
+                //{
+                //    elememInterface.SendCLMessage("CLSTIM", currentSettings.clDuration);
+                //}
+                //else if (stimListTypes[listNum] == 2)
+                //{
+                //    elememInterface.SendCLMessage("CLSHAM", currentSettings.clDuration);
+                //}
             }
 
             SetRamulatorWordState(true, words[wordsSeen]);
+            SetElememWordState(words[wordsSeen], i, false);
             yield return PausableWait(currentSettings.wordPresentationLength);
             textDisplayer.ClearText();
             SetRamulatorWordState(false, words[wordsSeen]);
@@ -241,7 +264,25 @@ public class EditableExperiment : CoroutineExperiment
         ramulatorInterface.SetState(stateName, state, extraData);
     }
 
-    private IEnumerator DoDistractor()
+    private void SetElememWordState(IronPython.Runtime.PythonDictionary wordData, int serialPos, bool stim)
+    {
+        Dictionary<string, object> dotNetWordData = new Dictionary<string, object>();
+        foreach (string key in wordData.Keys)
+            dotNetWordData.Add(key, wordData[key] == null ? "" : wordData[key].ToString());
+        elememInterface.SendWordMessage((string) dotNetWordData["word"], serialPos, stim, dotNetWordData);
+    }
+
+    // NO INPUT:  REST, ORIENT, COUNTDOWN, TRIALEND, DISTRACT, INSTRUCT, WAITING, SYNC
+    // INPUT:     ISI (float duration), RECALL (float duration)
+    protected override void SetElememState(string stateName, Dictionary<string, object> extraData = null)
+    {
+        if (extraData == null)
+            extraData = new Dictionary<string, object>();
+        extraData.Add("phase_type", current_phase_type);
+        elememInterface.SendStateMessage(stateName, extraData);
+    }
+
+private IEnumerator DoDistractor()
     {
         float endTime = Time.time + currentSettings.distractionLength;
 
