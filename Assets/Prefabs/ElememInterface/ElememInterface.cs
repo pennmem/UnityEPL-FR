@@ -211,9 +211,6 @@ public class ElememInterfaceHelper : IHostPC
             sw.Stop();
 
             delay[i] = sw.ElapsedTicks * (1000f / Stopwatch.Frequency);
-            if(delay[i] > 20) {
-                break;
-            }
 
             Thread.Sleep(50 - (int)delay[i]);
         }
@@ -321,24 +318,6 @@ public class ElememInterfaceHelper : IHostPC
         heartbeatCount++;
         SendMessage("HEARTBEAT", data);
         WaitForMessage("HEARTBEAT_OK", heartbeatTimeout);
-    }
-
-    public void RepeatedlyUpdateClassifierResult()
-    {
-        while (true)
-        {
-            var classifierInfo = WaitForMessages(new[] { "CLASSIFIER_RESULT", "EEG_EPOCH_END" }, 20000);
-            switch (classifierInfo["type"].Value<string>())
-            {
-                case "CLASSIFIER_RESULT":
-                    lock (classifierResultLock)
-                        classifierResult = classifierInfo["data"]["result"].ToObject<int>();
-                    break;
-                case "EEG_EPOCH_END":
-                    // Do nothing, just log the info
-                    break;
-            }
-        }
     }
 
     private void ReportMessage(string message, bool sent)
