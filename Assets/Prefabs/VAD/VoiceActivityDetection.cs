@@ -38,7 +38,7 @@ public class VoiceActivityDetection : MonoBehaviour
 			{
 				talkingState = someoneIsTalking;
 				ramulatorInterface.SetState("VOCALIZATION", talkingState, new Dictionary<string, object>());
-				elememInterface.SendStateMessage("VOCALIZATION");
+				elememInterface.SendStateMessage("VOCALIZATION", new Dictionary<string, object>() { { "value", talkingState } });
 			}
 		}
         else

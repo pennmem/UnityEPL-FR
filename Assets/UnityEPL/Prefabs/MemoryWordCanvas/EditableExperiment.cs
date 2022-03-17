@@ -268,7 +268,8 @@ public class EditableExperiment : CoroutineExperiment
     {
         Dictionary<string, object> dotNetWordData = new Dictionary<string, object>();
         foreach (string key in wordData.Keys)
-            dotNetWordData.Add(key, wordData[key] == null ? "" : wordData[key].ToString());
+            if (key != "amplitude_index" && key != "stim_channels")
+                dotNetWordData.Add(key, wordData[key] == null ? "" : wordData[key].ToString());
         elememInterface.SendWordMessage((string) dotNetWordData["word"], serialPos, stim, dotNetWordData);
     }
 

@@ -176,7 +176,7 @@ public class ElememInterfaceHelper : IHostPC
         ExperimentSettings experimentSettings = FRExperimentSettings.GetSettingsByName(UnityEPL.GetExperimentName());
         Dictionary<string, object> configDict = new Dictionary<string, object>();
         configDict.Add("stim_mode", experimentSettings.stimMode.ToString());
-        //configDict.Add("experiment", UnityEPL.GetExperimentName()); // This is added in the DataPoint class
+        configDict.Add("experiment", UnityEPL.GetExperimentName());
         configDict.Add("subject", UnityEPL.GetParticipants()[0]);
         configDict.Add("session", UnityEPL.GetSessionNumber().ToString());
         SendMessage("CONFIGURE", configDict);
@@ -298,7 +298,7 @@ public class ElememInterfaceHelper : IHostPC
     public override void SendMessage(string type, Dictionary<string, object> data = null) {
         if (data == null)
             data = new Dictionary<string, object>();
-        DataPoint point = new DataPoint(type, System.DateTime.UtcNow, data);
+        ElememDataPoint point = new ElememDataPoint(type, System.DateTime.UtcNow, data);
         string message = point.ToJSON();
 
         UnityEngine.Debug.Log("Sent Message");
@@ -358,7 +358,7 @@ public class ElememInterface : MonoBehaviour
         UnityEngine.Debug.Log("Started Elemem Interface");
     }
 
-        // MATH
+    // MATH
     public void SendMathMessage(string problem, string response, int responseTimeMs, bool correct)
     {
         var data = new Dictionary<string, object>();
