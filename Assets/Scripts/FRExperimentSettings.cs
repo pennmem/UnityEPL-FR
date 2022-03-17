@@ -355,8 +355,7 @@ public static class FRExperimentSettings
     public static ExperimentSettings GetElememFR5Settings()
     {
         ExperimentSettings ElememFR5Settings = GetFR6Settings();
-        //ElememFR5Settings.wordListGenerator = new FRListGenerator(11, 11, 4, 11, 0, 0, 1);
-        ElememFR5Settings.wordListGenerator = new FRListGenerator(12, 13, 1, 12, 0, 0, 1);
+        ElememFR5Settings.wordListGenerator = new FRListGenerator(11, 11, 4, 11, 0, 0, 1);
         ElememFR5Settings.experimentName = "FR5";
         ElememFR5Settings.version = "1.0";
         ElememFR5Settings.useRamulator = false;
