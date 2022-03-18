@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -28,6 +29,18 @@ public class EditableExperiment : CoroutineExperiment
 
     //List<int> stimListTypes;
 
+    void UncaughtExceptionHandler(object sender, UnhandledExceptionEventArgs args)
+    {
+        Exception e = (Exception)args.ExceptionObject;
+        Debug.Log("UncaughtException: " + e.Message);
+        Debug.Log("UncaughtException: " + e);
+
+        Dictionary<string, object> exceptionData = new Dictionary<string, object>()
+            { { "name", e.Message },
+              { "traceback", e.ToString() } };
+        scriptedEventReporter.ReportScriptedEvent("unhandled program exception", exceptionData);
+    }
+
     //use update to collect user input every frame
     void Update()
     {
@@ -52,6 +65,10 @@ public class EditableExperiment : CoroutineExperiment
 
     IEnumerator Start()
     {
+        // Exception handling
+        AppDomain currentDomain = AppDomain.CurrentDomain;
+        currentDomain.UnhandledException += new UnhandledExceptionEventHandler(UncaughtExceptionHandler);
+
         Cursor.visible = false;
         Application.runInBackground = true;
 
@@ -130,7 +147,7 @@ public class EditableExperiment : CoroutineExperiment
             yield return DoDistractor();
             SetRamulatorState("DISTRACT", false, new Dictionary<string, object>() { { "current_trial", i } });
 
-            yield return PausableWait(Random.Range(currentSettings.minPauseBeforeRecall, currentSettings.maxPauseBeforeRecall));
+            yield return PausableWait(UnityEngine.Random.Range(currentSettings.minPauseBeforeRecall, currentSettings.maxPauseBeforeRecall));
 
             SetRamulatorState("RETRIEVAL", true, new Dictionary<string, object>() { { "current_trial", i } });
             SetElememState("RETRIEVAL");
@@ -202,13 +219,13 @@ public class EditableExperiment : CoroutineExperiment
         SetRamulatorState("ORIENT", true, new Dictionary<string, object>());
         SetElememState("ORIENT");
         textDisplayer.DisplayText("orientation stimulus", "+");
-        yield return PausableWait(Random.Range(currentSettings.minOrientationStimulusLength, currentSettings.maxOrientationStimulusLength));
+        yield return PausableWait(UnityEngine.Random.Range(currentSettings.minOrientationStimulusLength, currentSettings.maxOrientationStimulusLength));
         textDisplayer.ClearText();
         SetRamulatorState("ORIENT", false, new Dictionary<string, object>());
 
         for (int i = 0; i < currentSettings.wordsPerList; i++)
         {
-            yield return PausableWait(Random.Range(currentSettings.minISI, currentSettings.maxISI));
+            yield return PausableWait(UnityEngine.Random.Range(currentSettings.minISI, currentSettings.maxISI));
             string word = (string)words[wordsSeen]["word"];
             textDisplayer.DisplayText("word stimulus", word);
 
@@ -436,7 +453,7 @@ private IEnumerator DoDistractor()
 
     private int[] DistractorProblem()
     {
-        return new int[] { Random.Range(1, 9), Random.Range(1, 9), Random.Range(1, 9) };
+        return new int[] { UnityEngine.Random.Range(1, 9), UnityEngine.Random.Range(1, 9), UnityEngine.Random.Range(1, 9) };
     }
 
     private static void IncrementWordsSeen()

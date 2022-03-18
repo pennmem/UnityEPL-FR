@@ -193,11 +193,13 @@ public class ElememInterfaceHelper : IHostPC
         // start heartbeats
         //int interval = (int)im.GetSetting("heartbeatInterval");
         //DoRepeating(new EventBase(Heartbeat), -1, 0, interval);
-        DoRepeating(new RepeatingEvent(new EventBase(Heartbeat), -1, 0, 1000));
 
         SendMessage("READY");
         WaitForMessage("START", messageTimeout);
         //im.Do(new EventBase<string>(im.SetHostPCStatus, "READY"));
+
+        // This is after WaitForMessage until the TODO for making the WaitForMessage use the event loop
+        DoRepeating(new RepeatingEvent(new EventBase(Heartbeat), -1, 0, 1000));
     }
 
     private void DoLatencyCheck() {
@@ -233,6 +235,7 @@ public class ElememInterfaceHelper : IHostPC
         return WaitForMessages(new[] { type }, timeout);
     }
 
+    // TODO: JPB: Make this a helper so that it calls a Do() instead (threading issue if you wait on another event)
     public override JObject WaitForMessages(string[] types, int timeout) {
         Stopwatch sw = new Stopwatch();
         sw.Start();
@@ -295,9 +298,10 @@ public class ElememInterfaceHelper : IHostPC
         // }
     }
 
+
+    // TODO: JPB: Make this a helper so that it calls a Do() instead (threading issue if you wait on another event)
     public override void SendMessage(string type, Dictionary<string, object> data = null) {
-        if (data == null)
-            data = new Dictionary<string, object>();
+        
         ElememDataPoint point = new ElememDataPoint(type, System.DateTime.UtcNow, data);
         string message = point.ToJSON();
 
