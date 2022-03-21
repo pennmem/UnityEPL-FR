@@ -16,6 +16,7 @@ public abstract class IHostPC : EventLoop {
     public abstract void Connect();
     public abstract void HandleMessage(string message, DateTime time);
     public abstract void SendMessage(string type, Dictionary<string, object> data);
+    protected abstract void SendMessageInternal(string type, Dictionary<string, object> data);
 }
 
 public class ElememListener {
@@ -118,11 +119,14 @@ public class ElememInterfaceHelper : IHostPC
 
     private ScriptedEventReporter scriptedEventReporter;
 
-    public readonly object classifierResultLock = new object();
-    public volatile int classifierResult = 0;
+    private bool interfaceDisabled = true;
 
-    public ElememInterfaceHelper(ScriptedEventReporter _scriptedEventReporter) { //InterfaceManager _im) {
+    public ElememInterfaceHelper(ScriptedEventReporter _scriptedEventReporter, bool _interfaceDisabled) { //InterfaceManager _im) {
         //im = _im;
+
+        interfaceDisabled = _interfaceDisabled;
+        if (interfaceDisabled) return;
+
         scriptedEventReporter = _scriptedEventReporter;
         listener = new ElememListener(this);
         Start();
@@ -136,7 +140,7 @@ public class ElememInterfaceHelper : IHostPC
     }
 
 
-    public NetworkStream GetWriteStream() {
+    private NetworkStream GetWriteStream() {
         // TODO implement locking here
         if(elememServer == null) {
             throw new InvalidOperationException("Socket not initialized.");
@@ -145,6 +149,7 @@ public class ElememInterfaceHelper : IHostPC
         return elememServer.GetStream();
     }
 
+    // Should only be used by ElememListener
     public NetworkStream GetReadStream() {
         // TODO implement locking here
         if(elememServer == null) {
@@ -155,6 +160,8 @@ public class ElememInterfaceHelper : IHostPC
     }
 
     public override void Connect() {
+        if (interfaceDisabled) return;
+
         elememServer = new TcpClient();
 
         //try {
@@ -170,7 +177,7 @@ public class ElememInterfaceHelper : IHostPC
         //im.Do(new EventBase<string>(im.SetHostPCStatus, "INITIALIZING")); 
 
         UnityEngine.Debug.Log("CONNECTING");
-        SendMessage("CONNECTED"); // Awake
+        SendMessageInternal("CONNECTED"); // Awake
         WaitForMessage("CONNECTED_OK", messageTimeout);
 
         ExperimentSettings experimentSettings = FRExperimentSettings.GetSettingsByName(UnityEPL.GetExperimentName());
@@ -179,7 +186,7 @@ public class ElememInterfaceHelper : IHostPC
         configDict.Add("experiment", UnityEPL.GetExperimentName());
         configDict.Add("subject", UnityEPL.GetParticipants()[0]);
         configDict.Add("session", UnityEPL.GetSessionNumber().ToString());
-        SendMessage("CONFIGURE", configDict);
+        SendMessageInternal("CONFIGURE", configDict);
         var ElememConfig = WaitForMessage("CONFIGURE_OK", messageTimeout);
         var ElememerverConfigPath = System.IO.Path.Combine(UnityEPL.GetDataPath(), "elememServer_config.json");
         System.IO.File.AppendAllText(ElememerverConfigPath, ElememConfig.ToString());
@@ -194,7 +201,7 @@ public class ElememInterfaceHelper : IHostPC
         //int interval = (int)im.GetSetting("heartbeatInterval");
         //DoRepeating(new EventBase(Heartbeat), -1, 0, interval);
 
-        SendMessage("READY");
+        SendMessageInternal("READY");
         WaitForMessage("START", messageTimeout);
         //im.Do(new EventBase<string>(im.SetHostPCStatus, "READY"));
 
@@ -232,11 +239,15 @@ public class ElememInterfaceHelper : IHostPC
 
     public override JObject WaitForMessage(string type, int timeout)
     {
+        if (interfaceDisabled) return new JObject();
+
         return WaitForMessages(new[] { type }, timeout);
     }
 
     // TODO: JPB: Make this a helper so that it calls a Do() instead (threading issue if you wait on another event)
     public override JObject WaitForMessages(string[] types, int timeout) {
+        if (interfaceDisabled) return new JObject();
+
         Stopwatch sw = new Stopwatch();
         sw.Start();
 
@@ -274,6 +285,8 @@ public class ElememInterfaceHelper : IHostPC
     }
 
     public override void HandleMessage(string message, DateTime time) {
+        if (interfaceDisabled) return;
+
         JObject json = JObject.Parse(message);
         json.Add("task pc time", time);
 
@@ -299,9 +312,9 @@ public class ElememInterfaceHelper : IHostPC
     }
 
 
-    // TODO: JPB: Make this a helper so that it calls a Do() instead (threading issue if you wait on another event)
-    public override void SendMessage(string type, Dictionary<string, object> data = null) {
-        
+    protected override void SendMessageInternal(string type, Dictionary<string, object> data = null) {
+        if (interfaceDisabled) return;
+
         ElememDataPoint point = new ElememDataPoint(type, System.DateTime.UtcNow, data);
         string message = point.ToJSON();
 
@@ -315,12 +328,18 @@ public class ElememInterfaceHelper : IHostPC
         ReportMessage(message, true);
     }
 
+    public override void SendMessage(string type, Dictionary<string, object> data = null)
+    {
+        if (interfaceDisabled) return;
+        Do(new EventBase<string, Dictionary<string, object>>(SendMessageInternal, type, data));
+    }
+
     private void Heartbeat()
     {
         var data = new Dictionary<string, object>();
         data.Add("count", heartbeatCount);
         heartbeatCount++;
-        SendMessage("HEARTBEAT", data);
+        SendMessageInternal("HEARTBEAT", data);
         WaitForMessage("HEARTBEAT_OK", heartbeatTimeout);
     }
 
@@ -348,18 +367,13 @@ public class ElememInterface : MonoBehaviour
 
     private ElememInterfaceHelper elememInterfaceHelper = null;
 
-    private bool interfaceDisabled = false;
-
     // CONNECTED, CONFIGURE, READY, and HEARTBEAT
     public IEnumerator BeginNewSession(int sessionNum, bool disableInterface = false)
     {
-        interfaceDisabled = disableInterface;
-        if (interfaceDisabled)
-            yield break;
-
         yield return new WaitForSeconds(1);
-        elememInterfaceHelper = new ElememInterfaceHelper(scriptedEventReporter);
-        UnityEngine.Debug.Log("Started Elemem Interface");
+        elememInterfaceHelper = new ElememInterfaceHelper(scriptedEventReporter, disableInterface);
+        if (disableInterface)
+            UnityEngine.Debug.Log("Started Elemem Interface");
     }
 
     // MATH
@@ -442,7 +456,6 @@ public class ElememInterface : MonoBehaviour
 
     private void SendMessage(string type, Dictionary<string, object> data = null)
     {
-        if (interfaceDisabled) return;
         elememInterfaceHelper.SendMessage(type, data);
     }
 }
