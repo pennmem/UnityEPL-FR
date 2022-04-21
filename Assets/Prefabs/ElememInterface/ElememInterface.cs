@@ -456,7 +456,8 @@ public class ElememInterface : MonoBehaviour
 
     private void SendMessage(string type, Dictionary<string, object> data = null)
     {
-        elememInterfaceHelper.SendMessage(type, data);
+        if (elememInterfaceHelper != null)
+            elememInterfaceHelper.SendMessage(type, data);
     }
 }
 #endif // !UNITY_WEBGL

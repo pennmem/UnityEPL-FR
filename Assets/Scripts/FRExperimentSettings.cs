@@ -111,9 +111,9 @@ public static class FRExperimentSettings
         FR1Settings.minPauseBeforeRecall = 1f;
         FR1Settings.maxPauseBeforeRecall = 1.4f;
         FR1Settings.recallTextDisplayLength = 1f;
-        FR1Settings.useRamulator = false;
-        FR1Settings.useElemem = true;
-        FR1Settings.stimMode = "none";
+        FR1Settings.useRamulator = false; //true
+        FR1Settings.useElemem = false;
+        //FR1Settings.stimMode = "none";
         FR1Settings.isTwoParter = true;
         FR1Settings.useSessionListSelection = true;
 
@@ -178,10 +178,10 @@ public static class FRExperimentSettings
         FR6Settings.minPauseBeforeRecall = 1f;
         FR6Settings.maxPauseBeforeRecall = 1.4f;
         FR6Settings.recallTextDisplayLength = 1f;
-        FR6Settings.useRamulator = false;
-        FR6Settings.useElemem = true;
-        FR6Settings.stimMode = "closed";
-        FR6Settings.clDuration = 1000; 
+        FR6Settings.useRamulator = true;
+        FR6Settings.useElemem = false;
+        //FR6Settings.stimMode = "closed";
+        //FR6Settings.clDuration = 1000; 
         FR6Settings.isTwoParter = false;
         FR6Settings.useSessionListSelection = false;
 
@@ -361,6 +361,7 @@ public static class FRExperimentSettings
         ElememFR5Settings.useRamulator = false;
         ElememFR5Settings.useElemem = true;
         ElememFR5Settings.stimMode = "closed";
+        ElememFR5Settings.clDuration = 1000;
         return ElememFR5Settings;
     }
 
@@ -378,6 +379,7 @@ public static class FRExperimentSettings
         ElememFR6Settings.useRamulator = false;
         ElememFR6Settings.useElemem = true;
         ElememFR6Settings.stimMode = "closed";
+        ElememFR6Settings.clDuration = 1000;
         return ElememFR6Settings;
     }
 
@@ -413,6 +415,7 @@ public static class FRExperimentSettings
         ElememCatFR5Settings.useRamulator = false;
         ElememCatFR5Settings.useElemem = true;
         ElememCatFR5Settings.stimMode = "closed";
+        ElememCatFR5Settings.clDuration = 1000;
         return ElememCatFR5Settings;
     }
 

@@ -82,9 +82,15 @@ public class EditableExperiment : CoroutineExperiment
         versionsData.Add("Logfile version", "1");
         scriptedEventReporter.ReportScriptedEvent("versions", versionsData);
 
+        // Sys 1 (syncbox not working)
+        //if (!Config.noSyncbox)
+        //    transform.root.GetComponentInChildren<Syncbox>().enabled = true;
+
+        // Sys 3
         if (currentSettings.useRamulator)
             yield return ramulatorInterface.BeginNewSession(session);
 
+        // Sys 4
         yield return elememInterface.BeginNewSession(session, !currentSettings.useElemem);
 
         // TESTING CODE
@@ -95,6 +101,7 @@ public class EditableExperiment : CoroutineExperiment
         //elememInterface.SendCLMessage("CLSTIM", currentSettings.clDuration);
 
         //stimListTypes = GenStimLists();
+
 
         VAD.DoVAD(false);
 
@@ -388,6 +395,8 @@ private IEnumerator DoDistractor()
 
     private IEnumerator DoRecall()
     {
+        SetElememState("RECALL", new Dictionary<string, object> { { "duration", currentSettings.recallLength } });
+
         VAD.DoVAD(true);
         highBeep.Play();
         scriptedEventReporter.ReportScriptedEvent("Sound played", new Dictionary<string, object>() { { "sound name", "high beep" }, { "sound duration", highBeep.clip.length.ToString() } });
