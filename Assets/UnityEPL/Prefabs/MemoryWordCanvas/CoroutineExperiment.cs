@@ -17,7 +17,7 @@ public abstract class CoroutineExperiment : MonoBehaviour
     public AudioSource highBeep;
     public AudioSource lowBeep;
     public AudioSource lowerBeep;
-    
+
     protected abstract void SetRamulatorState(string stateName, bool state, Dictionary<string, object> extraData);
     protected abstract void SetElememState(string stateName, Dictionary<string, object> data);
 
@@ -119,7 +119,17 @@ public abstract class CoroutineExperiment : MonoBehaviour
         }
         while (replay);
     }
-    
+
+    protected IEnumerator DoCPSVideo()
+    {
+        yield return PressAnyKey("Press any key to play movie.");
+
+        SetElememState("DISTRACT", new Dictionary<string, object>());
+        videoPlayer.StartVideo("");
+        while (videoPlayer.IsPlaying())
+            yield return null;
+    }
+
     protected IEnumerator PressAnyKey(string displayText)
     {
         SetRamulatorState("WAITING", true, new Dictionary<string, object>());

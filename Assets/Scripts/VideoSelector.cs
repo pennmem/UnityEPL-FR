@@ -12,8 +12,9 @@ public class VideoSelector : MonoBehaviour
     public UnityEngine.Video.VideoClip CatFR6clip;
     public UnityEngine.Video.VideoClip PS5frClip;
     public UnityEngine.Video.VideoClip CatPS5frClip;
+    public UnityEngine.Video.VideoClip CPSClip;
 
-	void OnEnable ()
+    void OnEnable ()
     {
         Vector2 originalAnchorMin = videoTransform.anchorMin;
         Vector2 originalAnchorMax = videoTransform.anchorMax;
@@ -38,6 +39,8 @@ public class VideoSelector : MonoBehaviour
             videoTransform.anchorMin = new Vector2(0, originalAnchorMin.y);
             videoTransform.anchorMax = new Vector2(1, originalAnchorMax.y);
         }
+        if (UnityEPL.GetExperimentName().Equals("CPS"))
+            videoPlayer.clip = CPSClip;
 
         videoPlayer.Play();
 	}

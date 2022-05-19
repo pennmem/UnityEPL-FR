@@ -29,8 +29,11 @@ public class VideoControl : MonoBehaviour
         }
     }
 
-    public void StartVideo()
+    public void StartVideo(string customText = null)
     {
+        if (customText != null)
+            videoPlayer.transform.GetComponentInChildren<UnityEngine.UI.Text>().text = customText;
+
         gameObject.SetActive(true);
     }
 

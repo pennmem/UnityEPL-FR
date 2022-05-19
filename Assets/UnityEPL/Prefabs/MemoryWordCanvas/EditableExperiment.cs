@@ -25,7 +25,7 @@ public class EditableExperiment : CoroutineExperiment
     public VoiceActivityDetection VAD;
 
     private bool paused = false;
-    private string current_phase_type;
+    private string current_phase_type = "";
 
     //List<int> stimListTypes;
 
@@ -49,6 +49,7 @@ public class EditableExperiment : CoroutineExperiment
         {
             paused = !paused;
             pauseIndicator.SetActive(paused);
+            elememInterface.SendStateMessage("PAUSED", new Dictionary<string, object> { { "state", paused } });
         }
     }
 
@@ -61,6 +62,14 @@ public class EditableExperiment : CoroutineExperiment
                 endTime += Time.deltaTime;
             yield return null;
         }
+    }
+
+    IEnumerator DoCPS()
+    {
+        elememInterface.SendTrialMessage(0, true);
+        yield return DoCPSVideo();
+        elememInterface.SendExitMessage();
+        textDisplayer.DisplayText("display end message", "Woo!  The experiment is over.");
     }
 
     IEnumerator Start()
@@ -92,6 +101,13 @@ public class EditableExperiment : CoroutineExperiment
 
         // Sys 4
         yield return elememInterface.BeginNewSession(session, !currentSettings.useElemem);
+
+        // CPS
+        if (currentSettings.experimentName == "CPS")
+        {
+            yield return DoCPS();
+            yield break;
+        }
 
         // TESTING CODE
         //elememInterface.SendCLMessage("CLNORMALIZE", currentSettings.clDuration);
