@@ -26,23 +26,35 @@ public struct ExperimentSettings
     public float maxPauseBeforeRecall; //maximum amount of time to wait after the last distractor is entered before recall begins. a random value between min and max will be chosen with uniform distribution.
     public float recallTextDisplayLength; //how long to display "****" for at the beginning of the recall period.
     public bool useRamulator; //whether or not the task should try to connect to and send messages to ramulator.
+    public bool useElemem; //whether or not the task should try to connect to and send messages to elemem.
+    public string stimMode; //what type of stim elemem will use
+    public uint clDuration; //duration in ms to collect data for normalization or classification
     public bool isTwoParter; //whether or not the experiment should divide the word pool in two and alternative halves between sessions.
     public bool isCategoryPool; //whether or not the catFR wordpool is used.
     public bool useSessionListSelection; //whether or not the list to begin from can be chosen in the start screen.
+    public int listGroupSize; //if > 0, insert pauseBetweenGroups record-only pause between this many lists.
+    public float pauseBetweenGroups; //seconds to pause between groupings of listGroupSize lists.
+    public string wordpoolFilename; //if set, override wordpool with this one.
 }
 
 public static class FRExperimentSettings
 {
-    private static ExperimentSettings[] activeExperimentSettings = { GetFR1Settings(),                              // IF YOU WANT TO ADD OR REMOVE AN EXPERIMENT
-                                                                     GetCatFR1Settings (),                          // CREATE A NEW SETTINGS FETCHER IF NEEDED
-                                                                     GetFR6Settings(),                              // AND THEN ADD OR REMOVE THE EXPERIMENT
-                                                                     GetCatFR6Settings(),                           // SETTINGS FROM THIS ARRAY.
+    private static ExperimentSettings[] activeExperimentSettings = { //GetFR1Settings(),                              // IF YOU WANT TO ADD OR REMOVE AN EXPERIMENT
+                                                                     //GetCatFR1Settings(),                          // CREATE A NEW SETTINGS FETCHER IF NEEDED
+                                                                     //GetFR6Settings(),                              // AND THEN ADD OR REMOVE THE EXPERIMENT
+                                                                     //GetCatFR6Settings(),                           // SETTINGS FROM THIS ARRAY.
+                                                                     GetElememFR1Settings(),
+                                                                     GetElememCatFR1Settings(),
+                                                                     GetElememFR5Settings(),
+                                                                     GetElememCatFR5Settings(),
                                                                      GetPS5Settings(),
                                                                      GetCatPS5Settings(),
                                                                      GetPS4Settings(),
                                                                      GetCatPS4Settings(),
                                                                      GetTICLFRSettings(),
                                                                      GetTICLCatFRSettings(),
+                                                                     GetTICCLSSettings(),
+                                                                     GetTICCLSbSettings(),
                                                                      GetTestFR1Settings() };
 
     /// <summary>
@@ -99,9 +111,15 @@ public static class FRExperimentSettings
         FR1Settings.minPauseBeforeRecall = 1f;
         FR1Settings.maxPauseBeforeRecall = 1.4f;
         FR1Settings.recallTextDisplayLength = .5f;
-        FR1Settings.useRamulator = true;
+        FR1Settings.useRamulator = false; //true
+        FR1Settings.useElemem = false;
         FR1Settings.isTwoParter = true;
         FR1Settings.useSessionListSelection = true;
+
+        FR1Settings.listGroupSize = 0;
+        FR1Settings.pauseBetweenGroups = 0;
+        FR1Settings.wordpoolFilename = "";
+
         return FR1Settings;
     }
 
@@ -160,8 +178,16 @@ public static class FRExperimentSettings
         FR6Settings.maxPauseBeforeRecall = 1.4f;
         FR6Settings.recallTextDisplayLength = 1f;
         FR6Settings.useRamulator = true;
+        FR6Settings.useElemem = false;
+        //FR6Settings.stimMode = "closed";
+        //FR6Settings.clDuration = 1000; 
         FR6Settings.isTwoParter = false;
         FR6Settings.useSessionListSelection = false;
+
+        FR6Settings.listGroupSize = 0;
+        FR6Settings.pauseBetweenGroups = 0;
+        FR6Settings.wordpoolFilename = "";
+
         return FR6Settings;
     }
 
@@ -265,6 +291,131 @@ public static class FRExperimentSettings
         TICLCatFRSettings.experimentName = "TICL_CatFR";
         TICLCatFRSettings.isCategoryPool = true;
         return TICLCatFRSettings;
+    }
+
+    /// <summary>
+    /// Gets the TICCLS settings.
+    /// 
+    /// This is the same as TICL_CatFR, but with a different word list.
+    /// </summary>
+    /// <returns>The PS5 settings.</returns>
+    public static ExperimentSettings GetTICCLSSettings()
+    {
+        ExperimentSettings TICCLSSettings = GetTICLCatFRSettings();
+        TICCLSSettings.experimentName = "TICCLS";
+        TICCLSSettings.version = "1.0";
+        TICCLSSettings.numberOfLists = 26;
+        TICCLSSettings.wordListGenerator = new FRListGenerator(15, 0, 6, 15, 0, 0, 1, 0, 5);
+        //TICCLSSettings.wordpoolFilename = "ram_categorized_300_en";
+        TICCLSSettings.listGroupSize = 5;
+        TICCLSSettings.pauseBetweenGroups = 50*60;
+        return TICCLSSettings;
+    }
+
+    /// <summary>
+    /// Gets the TICCLSb settings.
+    /// 
+    /// This is the same as TICCLS, but the first delay and subsequent list
+    /// are the sham periods, rather than the last.
+    /// </summary>
+    /// <returns>The PS5 settings.</returns>
+    public static ExperimentSettings GetTICCLSbSettings()
+    {
+        ExperimentSettings TICCLSbSettings = GetTICCLSSettings();
+        TICCLSbSettings.wordListGenerator = new FRListGenerator(15, 0, 11, 15, 0, 0, 1, 0, 0);
+        TICCLSbSettings.experimentName = "TICCLSb";
+        return TICCLSbSettings;
+    }
+
+    /// <summary>
+    /// Gets the ElememFR1 settings.
+    ///
+    /// This is the same as FR1, but uses elemem.
+    /// </summary>
+    /// <returns>The ElememFR1 settings.</returns>
+    public static ExperimentSettings GetElememFR1Settings()
+    {
+        Config.experimentConfigName = "ElememFR1";
+        ExperimentSettings ElememFR1Settings = GetFR1Settings();
+        ElememFR1Settings.experimentName = "FR1";
+        ElememFR1Settings.version = "1.0";
+        ElememFR1Settings.useRamulator = false;
+        ElememFR1Settings.useElemem = true;
+        ElememFR1Settings.stimMode = "none";
+        return ElememFR1Settings;
+    }
+
+    /// <summary>
+    /// Gets the ElememFR5 settings.
+    /// 
+    /// This is the same as FR5, but uses elemem.
+    /// </summary>
+    /// <returns>The ElememFR5 settings.</returns>
+    public static ExperimentSettings GetElememFR5Settings()
+    {
+        ExperimentSettings ElememFR5Settings = GetFR6Settings();
+        ElememFR5Settings.wordListGenerator = new FRListGenerator(11, 11, 4, 11, 0, 0, 1);
+        ElememFR5Settings.experimentName = "FR5";
+        ElememFR5Settings.version = "1.0";
+        ElememFR5Settings.useRamulator = false;
+        ElememFR5Settings.useElemem = true;
+        ElememFR5Settings.stimMode = "closed";
+        ElememFR5Settings.clDuration = 1000;
+        return ElememFR5Settings;
+    }
+
+    /// <summary>
+    /// Gets the ElememFR6 settings.
+    ///
+    /// This is the same as FR6, but uses elemem.
+    /// </summary>
+    /// <returns>The ElememFR6 settings.</returns>
+    public static ExperimentSettings GetElememFR6Settings()
+    {
+        ExperimentSettings ElememFR6Settings = GetFR6Settings();
+        ElememFR6Settings.experimentName = "FR6";
+        ElememFR6Settings.version = "1.0";
+        ElememFR6Settings.useRamulator = false;
+        ElememFR6Settings.useElemem = true;
+        ElememFR6Settings.stimMode = "closed";
+        ElememFR6Settings.clDuration = 1000;
+        return ElememFR6Settings;
+    }
+
+    /// <summary>
+    /// Gets the ElememCatFR1 settings.
+    ///
+    /// This is the same as CatFR1, but uses elemem.
+    /// </summary>
+    /// <returns>The ElememCatFR1 settings.</returns>
+    public static ExperimentSettings GetElememCatFR1Settings()
+    {
+        ExperimentSettings ElememCatFR1Settings = GetCatFR1Settings();
+        ElememCatFR1Settings.experimentName = "CatFR1";
+        ElememCatFR1Settings.version = "1.0";
+        ElememCatFR1Settings.useRamulator = false;
+        ElememCatFR1Settings.useElemem = true;
+        ElememCatFR1Settings.stimMode = "none";
+        return ElememCatFR1Settings;
+    }
+
+    /// <summary>
+    /// Gets the ElememCatFR5 settings.
+    /// 
+    /// This is the same as CatFR5, but uses elemem.
+    /// </summary>
+    /// <returns>The ElememCatFR5 settings.</returns>
+    public static ExperimentSettings GetElememCatFR5Settings()
+    {
+        ExperimentSettings ElememCatFR5Settings = GetCatFR6Settings();
+        ElememCatFR5Settings.wordListGenerator = new FRListGenerator(11, 11, 4, 11, 0, 0, 1);
+        ElememCatFR5Settings.experimentName = "CatFR5";
+        ElememCatFR5Settings.version = "1.0";
+        ElememCatFR5Settings.useRamulator = false;
+        ElememCatFR5Settings.useElemem = true;
+        ElememCatFR5Settings.stimMode = "closed";
+        ElememCatFR5Settings.clDuration = 1000;
+        return ElememCatFR5Settings;
     }
 
     /// <summary>

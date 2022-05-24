@@ -19,11 +19,14 @@ public abstract class CoroutineExperiment : MonoBehaviour
     public AudioSource lowerBeep;
     
     protected abstract void SetRamulatorState(string stateName, bool state, Dictionary<string, object> extraData);
-    
+    protected abstract void SetElememState(string stateName, Dictionary<string, object> data);
+
     protected IEnumerator DoSubjectSessionQuitPrompt(int sessionNumber)
     {
         yield return null;
         SetRamulatorState("WAITING", true, new Dictionary<string, object>());
+        SetElememState("WAITING", new Dictionary<string, object>());
+
         textDisplayer.DisplayText("subject/session confirmation", "Running " + UnityEPL.GetParticipants()[0] + " in session " + sessionNumber.ToString() + " of " + UnityEPL.GetExperimentName() + ".\n Press Y to continue, N to quit.");
         while (!Input.GetKeyDown(KeyCode.Y) && !Input.GetKeyDown(KeyCode.N))
         {
@@ -67,6 +70,7 @@ public abstract class CoroutineExperiment : MonoBehaviour
             textDisplayer.OriginalColor();
             
             SetRamulatorState("WAITING", true, new Dictionary<string, object>());
+            SetElememState("WAITING", new Dictionary<string, object>());
             textDisplayer.DisplayText("microphone test confirmation", "Did you hear the recording? \n(Y=Continue / N=Try Again / C=Cancel).");
             while (!Input.GetKeyDown(KeyCode.Y) && !Input.GetKeyDown(KeyCode.N) && !Input.GetKeyDown(KeyCode.C))
             {
@@ -95,12 +99,14 @@ public abstract class CoroutineExperiment : MonoBehaviour
         {
             //start video player and wait for it to stop playing
             SetRamulatorState("INSTRUCT", true, new Dictionary<string, object>());
+            SetElememState("INSTRUCT", new Dictionary<string, object>());
             videoPlayer.StartVideo();
             while (videoPlayer.IsPlaying())
             yield return null;
             SetRamulatorState("INSTRUCT", false, new Dictionary<string, object>());
             
             SetRamulatorState("WAITING", true, new Dictionary<string, object>());
+            SetElememState("INSTRUCT", new Dictionary<string, object>());
             textDisplayer.DisplayText("repeat video prompt", "Press Y to continue to practice list, \n Press N to replay instructional video.");
             while (!Input.GetKeyDown(KeyCode.Y) && !Input.GetKeyDown(KeyCode.N))
             {
@@ -117,6 +123,7 @@ public abstract class CoroutineExperiment : MonoBehaviour
     protected IEnumerator PressAnyKey(string displayText)
     {
         SetRamulatorState("WAITING", true, new Dictionary<string, object>());
+        SetElememState("WAITING", new Dictionary<string, object>());
         yield return null;
         textDisplayer.DisplayText("press any key prompt", displayText);
         while (!Input.anyKeyDown)

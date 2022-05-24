@@ -18,6 +18,7 @@ public abstract class DataReporter : MonoBehaviour
 
     protected bool IsMacOS()
     {
+        return false;
         return Application.platform == RuntimePlatform.OSXEditor || Application.platform == RuntimePlatform.OSXPlayer;
     }
 

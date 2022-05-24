@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -34,6 +34,7 @@ public class LaunchExperiment : MonoBehaviour
 
     private IEnumerator LaunchExperimentCoroutine()
     {
+	Debug.Log("In LaunchExperiment.");
         if (participantNameInput.text.Equals(""))
         {
             cantGoPrompt.GetComponent<UnityEngine.UI.Text>().text = "Please enter a participant";
@@ -55,14 +56,22 @@ public class LaunchExperiment : MonoBehaviour
             yield break;
         }
 
+	Debug.Log("Attempting to start.");
         UnityEPL.AddParticipant(participantNameInput.text);
         UnityEPL.SetSessionNumber(sessionNumber);
 
+	Debug.Log("Selecting Participant.");
         int listNumber = ParticipantSelection.nextListNumber;
+	Debug.Log("Mark 1.");
         IronPython.Runtime.List words = ParticipantSelection.nextWords;
+        Debug.Log(words);
+	Debug.Log("Mark 2.");
         EditableExperiment.ConfigureExperiment((ushort)(listNumber * 12), (ushort)sessionNumber, newWords: words);
+	Debug.Log("Mark 3.");
         launchButton.SetActive(false);
+	Debug.Log("Mark 4.");
         loadingButton.SetActive(true);
+	Debug.Log("At End.");
         yield return null;
         UnityEngine.SceneManagement.SceneManager.LoadScene(FRExperimentSettings.ExperimentNameToExperimentScene(UnityEPL.GetExperimentName()));
     }

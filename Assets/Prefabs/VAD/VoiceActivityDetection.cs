@@ -8,7 +8,8 @@ using UnityEngine;
 public class VoiceActivityDetection : MonoBehaviour
 {
     public RamulatorInterface ramulatorInterface;
-    public SoundRecorder soundRecorder;
+	public ElememInterface elememInterface;
+	public SoundRecorder soundRecorder;
     public float speakingThreshold = 0.003f;
 	public GameObject UI;
 	public GameObject indicator;
@@ -37,6 +38,7 @@ public class VoiceActivityDetection : MonoBehaviour
 			{
 				talkingState = someoneIsTalking;
 				ramulatorInterface.SetState("VOCALIZATION", talkingState, new Dictionary<string, object>());
+				elememInterface.SendStateMessage("VOCALIZATION", new Dictionary<string, object>() { { "value", talkingState } });
 			}
 		}
         else
