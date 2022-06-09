@@ -48,6 +48,7 @@ public class Syncbox : MonoBehaviour
 		while (true)
         {
             //pulse
+            Debug.Log("Pew!");
             scriptedEventReporter.ReportOutOfThreadScriptedEvent("Sync pulse begin", new System.Collections.Generic.Dictionary<string, object>());
             SyncPulse();
             scriptedEventReporter.ReportOutOfThreadScriptedEvent("Sync pulse end", new System.Collections.Generic.Dictionary<string, object>());

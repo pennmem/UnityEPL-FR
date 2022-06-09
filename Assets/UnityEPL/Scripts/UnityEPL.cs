@@ -8,6 +8,7 @@ public static class UnityEPL
     private static string experiment = null;
     private static string dataPath = null;
     private static int sessionNumber = -1;
+    private static bool useElemem = false;
 
     //iPhones require special DLLImport due to static linkage
     //Add this to other external functions if adding iPhone support
@@ -173,8 +174,30 @@ public static class UnityEPL
         sessionNumber = newSessionNumber;
     }
 
+    /// <summary>
+    /// Get the session number
+    /// </summary>
+    /// <returns>The session number</returns>
     public static int GetSessionNumber()
     {
         return sessionNumber;
+    }
+
+    /// <summary>
+    /// Sets whether elemem should be used
+    /// </summary>
+    /// <param name="enable"></param>
+    public static void SetUseElemem(bool enable)
+    {
+        useElemem = enable;
+    }
+
+    /// <summary>
+    /// Gets whether elemem should be used
+    /// </summary>
+    /// <returns>The enable Elemem flag</returns>
+    public static bool GetUseElemem()
+    {
+        return useElemem;
     }
 }
