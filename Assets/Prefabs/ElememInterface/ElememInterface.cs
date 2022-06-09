@@ -372,7 +372,7 @@ public class ElememInterface : MonoBehaviour
     {
         yield return new WaitForSeconds(1);
         elememInterfaceHelper = new ElememInterfaceHelper(scriptedEventReporter, disableInterface);
-        if (disableInterface)
+        if (!disableInterface)
             UnityEngine.Debug.Log("Started Elemem Interface");
     }
 

@@ -82,16 +82,20 @@ public class EditableExperiment : CoroutineExperiment
         versionsData.Add("Logfile version", "1");
         scriptedEventReporter.ReportScriptedEvent("versions", versionsData);
 
-        // Sys 1 (syncbox not working)
-        //if (!Config.noSyncbox)
-        //    transform.root.GetComponentInChildren<Syncbox>().enabled = true;
+        // Sys 4
+        currentSettings.useElemem = UnityEPL.GetUseElemem();
+        if (currentSettings.useElemem)
+            currentSettings.useRamulator = false;
+        yield return elememInterface.BeginNewSession(session, !currentSettings.useElemem);
 
         // Sys 3
         if (currentSettings.useRamulator)
             yield return ramulatorInterface.BeginNewSession(session);
 
-        // Sys 4
-        yield return elememInterface.BeginNewSession(session, !currentSettings.useElemem);
+        // Sys 1 (syncbox not working)
+        if (!Config.noSyncbox && !currentSettings.useElemem && !currentSettings.useRamulator)
+            GameObject.Find("Syncbox").GetComponentInChildren<Syncbox>().enabled = true;
+
 
         // TESTING CODE
         //elememInterface.SendCLMessage("CLNORMALIZE", currentSettings.clDuration);
