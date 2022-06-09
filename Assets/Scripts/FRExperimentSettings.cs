@@ -160,7 +160,7 @@ public static class FRExperimentSettings
         ExperimentSettings FR5Settings = new ExperimentSettings();
 
         FR5Settings.experimentName = "FR5";
-        FR5Settings.version = "6.0";
+        FR5Settings.version = "5.1";
         FR5Settings.wordListGenerator = new FRListGenerator(11, 11, 4, 11, 0, 0, 1);
         FR5Settings.isCategoryPool = false;
         FR5Settings.numberOfLists = 26;
@@ -199,7 +199,7 @@ public static class FRExperimentSettings
     public static ExperimentSettings GetCatFR5Settings()
     {
         ExperimentSettings CatFR5Settings = GetFR5Settings();
-        CatFR5Settings.experimentName = "CatFR6";
+        CatFR5Settings.experimentName = "CatFR5";
         CatFR5Settings.isCategoryPool = true;
         return CatFR5Settings;
     }
