@@ -92,7 +92,7 @@ public static class FRExperimentSettings
     {
         ExperimentSettings FR1Settings = new ExperimentSettings();
         FR1Settings.experimentName = "FR1";
-        FR1Settings.version = "1.0";
+        FR1Settings.version = "1.1";
         FR1Settings.wordListGenerator = new FRListGenerator(0, 13, 0, 0, 0, 0, 0);
         FR1Settings.isCategoryPool = false;
         FR1Settings.numberOfLists = 13;
@@ -160,7 +160,7 @@ public static class FRExperimentSettings
         ExperimentSettings FR5Settings = new ExperimentSettings();
 
         FR5Settings.experimentName = "FR5";
-        FR5Settings.version = "6.0";
+        FR5Settings.version = "5.1";
         FR5Settings.wordListGenerator = new FRListGenerator(11, 11, 4, 11, 0, 0, 1);
         FR5Settings.isCategoryPool = false;
         FR5Settings.numberOfLists = 26;
@@ -199,7 +199,7 @@ public static class FRExperimentSettings
     public static ExperimentSettings GetCatFR5Settings()
     {
         ExperimentSettings CatFR5Settings = GetFR5Settings();
-        CatFR5Settings.experimentName = "CatFR6";
+        CatFR5Settings.experimentName = "CatFR5";
         CatFR5Settings.isCategoryPool = true;
         return CatFR5Settings;
     }
@@ -216,7 +216,7 @@ public static class FRExperimentSettings
     {
         ExperimentSettings FR6Settings = new ExperimentSettings();
         FR6Settings.experimentName = "FR6";
-        FR6Settings.version = "6.0";
+        FR6Settings.version = "6.1";
         FR6Settings.wordListGenerator = new FRListGenerator(16, 6, 4, 5, 5, 6, 1);
         FR6Settings.isCategoryPool = false;
         FR6Settings.numberOfLists = 26;
@@ -303,7 +303,7 @@ public static class FRExperimentSettings
         ExperimentSettings PS4Settings = GetFR6Settings();
         PS4Settings.wordListGenerator = new FRListGenerator(0, 0, 4, 0, 0, 0, 1, NEW_PS_LIST_COUNT: 22);
         PS4Settings.experimentName = "PS4_FR5";
-        PS4Settings.version = "4.1";
+        PS4Settings.version = "4.2";
         return PS4Settings;
     }
 
