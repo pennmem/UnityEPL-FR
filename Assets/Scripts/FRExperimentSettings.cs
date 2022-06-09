@@ -108,7 +108,7 @@ public static class FRExperimentSettings
         FR1Settings.maxOrientationStimulusLength = 1.4f;
         FR1Settings.minPauseBeforeRecall = 1f;
         FR1Settings.maxPauseBeforeRecall = 1.4f;
-        FR1Settings.recallTextDisplayLength = .5f;
+        FR1Settings.recallTextDisplayLength = 1f;
         FR1Settings.useRamulator = false; //true
         FR1Settings.useElemem = false;
         FR1Settings.stimMode = "none";
@@ -176,7 +176,7 @@ public static class FRExperimentSettings
         FR5Settings.maxOrientationStimulusLength = 1.4f;
         FR5Settings.minPauseBeforeRecall = 1f;
         FR5Settings.maxPauseBeforeRecall = 1.4f;
-        FR5Settings.recallTextDisplayLength = 0.5f;
+        FR5Settings.recallTextDisplayLength = 1f;
         FR5Settings.useRamulator = true;
         FR5Settings.useElemem = false;
         FR5Settings.stimMode = "closed";
@@ -232,7 +232,7 @@ public static class FRExperimentSettings
         FR6Settings.maxOrientationStimulusLength = 1.4f;
         FR6Settings.minPauseBeforeRecall = 1f;
         FR6Settings.maxPauseBeforeRecall = 1.4f;
-        FR6Settings.recallTextDisplayLength = 0.5f;
+        FR6Settings.recallTextDisplayLength = 1f;
         FR6Settings.useRamulator = true;
         FR6Settings.useElemem = false;
         FR6Settings.stimMode = "closed";
