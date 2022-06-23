@@ -109,7 +109,7 @@ public static class FRExperimentSettings
         FR1Settings.minPauseBeforeRecall = 1f;
         FR1Settings.maxPauseBeforeRecall = 1.4f;
         FR1Settings.recallTextDisplayLength = 1f;
-        FR1Settings.useRamulator = false; //true
+        FR1Settings.useRamulator = true;
         FR1Settings.useElemem = false;
         FR1Settings.stimMode = "none";
         FR1Settings.isTwoParter = true;
