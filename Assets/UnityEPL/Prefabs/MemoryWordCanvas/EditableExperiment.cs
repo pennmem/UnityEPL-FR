@@ -92,7 +92,7 @@ public class EditableExperiment : CoroutineExperiment
         if (currentSettings.useRamulator)
             yield return ramulatorInterface.BeginNewSession(session);
 
-        // Sys 1 (syncbox not working)
+        // Sys 1
         if (!Config.noSyncbox && !currentSettings.useElemem && !currentSettings.useRamulator)
             GameObject.Find("Syncbox").GetComponentInChildren<Syncbox>().enabled = true;
 

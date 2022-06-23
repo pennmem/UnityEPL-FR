@@ -64,7 +64,7 @@ public class Syncbox : MonoBehaviour
         //close usb, log the result string returned
 		Debug.Log(Marshal.PtrToStringAuto (CloseUSB()));
         //stop the pulsing thread
-        syncpulseThread.Abort();
+        syncpulseThread?.Abort();
 	}
 
 }
