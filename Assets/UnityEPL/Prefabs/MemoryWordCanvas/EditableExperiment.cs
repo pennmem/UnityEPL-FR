@@ -26,7 +26,6 @@ public class EditableExperiment : CoroutineExperiment
 
     private bool paused = false;
     private string current_phase_type;
-
     //List<int> stimListTypes;
 
     void UncaughtExceptionHandler(object sender, UnhandledExceptionEventArgs args)
@@ -78,6 +77,7 @@ public class EditableExperiment : CoroutineExperiment
         //write versions to logfile
         Dictionary<string, object> versionsData = new Dictionary<string, object>();
         versionsData.Add("UnityEPL version", Application.version);
+        versionsData.Add("Task version", ExperimentSettings.taskVersion);
         versionsData.Add("Experiment version", currentSettings.version);
         versionsData.Add("Logfile version", "1");
         scriptedEventReporter.ReportScriptedEvent("versions", versionsData);
