@@ -14,6 +14,8 @@ public class VideoSelector : MonoBehaviour
     public UnityEngine.Video.VideoClip CatPS5frClip;
     public UnityEngine.Video.VideoClip CPSClip;
 
+    public string videoPath = null;
+
     void OnEnable ()
     {
         Vector2 originalAnchorMin = videoTransform.anchorMin;
@@ -41,7 +43,12 @@ public class VideoSelector : MonoBehaviour
         }
         if (UnityEPL.GetExperimentName().Equals("CPS"))
             videoPlayer.clip = CPSClip;
-
+        if (videoPath != null)
+        {
+            videoPlayer.clip = null;
+            videoPlayer.url = videoPath;
+        }
+            
         videoPlayer.Play();
 	}
 }

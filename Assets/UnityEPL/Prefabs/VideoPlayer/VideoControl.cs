@@ -9,6 +9,11 @@ public class VideoControl : MonoBehaviour
     public UnityEngine.Video.VideoPlayer videoPlayer;
     public bool deactivateWhenFinished = true;
 
+    void Start()
+    {
+        videoPlayer.loopPointReached += EndReached;
+    }
+
     void Update()
     {
         if (Input.GetKeyDown(pauseToggleKey))
@@ -23,10 +28,11 @@ public class VideoControl : MonoBehaviour
             videoPlayer.Stop();
             gameObject.SetActive(false);
         }
-        if (videoPlayer.time >= videoPlayer.clip.length)
-        {
-            gameObject.SetActive(false);
-        }
+    }
+
+    public void SetVideo(string videoPath)
+    {
+        transform.GetComponent<VideoSelector>().videoPath = videoPath;
     }
 
     public void StartVideo(string customText = null)
@@ -40,5 +46,10 @@ public class VideoControl : MonoBehaviour
     public bool IsPlaying()
     {
         return gameObject.activeSelf;
+    }
+
+    private void EndReached(UnityEngine.Video.VideoPlayer vp)
+    {
+        gameObject.SetActive(false);
     }
 }

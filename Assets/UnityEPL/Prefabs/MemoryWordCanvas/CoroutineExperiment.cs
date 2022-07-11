@@ -120,16 +120,6 @@ public abstract class CoroutineExperiment : MonoBehaviour
         while (replay);
     }
 
-    protected IEnumerator DoCPSVideo()
-    {
-        yield return PressAnyKey("Press any key to play movie.");
-
-        SetElememState("DISTRACT", new Dictionary<string, object>());
-        videoPlayer.StartVideo("");
-        while (videoPlayer.IsPlaying())
-            yield return null;
-    }
-
     protected IEnumerator PressAnyKey(string displayText)
     {
         SetRamulatorState("WAITING", true, new Dictionary<string, object>());
@@ -141,7 +131,6 @@ public abstract class CoroutineExperiment : MonoBehaviour
         textDisplayer.ClearText();
         SetRamulatorState("WAITING", false, new Dictionary<string, object>());
     }
-    
     
     protected void Quit()
     {

@@ -1,0 +1,3 @@
+[submodule "Assets/UnityStandaloneFileBrowser"]
+	path = Assets/UnityStandaloneFileBrowser
+	url = https://github.com/quangdungtr/UnityStandaloneFileBrowser.git
