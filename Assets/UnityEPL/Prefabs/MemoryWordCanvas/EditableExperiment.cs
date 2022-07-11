@@ -89,6 +89,8 @@ public class EditableExperiment : CoroutineExperiment
         yield return elememInterface.BeginNewSession(session, !currentSettings.useElemem);
 
         // Sys 3
+        if (Config.noRamulator)
+            currentSettings.useRamulator = false;
         if (currentSettings.useRamulator)
             yield return ramulatorInterface.BeginNewSession(session);
 
