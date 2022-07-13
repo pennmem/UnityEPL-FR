@@ -77,11 +77,11 @@ public class DataPoint
             }
             else if (bool.TryParse(value, out valueBool)) //bools
             {
-                valueJSONString = "\"" + value.ToLower() + "\"";
+                valueJSONString = value.ToLower();
             }
             else //everything else is a string
             {
-                valueJSONString = "\"" + value + "\"";
+                valueJSONString = "\"" + value.Replace("\n", " ") + "\""; // Remove new lines for json lines cleaning
             }
             JSONString = JSONString + "\"" + key + "\":" + valueJSONString + ",";
         }
