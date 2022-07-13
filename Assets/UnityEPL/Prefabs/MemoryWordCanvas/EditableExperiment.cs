@@ -119,20 +119,27 @@ public class EditableExperiment : CoroutineExperiment
         //write versions to logfile
         Dictionary<string, object> versionsData = new Dictionary<string, object>();
         versionsData.Add("UnityEPL version", Application.version);
+        versionsData.Add("Task version", ExperimentSettings.taskVersion);
         versionsData.Add("Experiment version", currentSettings.version);
         versionsData.Add("Logfile version", "1");
         scriptedEventReporter.ReportScriptedEvent("versions", versionsData);
 
-        // Sys 1 (syncbox not working)
-        //if (!Config.noSyncbox)
-        //    transform.root.GetComponentInChildren<Syncbox>().enabled = true;
+        // Sys 4
+        currentSettings.useElemem = UnityEPL.GetUseElemem();
+        if (currentSettings.useElemem)
+            currentSettings.useRamulator = false;
+        yield return elememInterface.BeginNewSession(session, !currentSettings.useElemem);
 
         // Sys 3
+        if (Config.noRamulator)
+            currentSettings.useRamulator = false;
         if (currentSettings.useRamulator)
             yield return ramulatorInterface.BeginNewSession(session);
 
-        // Sys 4
-        yield return elememInterface.BeginNewSession(session, !currentSettings.useElemem);
+        // Sys 1
+        if (!Config.noSyncbox && !currentSettings.useElemem && !currentSettings.useRamulator)
+            GameObject.Find("Syncbox").GetComponentInChildren<Syncbox>().enabled = true;
+
 
         // CPS
         if (currentSettings.experimentName == "CPS")
@@ -204,6 +211,10 @@ public class EditableExperiment : CoroutineExperiment
 
             yield return PausableWait(UnityEngine.Random.Range(currentSettings.minPauseBeforeRecall, currentSettings.maxPauseBeforeRecall));
 
+            // NOTE: This is a fix for the delay of retrieval issue, where the pre recall prompt delays
+            // the start of recording. To keep the clarity of the Ramulator state structure, the delay
+            // is now owned by the PreRecall function
+            yield return DoPreRecall();
             SetRamulatorState("RETRIEVAL", true, new Dictionary<string, object>() { { "current_trial", i } });
             SetElememState("RETRIEVAL");
             yield return DoRecall();
@@ -441,18 +452,19 @@ private IEnumerator DoDistractor()
         scriptedEventReporter.ReportScriptedEvent("distractor answered", dataDict);
     }
 
-    private IEnumerator DoRecall()
-    {
-        SetElememState("RECALL", new Dictionary<string, object> { { "duration", currentSettings.recallLength } });
-
-        VAD.DoVAD(true);
+    private IEnumerator DoPreRecall() {
         highBeep.Play();
         scriptedEventReporter.ReportScriptedEvent("Sound played", new Dictionary<string, object>() { { "sound name", "high beep" }, { "sound duration", highBeep.clip.length.ToString() } });
 
         textDisplayer.DisplayText("display recall text", "*******");
         yield return PausableWait(currentSettings.recallTextDisplayLength);
         textDisplayer.ClearText();
+    }
 
+    private IEnumerator DoRecall()
+    {
+        SetElememState("RECALL", new Dictionary<string, object> { { "duration", currentSettings.recallLength } });
+        VAD.DoVAD(true);
         //path
         int listno = (wordsSeen / 12) - 1;
         string output_directory = UnityEPL.GetDataPath();

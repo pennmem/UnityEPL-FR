@@ -8,6 +8,8 @@ using System.Collections;
 /// </summary>
 public struct ExperimentSettings
 {
+    public const string taskVersion = "1.5.2";
+
     public WordListGenerator wordListGenerator; //how the words for this experiment will be created and organized.  for a full list of parameters and what they do, see the comments for WordListGenerator in WordListGenerator.cs
     public string experimentName; //the name of the experiment.  this will be displayed to the user and sent to ramulator.
     public string version; //the version of the experiment.  for logging purposes.
@@ -39,14 +41,12 @@ public struct ExperimentSettings
 
 public static class FRExperimentSettings
 {
-    private static ExperimentSettings[] activeExperimentSettings = { //GetFR1Settings(),                              // IF YOU WANT TO ADD OR REMOVE AN EXPERIMENT
-                                                                     //GetCatFR1Settings(),                          // CREATE A NEW SETTINGS FETCHER IF NEEDED
-                                                                     //GetFR6Settings(),                              // AND THEN ADD OR REMOVE THE EXPERIMENT
-                                                                     //GetCatFR6Settings(),                           // SETTINGS FROM THIS ARRAY.
-                                                                     GetElememFR1Settings(),
-                                                                     GetElememCatFR1Settings(),
-                                                                     GetElememFR5Settings(),
-                                                                     GetElememCatFR5Settings(),
+    private static ExperimentSettings[] activeExperimentSettings = { GetFR1Settings(),                              // IF YOU WANT TO ADD OR REMOVE AN EXPERIMENT
+                                                                     GetCatFR1Settings(),                          // CREATE A NEW SETTINGS FETCHER IF NEEDED
+                                                                     GetFR5Settings(),                              // AND THEN ADD OR REMOVE THE EXPERIMENT
+                                                                     GetCatFR5Settings(),                           // SETTINGS FROM THIS ARRAY.
+                                                                     GetFR6Settings(),
+                                                                     GetCatFR6Settings(),
                                                                      GetPS5Settings(),
                                                                      GetCatPS5Settings(),
                                                                      GetPS4Settings(),
@@ -95,7 +95,7 @@ public static class FRExperimentSettings
     {
         ExperimentSettings FR1Settings = new ExperimentSettings();
         FR1Settings.experimentName = "FR1";
-        FR1Settings.version = "1.0";
+        FR1Settings.version = "1.1";
         FR1Settings.wordListGenerator = new FRListGenerator(0, 13, 0, 0, 0, 0, 0);
         FR1Settings.isCategoryPool = false;
         FR1Settings.numberOfLists = 13;
@@ -112,9 +112,9 @@ public static class FRExperimentSettings
         FR1Settings.minPauseBeforeRecall = 1f;
         FR1Settings.maxPauseBeforeRecall = 1.4f;
         FR1Settings.recallTextDisplayLength = 1f;
-        FR1Settings.useRamulator = false; //true
+        FR1Settings.useRamulator = true;
         FR1Settings.useElemem = false;
-        //FR1Settings.stimMode = "none";
+        FR1Settings.stimMode = "none";
         FR1Settings.isTwoParter = true;
         FR1Settings.useSessionListSelection = true;
 
@@ -151,6 +151,63 @@ public static class FRExperimentSettings
     }
 
     /// <summary>
+    /// Gets the FR 5 settings.
+    /// 
+    /// FR5 is a stim experiment.  Lists are handled as in FR1.  No stimulation is applied in list 0 (practice list) or lists 1-3 (baseline lists)/
+    /// 
+    /// The remaining 22 lists are randomly interleaved: 11 stim and 11 no stim.
+    /// </summary>
+    /// <returns>The FR 5 settings.</returns>
+    public static ExperimentSettings GetFR5Settings()
+    {
+        ExperimentSettings FR5Settings = new ExperimentSettings();
+
+        FR5Settings.experimentName = "FR5";
+        FR5Settings.version = "5.1";
+        FR5Settings.wordListGenerator = new FRListGenerator(11, 11, 4, 11, 0, 0, 1);
+        FR5Settings.isCategoryPool = false;
+        FR5Settings.numberOfLists = 26;
+        FR5Settings.wordsPerList = 12;
+        FR5Settings.wordPresentationLength = 1.6f;
+        FR5Settings.minISI = 0.75f;
+        FR5Settings.maxISI = 1f;
+        FR5Settings.distractionLength = 20f;
+        FR5Settings.answerConfirmationTime = 0f;
+        FR5Settings.recallLength = 30f;
+        FR5Settings.microphoneTestLength = 5;
+        FR5Settings.minOrientationStimulusLength = 1f;
+        FR5Settings.maxOrientationStimulusLength = 1.4f;
+        FR5Settings.minPauseBeforeRecall = 1f;
+        FR5Settings.maxPauseBeforeRecall = 1.4f;
+        FR5Settings.recallTextDisplayLength = 1f;
+        FR5Settings.useRamulator = true;
+        FR5Settings.useElemem = false;
+        FR5Settings.stimMode = "closed";
+        FR5Settings.clDuration = 1000;
+        FR5Settings.isTwoParter = false;
+        FR5Settings.useSessionListSelection = false;
+
+        FR5Settings.listGroupSize = 0;
+        FR5Settings.pauseBetweenGroups = 0;
+        FR5Settings.wordpoolFilename = "";
+        return FR5Settings;
+    }
+
+    /// <summary>
+    /// Gets the CatFR 5 settings.
+    /// 
+    /// CatFR5 is identical to FR5, but uses the category word pool described above.
+    /// </summary>
+    /// <returns>The CatFR 5 settings.</returns>
+    public static ExperimentSettings GetCatFR5Settings()
+    {
+        ExperimentSettings CatFR5Settings = GetFR5Settings();
+        CatFR5Settings.experimentName = "CatFR5";
+        CatFR5Settings.isCategoryPool = true;
+        return CatFR5Settings;
+    }
+
+    /// <summary>
     /// Gets the FR 6 settings.
     /// 
     /// FR6 is a stim experiment.  Lists are handled as in FR1.  No stimulation is applied in list 0 (practice list) or lists 1-3 (baseline lists)/
@@ -162,7 +219,7 @@ public static class FRExperimentSettings
     {
         ExperimentSettings FR6Settings = new ExperimentSettings();
         FR6Settings.experimentName = "FR6";
-        FR6Settings.version = "6.0";
+        FR6Settings.version = "6.1";
         FR6Settings.wordListGenerator = new FRListGenerator(16, 6, 4, 5, 5, 6, 1);
         FR6Settings.isCategoryPool = false;
         FR6Settings.numberOfLists = 26;
@@ -181,8 +238,8 @@ public static class FRExperimentSettings
         FR6Settings.recallTextDisplayLength = 1f;
         FR6Settings.useRamulator = true;
         FR6Settings.useElemem = false;
-        //FR6Settings.stimMode = "closed";
-        //FR6Settings.clDuration = 1000; 
+        FR6Settings.stimMode = "closed";
+        FR6Settings.clDuration = 1000; 
         FR6Settings.isTwoParter = false;
         FR6Settings.useSessionListSelection = false;
 
@@ -249,7 +306,7 @@ public static class FRExperimentSettings
         ExperimentSettings PS4Settings = GetFR6Settings();
         PS4Settings.wordListGenerator = new FRListGenerator(0, 0, 4, 0, 0, 0, 1, NEW_PS_LIST_COUNT: 22);
         PS4Settings.experimentName = "PS4_FR5";
-        PS4Settings.version = "4.1";
+        PS4Settings.version = "4.2";
         return PS4Settings;
     }
 
@@ -327,97 +384,6 @@ public static class FRExperimentSettings
         TICCLSbSettings.wordListGenerator = new FRListGenerator(15, 0, 11, 15, 0, 0, 1, 0, 0);
         TICCLSbSettings.experimentName = "TICCLSb";
         return TICCLSbSettings;
-    }
-
-    /// <summary>
-    /// Gets the ElememFR1 settings.
-    ///
-    /// This is the same as FR1, but uses elemem.
-    /// </summary>
-    /// <returns>The ElememFR1 settings.</returns>
-    public static ExperimentSettings GetElememFR1Settings()
-    {
-        Config.experimentConfigName = "ElememFR1";
-        ExperimentSettings ElememFR1Settings = GetFR1Settings();
-        ElememFR1Settings.experimentName = "FR1";
-        ElememFR1Settings.version = "1.0";
-        ElememFR1Settings.useRamulator = false;
-        ElememFR1Settings.useElemem = true;
-        ElememFR1Settings.stimMode = "none";
-        return ElememFR1Settings;
-    }
-
-    /// <summary>
-    /// Gets the ElememFR5 settings.
-    /// 
-    /// This is the same as FR5, but uses elemem.
-    /// </summary>
-    /// <returns>The ElememFR5 settings.</returns>
-    public static ExperimentSettings GetElememFR5Settings()
-    {
-        ExperimentSettings ElememFR5Settings = GetFR6Settings();
-        ElememFR5Settings.wordListGenerator = new FRListGenerator(11, 11, 4, 11, 0, 0, 1);
-        ElememFR5Settings.experimentName = "FR5";
-        ElememFR5Settings.version = "1.0";
-        ElememFR5Settings.useRamulator = false;
-        ElememFR5Settings.useElemem = true;
-        ElememFR5Settings.stimMode = "closed";
-        ElememFR5Settings.clDuration = 1000;
-        return ElememFR5Settings;
-    }
-
-    /// <summary>
-    /// Gets the ElememFR6 settings.
-    ///
-    /// This is the same as FR6, but uses elemem.
-    /// </summary>
-    /// <returns>The ElememFR6 settings.</returns>
-    public static ExperimentSettings GetElememFR6Settings()
-    {
-        ExperimentSettings ElememFR6Settings = GetFR6Settings();
-        ElememFR6Settings.experimentName = "FR6";
-        ElememFR6Settings.version = "1.0";
-        ElememFR6Settings.useRamulator = false;
-        ElememFR6Settings.useElemem = true;
-        ElememFR6Settings.stimMode = "closed";
-        ElememFR6Settings.clDuration = 1000;
-        return ElememFR6Settings;
-    }
-
-    /// <summary>
-    /// Gets the ElememCatFR1 settings.
-    ///
-    /// This is the same as CatFR1, but uses elemem.
-    /// </summary>
-    /// <returns>The ElememCatFR1 settings.</returns>
-    public static ExperimentSettings GetElememCatFR1Settings()
-    {
-        ExperimentSettings ElememCatFR1Settings = GetCatFR1Settings();
-        ElememCatFR1Settings.experimentName = "CatFR1";
-        ElememCatFR1Settings.version = "1.0";
-        ElememCatFR1Settings.useRamulator = false;
-        ElememCatFR1Settings.useElemem = true;
-        ElememCatFR1Settings.stimMode = "none";
-        return ElememCatFR1Settings;
-    }
-
-    /// <summary>
-    /// Gets the ElememCatFR5 settings.
-    /// 
-    /// This is the same as CatFR5, but uses elemem.
-    /// </summary>
-    /// <returns>The ElememCatFR5 settings.</returns>
-    public static ExperimentSettings GetElememCatFR5Settings()
-    {
-        ExperimentSettings ElememCatFR5Settings = GetCatFR6Settings();
-        ElememCatFR5Settings.wordListGenerator = new FRListGenerator(11, 11, 4, 11, 0, 0, 1);
-        ElememCatFR5Settings.experimentName = "CatFR5";
-        ElememCatFR5Settings.version = "1.0";
-        ElememCatFR5Settings.useRamulator = false;
-        ElememCatFR5Settings.useElemem = true;
-        ElememCatFR5Settings.stimMode = "closed";
-        ElememCatFR5Settings.clDuration = 1000;
-        return ElememCatFR5Settings;
     }
 
     /// <summary>
