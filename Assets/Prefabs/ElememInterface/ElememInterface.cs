@@ -410,7 +410,16 @@ public class ElememInterface : MonoBehaviour
         SendMessage(type, data);
     }
 
-    // CCLSTARTSTIM, CCLPAUSESTIM, CCLRESUMESTIM, CCLSTOPSTIM
+    // CCLSTARTSTIM
+    public void SendCCLStartMessage(int durationS)
+    {
+        var data = new Dictionary<string, object>() {
+            { "duration", durationS}
+        };
+        SendMessage("CCLSTARTSTIM", data);
+    }
+
+    // CCLPAUSESTIM, CCLRESUMESTIM, CCLSTOPSTIM
     public void SendCCLMessage(string type)
     {
         // TODO: JPB: Turn CCLMessage "type" from string to enum

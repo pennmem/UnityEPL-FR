@@ -58,7 +58,7 @@ public class TextDisplayer : MonoBehaviour
             textElement.text = text;
         }
         Dictionary<string, object> dataDict = new Dictionary<string, object>();
-        dataDict.Add("displayed text", text);
+        dataDict.Add("displayed text", text.Replace(System.Environment.NewLine, "\\n"));
         if (wordEventReporter != null)
             wordEventReporter.ReportScriptedEvent(description, dataDict);
     }

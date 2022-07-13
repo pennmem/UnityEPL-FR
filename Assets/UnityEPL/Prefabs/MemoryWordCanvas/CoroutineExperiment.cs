@@ -127,7 +127,7 @@ public abstract class CoroutineExperiment : MonoBehaviour
         yield return null;
         textDisplayer.DisplayText("press any key prompt", displayText);
         while (!Input.anyKeyDown)
-        yield return null;
+            yield return null;
         textDisplayer.ClearText();
         SetRamulatorState("WAITING", false, new Dictionary<string, object>());
     }

@@ -48,7 +48,5 @@ public class VideoSelector : MonoBehaviour
             videoPlayer.clip = null;
             videoPlayer.url = videoPath;
         }
-            
-        videoPlayer.Play();
 	}
 }
