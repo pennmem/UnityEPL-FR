@@ -47,6 +47,7 @@ public static class FRExperimentSettings
                                                                      GetCatFR5Settings(),                           // SETTINGS FROM THIS ARRAY.
                                                                      GetFR6Settings(),
                                                                      GetCatFR6Settings(),
+                                                                     GetCPSSettings(),
                                                                      GetPS5Settings(),
                                                                      GetCatPS5Settings(),
                                                                      GetPS4Settings(),
@@ -55,7 +56,6 @@ public static class FRExperimentSettings
                                                                      GetTICLCatFRSettings(),
                                                                      GetTICCLSSettings(),
                                                                      GetTICCLSbSettings(),
-                                                                     GetCPSSettings(),
                                                                      GetTestFR1Settings() };
 
     /// <summary>
