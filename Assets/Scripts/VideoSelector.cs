@@ -13,23 +13,26 @@ public class VideoSelector : MonoBehaviour
     public UnityEngine.Video.VideoClip PS5frClip;
     public UnityEngine.Video.VideoClip CatPS5frClip;
 
-	void OnEnable ()
+    public string videoPath = null;
+
+    void OnEnable ()
     {
         Vector2 originalAnchorMin = videoTransform.anchorMin;
         Vector2 originalAnchorMax = videoTransform.anchorMax;
 
         if (UnityEPL.GetExperimentName().Equals("FR1"))
             videoPlayer.clip = FR1clip;
-        if (UnityEPL.GetExperimentName().Equals("CatFR1"))
+        else if (UnityEPL.GetExperimentName().Equals("CatFR1"))
             videoPlayer.clip = CatFR1clip;
-        if (UnityEPL.GetExperimentName().Equals("FR6"))
+        else if (UnityEPL.GetExperimentName().Equals("FR6"))
             videoPlayer.clip = FR6clip;
-        if (UnityEPL.GetExperimentName().Equals("CatFR6"))
+        else if (UnityEPL.GetExperimentName().Equals("CatFR6"))
             videoPlayer.clip = CatFR6clip;
-        if (UnityEPL.GetExperimentName().Equals("PS5_FR"))
+        else if (UnityEPL.GetExperimentName().Equals("PS5_FR"))
             videoPlayer.clip = PS5frClip;
-        if (UnityEPL.GetExperimentName().Equals("PS5_CatFR"))
+        else if (UnityEPL.GetExperimentName().Equals("PS5_CatFR"))
             videoPlayer.clip = CatPS5frClip;
+
         if (UnityEPL.GetExperimentName().Equals("FR1") ||
             UnityEPL.GetExperimentName().Equals("CatFR1") ||
             UnityEPL.GetExperimentName().Equals("PS5_FR") ||
@@ -39,6 +42,10 @@ public class VideoSelector : MonoBehaviour
             videoTransform.anchorMax = new Vector2(1, originalAnchorMax.y);
         }
 
-        videoPlayer.Play();
+        if (videoPath != null)
+        {
+            videoPlayer.clip = null;
+            videoPlayer.url = videoPath;
+        }
 	}
 }

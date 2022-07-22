@@ -393,6 +393,14 @@ public class ElememInterface : MonoBehaviour
         SendMessage("STIM");
     }
 
+    // STIMSELECT
+    public void SendStimSelectMessage(string tag)
+    {
+        var data = new Dictionary<string, object>();
+        data.Add("tag", tag);
+        SendMessage("STIMSELECT", data);
+    }
+
     // CLSTIM, CLSHAM, CLNORMALIZE
     public void SendCLMessage(string type, uint classifyMs)
     {
@@ -402,12 +410,21 @@ public class ElememInterface : MonoBehaviour
         SendMessage(type, data);
     }
 
-    // STIMSELECT
-    public void SendStimSelectMessage(string tag)
+    // CCLSTARTSTIM
+    public void SendCCLStartMessage(int durationS)
     {
+        var data = new Dictionary<string, object>() {
+            { "duration", durationS}
+        };
+        SendMessage("CCLSTARTSTIM", data);
+    }
+
+    // CCLPAUSESTIM, CCLRESUMESTIM, CCLSTOPSTIM
+    public void SendCCLMessage(string type)
+    {
+        // TODO: JPB: Turn CCLMessage "type" from string to enum
         var data = new Dictionary<string, object>();
-        data.Add("tag", tag);
-        SendMessage("STIMSELECT", data);
+        SendMessage(type, data);
     }
 
     // SESSION

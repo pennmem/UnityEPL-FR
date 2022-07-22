@@ -17,7 +17,7 @@ public abstract class CoroutineExperiment : MonoBehaviour
     public AudioSource highBeep;
     public AudioSource lowBeep;
     public AudioSource lowerBeep;
-    
+
     protected abstract void SetRamulatorState(string stateName, bool state, Dictionary<string, object> extraData);
     protected abstract void SetElememState(string stateName, Dictionary<string, object> data);
 
@@ -119,7 +119,7 @@ public abstract class CoroutineExperiment : MonoBehaviour
         }
         while (replay);
     }
-    
+
     protected IEnumerator PressAnyKey(string displayText)
     {
         SetRamulatorState("WAITING", true, new Dictionary<string, object>());
@@ -127,11 +127,10 @@ public abstract class CoroutineExperiment : MonoBehaviour
         yield return null;
         textDisplayer.DisplayText("press any key prompt", displayText);
         while (!Input.anyKeyDown)
-        yield return null;
+            yield return null;
         textDisplayer.ClearText();
         SetRamulatorState("WAITING", false, new Dictionary<string, object>());
     }
-    
     
     protected void Quit()
     {

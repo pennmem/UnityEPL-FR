@@ -47,6 +47,7 @@ public static class FRExperimentSettings
                                                                      GetCatFR5Settings(),                           // SETTINGS FROM THIS ARRAY.
                                                                      GetFR6Settings(),
                                                                      GetCatFR6Settings(),
+                                                                     GetCPSSettings(),
                                                                      GetPS5Settings(),
                                                                      GetCatPS5Settings(),
                                                                      GetPS4Settings(),
@@ -471,6 +472,18 @@ public static class FRExperimentSettings
         testCatFR6Settings.experimentName = "CatFR6_test";
         testCatFR6Settings.isCategoryPool = true;
         return testCatFR6Settings;
+    }
+
+    public static ExperimentSettings GetCPSSettings()
+    {
+        ExperimentSettings CPSSettings = GetFR1Settings();
+        CPSSettings.experimentName = "CPS";
+        CPSSettings.version = "1.0";
+        CPSSettings.useRamulator = false;
+        CPSSettings.useElemem = true;
+        CPSSettings.stimMode = "closed";
+
+        return CPSSettings;
     }
 
 

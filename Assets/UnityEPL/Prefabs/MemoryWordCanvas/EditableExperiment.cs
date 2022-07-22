@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -25,7 +26,8 @@ public class EditableExperiment : CoroutineExperiment
     public VoiceActivityDetection VAD;
 
     private bool paused = false;
-    private string current_phase_type;
+    private string current_phase_type = "";
+
     //List<int> stimListTypes;
 
     void UncaughtExceptionHandler(object sender, UnhandledExceptionEventArgs args)
@@ -37,7 +39,7 @@ public class EditableExperiment : CoroutineExperiment
         Dictionary<string, object> exceptionData = new Dictionary<string, object>()
             { { "name", e.Message },
               { "traceback", e.ToString() } };
-        scriptedEventReporter.ReportScriptedEvent("unhandled program exception", exceptionData);
+        scriptedEventReporter.ReportScriptedEvent("unhandled program exception", exceptionData, false);
     }
 
     //use update to collect user input every frame
@@ -48,6 +50,7 @@ public class EditableExperiment : CoroutineExperiment
         {
             paused = !paused;
             pauseIndicator.SetActive(paused);
+            elememInterface.SendStateMessage("PAUSED", new Dictionary<string, object> { { "state", paused } });
         }
     }
 
@@ -60,6 +63,45 @@ public class EditableExperiment : CoroutineExperiment
                 endTime += Time.deltaTime;
             yield return null;
         }
+    }
+
+    protected IEnumerator DoCPSVideo()
+    {
+        string startingPath = Path.Combine(UnityEPL.GetParticipantFolder(), "..", "..", "CPS_Movies");
+        var extensions = new[] {
+            new SFB.ExtensionFilter("Videos", "mp4", "mov"),
+            new SFB.ExtensionFilter("All Files", "*" ),
+        };
+
+        string[] videoPaths = new string[0];
+        while (videoPaths.Length == 0)
+            videoPaths = SFB.StandaloneFileBrowser.OpenFilePanel("Select Video To Watch", startingPath, extensions, false);
+        string videoPath = videoPaths[0].Replace("%20", " ");
+        yield return videoPlayer.SetVideo(videoPath);
+
+        yield return PressAnyKey("In this experiment, you will watch a short educational film lasting about twenty-five minutes. Please pay attention to the film to the best of your ability. You will be asked a series of questions about the video after its completion. After the questionnaire, you will have the opportunity to take a break.\n\n Press any key to begin watching.");
+
+        var movieInfo = new Dictionary<string, object> {
+            { "movie title", Path.GetFileName(videoPath) },
+            { "movie path", Path.GetDirectoryName(videoPath)},
+            { "movie duration seconds", videoPlayer.VideoDurationSeconds()} };
+        scriptedEventReporter.ReportScriptedEvent("movie", movieInfo);
+        SetElememState("ENCODING", movieInfo);
+
+        elememInterface.SendCCLStartMessage(videoPlayer.VideoDurationSeconds() - 10); // Remove 10s to not overrun video legnth
+        videoPlayer.StartVideo("");
+        while (videoPlayer.IsPlaying())
+            yield return null;
+    }
+
+    IEnumerator DoCPS()
+    {
+        elememInterface.SendTrialMessage(0, true);
+
+        yield return DoCPSVideo();
+
+        elememInterface.SendExitMessage();
+        textDisplayer.DisplayText("display end message", "Woo!  The experiment is over.");
     }
 
     IEnumerator Start()
@@ -98,6 +140,13 @@ public class EditableExperiment : CoroutineExperiment
         if (!Config.noSyncbox && !currentSettings.useElemem && !currentSettings.useRamulator)
             GameObject.Find("Syncbox").GetComponentInChildren<Syncbox>().enabled = true;
 
+
+        // CPS
+        if (currentSettings.experimentName == "CPS")
+        {
+            yield return DoCPS();
+            yield break;
+        }
 
         // TESTING CODE
         //elememInterface.SendCLMessage("CLNORMALIZE", currentSettings.clDuration);
@@ -307,7 +356,7 @@ public class EditableExperiment : CoroutineExperiment
         elememInterface.SendWordMessage((string) dotNetWordData["word"], serialPos, stim, dotNetWordData);
     }
 
-    // NO INPUT:  REST, ORIENT, COUNTDOWN, TRIALEND, DISTRACT, INSTRUCT, WAITING, SYNC
+    // NO INPUT:  REST, ORIENT, COUNTDOWN, TRIALEND, DISTRACT, INSTRUCT, WAITING, SYNC, ENCODING
     // INPUT:     ISI (float duration), RECALL (float duration)
     protected override void SetElememState(string stateName, Dictionary<string, object> extraData = null)
     {
