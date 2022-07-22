@@ -67,7 +67,7 @@ public class EditableExperiment : CoroutineExperiment
 
     protected IEnumerator DoCPSVideo()
     {
-        string startingPath = Path.Combine(UnityEPL.GetParticipantFolder(), "..", "..", "Videos");
+        string startingPath = Path.Combine(UnityEPL.GetParticipantFolder(), "..", "..", "CPS_Movies");
         var extensions = new[] {
             new SFB.ExtensionFilter("Videos", "mp4", "mov"),
             new SFB.ExtensionFilter("All Files", "*" ),
