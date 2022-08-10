@@ -121,6 +121,7 @@ public class RepFRExperiment : ExperimentBase {
     state.IncrementState();
     manager.Do(new EventBase<string, string>(manager.ShowText, "orientation stimulus", "+"));
     ReportEvent("rest", null);
+    SendHostPCMessage("REST", null);
 
     DoIn(new EventBase(() => {
                                 ReportEvent("rest end", null);
@@ -136,9 +137,10 @@ public class RepFRExperiment : ExperimentBase {
   protected virtual void StartTrial(StateMachine state) {
     Dictionary<string, object> data = new Dictionary<string, object>();
     data.Add("trial", state.currentSession.GetListIndex());
-    // data.Add("stim", currentSession[state.listIndex].encoding_stim);
+    data.Add("stim", currentSession.GetState().encoding_stim);
 
     ReportEvent("start trial", data);
+    SendHostPCMessage("TRIAL", data);
 
     state.IncrementState();
 
@@ -238,12 +240,12 @@ public class RepFRExperiment : ExperimentBase {
     }
   }
 
-
   protected void Recall(StateMachine state) {
     string wavPath = System.IO.Path.Combine(manager.fileManager.SessionPath(), 
                                             state.currentSession.GetListIndex().ToString() + ".wav");
-    state.IncrementState();
-    base.Recall(wavPath);
+    state.IncrementState(); // TODO: JPB: Move this into ExperimentBase.cs
+    bool stim = currentSession.GetState().recall_stim;
+    Recall(wavPath, stim);
   }
 
   //////////
@@ -295,7 +297,7 @@ public class RepFRExperiment : ExperimentBase {
     var enclist = RepWordGenerator.Generate(rep_counts,
         subset_gen.Get(unique_words_per_list), enc_stim);
     var reclist = RepWordGenerator.Generate(rep_counts, blank_words, rec_stim);
-    return new RepFRRun(enclist, reclist);
+    return new RepFRRun(enclist, reclist, enc_stim, rec_stim);
   }
 
 
@@ -350,14 +352,21 @@ public class RepFRExperiment : ExperimentBase {
   }
 }
 
-public class RepFRRun {
-  public StimWordList encoding;
-  public StimWordList recall;
+public class RepFRRun
+{
+    public StimWordList encoding;
+    public StimWordList recall;
+    public bool encoding_stim;
+    public bool recall_stim;
 
-  public RepFRRun(StimWordList encoding_list, StimWordList recall_list) {
-    encoding = encoding_list;
-    recall = recall_list;
-  }
+    public RepFRRun(StimWordList encoding_list, StimWordList recall_list,
+        bool set_encoding_stim = false, bool set_recall_stim = false)
+    {
+        encoding = encoding_list;
+        recall = recall_list;
+        encoding_stim = set_encoding_stim;
+        recall_stim = set_recall_stim;
+    }
 }
 
 [Serializable]

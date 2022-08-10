@@ -147,7 +147,6 @@ public abstract class ExperimentBase : EventLoop {
     //     DoIn(new EventBase(Run), manager.distractorDuration);
     // }
 
-
     protected void Orientation(StateMachine state) {
         int[] limits = manager.GetSetting("stimulusInterval");
         int interval = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
@@ -167,16 +166,17 @@ public abstract class ExperimentBase : EventLoop {
                                 duration);
     }
 
-    protected void RecallStim() {
-        ReportEvent("recall stimulus info", new Dictionary<string, object>());
+    private void RecallStim() {
+        var data = new Dictionary<string, object>();
+        ReportEvent("recall stimulus info", data);
         SendHostPCMessage("STIM", data);
     }
 
-    protected bool SetupRecallStim() {
+    private bool SetupRecallStim() {
         // Uniform stim.
-        int recstim_interval = manager.GetSetting("recStimulusInterval").ToObject<int>();
-        int stim_duration = manager.GetSetting("stimulusDuration").ToObject<int>();
-        int rec_period = manager.GetSetting("recallDuration").ToObject<int>();
+        int recstim_interval = (int)manager.GetSetting("recStimulusInterval");
+        int stim_duration = (int)manager.GetSetting("stimulusDuration");
+        int rec_period = (int)manager.GetSetting("recallDuration");
         int stim_reps = rec_period / (stim_duration + recstim_interval);
 
         int total_interval = stim_duration + recstim_interval;
@@ -215,8 +215,7 @@ public abstract class ExperimentBase : EventLoop {
         return stim_reps > 0;
     }
 
-    protected void Recall(string wavPath) {
-        bool stim = currentSession[state.listIndex].recall_stim;
+    protected void Recall(string wavPath, bool stim) {
         bool stimSetup = stim ? SetupRecallStim() : false;
 
         manager.Do(new EventBase(() => {
