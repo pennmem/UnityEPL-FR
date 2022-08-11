@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading;
-using System.Collections.Concurrent;
 
 public class EventLoop : EventQueue {
     protected ManualResetEventSlim wait;

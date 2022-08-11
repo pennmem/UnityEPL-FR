@@ -1,10 +1,6 @@
 using System;
-using System.Dynamic;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
-using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
-using UnityEngine;
 using KeyAction = System.Func<InputHandler, KeyMsg, bool>;
 
 
@@ -14,7 +10,6 @@ using KeyAction = System.Func<InputHandler, KeyMsg, bool>;
 // the current state and switch timelines
 public abstract class ExperimentBase : EventLoop {
     public InterfaceManager manager;
-    public GameObject microphoneTestMessage; // set in editor
 
     // dictionary containing lists of actions indexed
     // by the name of the function incrementing through

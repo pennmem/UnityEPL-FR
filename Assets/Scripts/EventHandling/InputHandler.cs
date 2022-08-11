@@ -1,8 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Collections.Concurrent;
-using System.ComponentModel;
-using UnityEngine;
 
 public class InputHandler : MessageTreeNode<KeyMsg> {
     public InputHandler(EventQueue host, Func<InputHandler, KeyMsg, bool> action) {

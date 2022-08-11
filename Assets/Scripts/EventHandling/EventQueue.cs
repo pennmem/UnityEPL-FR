@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Collections.Concurrent;
 using System;
-using UnityEngine;
 
 public class EventQueue {
     public ConcurrentQueue<IEventBase> eventQueue;

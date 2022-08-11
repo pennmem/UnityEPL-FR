@@ -21,28 +21,6 @@ public class RepFRRun {
   }
 }
 
-// Provides random subsets of a word pool without replacement.
-// TODO - This should be moved to a more general location for reuse.
-public class RandomSubset {
-  protected List<String> shuffled;
-  protected int index;
-
-  public RandomSubset(List<String> source_words) {
-    shuffled = RepWordGenerator.Shuffle(source_words);
-    index = 0;
-  }
-
-  public List<String> Get(int amount) {
-    if ((shuffled.Count - index) < amount) {
-      throw new IndexOutOfRangeException("Word list too small for session");
-    }
-    int index_now = index;
-    index += amount;
-
-    return shuffled.GetRange(index_now, amount);
-  }
-}
-
 public class RepFRSession : List<RepFRRun> {
 }
 
