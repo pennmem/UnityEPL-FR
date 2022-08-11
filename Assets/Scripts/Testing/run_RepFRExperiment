@@ -1,10 +1,10 @@
 #!/bin/bash
 
 TEST="RepFRExperiment"
-INCLUDES="../RepWordGenerator.cs ../ExperimentBase.cs"
+INCLUDES="stubsRepWordGenerator.cs ../Experiments/RepWordGenerator.cs ../Experiments/ExperimentState.cs ../Experiments/ExperimentBase.cs  ../EventHandling/InputHandler.cs ../EventHandling/Messages.cs ../EventHandling/EventLoop.cs ../EventHandling/EventQueue.cs ../HighResolutionDateTime.cs"
 
 echo "Warning, testing manually extracted subsetTestRepFRExperiment.cs"
-mcs TestRepFRExperiment.cs subsetTestRepFRExperiment.cs stubsRepWordGenerator.cs ../RepWordGenerator.cs -d:TESTING
-#mcs Test"$TEST".cs ../"$TEST".cs $INCLUDES &&
+mcs TestRepFRExperiment.cs subsetTestRepFRExperiment.cs stubsRepWordGenerator.cs ../Experiments/RepWordGenerator.cs ../Experiments/ExperimentState.cs -d:TESTING &&
+#mcs Test"$TEST".cs ../Experiments/"$TEST".cs $INCLUDES -d:TESTING &&
 mono Test"$TEST".exe
 

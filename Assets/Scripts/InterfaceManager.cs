@@ -1,10 +1,9 @@
 ﻿using System;
+using System.Threading;
 using System.IO;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using UnityEngine.SceneManagement;
-using Newtonsoft.Json.Linq;
 using UnityEngine;
 
 // It is up to objects that are referenced in this class to 
@@ -14,7 +13,7 @@ using UnityEngine;
 
 public class InterfaceManager : MonoBehaviour 
 {
-    private static string quitKey = "escape"; // escape to quit
+    private static string quitKey = "Escape"; // escape to quit
     const string SYSTEM_CONFIG = "config.json";
 
     //////////
@@ -49,25 +48,26 @@ public class InterfaceManager : MonoBehaviour
     // activate InterfaceManager functions
     //////////
     private EventQueue mainEvents = new EventQueue();
+    // let interface manager be seen as an event queue
     public static implicit operator EventQueue(InterfaceManager im) => im.mainEvents;
 
-    // queue to store key handlers before key event
+    // Deprecated Key handling
     private ConcurrentQueue<Action<string, bool>> onKey;
 
     //////////
     // Experiment Settings and Experiment object
     // that is instantiated once launch is called
     ////////// 
-    // global random number source
-    public static System.Random rnd = new System.Random();
+    // global random number source, wrapped so that out of thread 
+    // access doesn't break generation
+    public static ThreadLocal<System.Random> rnd = new ThreadLocal<System.Random>(() => new System.Random());
 
     // system configurations, generated on the fly by
     // FlexibleConfig
-    private object configLock = new object(); // TODO: make access in-thread only
-    public JObject systemConfig = null;
-    public JObject experimentConfig = null;
+    public ConcurrentDictionary<string, dynamic> systemConfig = null;
+    public ConcurrentDictionary<string, dynamic> experimentConfig = null;
     private ExperimentBase exp;
-
+    public InputHandler inputHandler;
     public FileManager fileManager;
 
     //////////
@@ -77,6 +77,12 @@ public class InterfaceManager : MonoBehaviour
     // other scripts instantiated by
     // Experiment Manager.
     //////////
+
+    // TODO: this could be better organized through an interface object
+    // in each scene, so interface manager always looks for the same object
+    // which exposes interface functions, rather than interface functions
+    // living here. The could potentially be accomplished with a clever
+    // namespace or similar to provide
 
     //////////
     // Devices that can be accessed by managed
@@ -88,28 +94,25 @@ public class InterfaceManager : MonoBehaviour
     public TextDisplayer textDisplayer;
     public SoundRecorder recorder;
     public GameObject warning;
-
     public AudioSource highBeep;
     public AudioSource lowBeep;
     public AudioSource lowerBeep;
     public AudioSource playback;
-
     public RamulatorInterface ramulator;
 
     //////////
     // Input reporters
     //////////
-
     public VoiceActivityDetection voiceActity;
     public ScriptedEventReporter scriptedInput;
-    public PeripheralInputReporter peripheralInput;
+    public InputReporter peripheralInput;
     public UIDataReporter uiInput;
     private int eventsPerFrame;
 
     // Start is called before the first frame update
     void Start()
     {
-        // Unity interal event handling
+        // Unity internal event handling
         SceneManager.sceneLoaded += onSceneLoaded;
 
         // create objects not tied to unity
@@ -117,23 +120,27 @@ public class InterfaceManager : MonoBehaviour
         syncBox = new NonUnitySyncbox(this);
         onKey = new ConcurrentQueue<Action<string, bool>>();
 
-        // load system configuration file // TODO: function
-        string text = System.IO.File.ReadAllText(System.IO.Path.Combine(fileManager.ConfigPath(), SYSTEM_CONFIG));
+        // configure default key handling to quit experiment
+        inputHandler = new InputHandler(mainEvents, (handler, msg) => {
+                if(msg.down && msg.key == quitKey) {
+                    Quit();
+                    handler.active = false;
+                    return false;
+                }
+                return true;
+        });
 
-        lock(configLock) {
-            systemConfig = FlexibleConfig.LoadFromText(text);
-        }
+        string text = System.IO.File.ReadAllText(System.IO.Path.Combine(fileManager.ConfigPath(), SYSTEM_CONFIG));
+        systemConfig = new ConcurrentDictionary<string, dynamic>(FlexibleConfig.LoadFromText(text));
 
         // Get all configuration files
         string configPath = fileManager.ConfigPath();
         string[] configs = Directory.GetFiles(configPath, "*.json");
         if(configs.Length < 2) {
-            // TODO: notify
-            ShowWarning("Configuration File Error", 5000);
-            DoIn(new EventBase(Quit), 5000);            
+            Notify(new Exception("Configuration File Error"));
         }
 
-        JArray exps = new JArray();
+        List<string> exps = new List<string>();
 
         for(int i=0, j=0; i<configs.Length; i++) {
             Debug.Log(configs[i]);
@@ -149,30 +156,13 @@ public class InterfaceManager : MonoBehaviour
             syncBox.Init();
         }
 
-
         // Start experiment Launcher scene
         mainEvents.Do(new EventBase(LaunchLauncher));
         eventsPerFrame = (int)(GetSetting("eventsPerFrame") ?? 5);
     }
 
-    // // Update is called once per frame
-    // float deltaTime = 0.0f;
-    // int updateRate = 10;
-    // int frame = 0;
     void Update()
     {
-		// deltaTime += (Time.unscaledDeltaTime - deltaTime) * 0.1f;
-        // frame++;
-
-        // if(updateRate % frame == 0) {
-        //     ReportEvent("FPS", new Dictionary<string, object>() {{"fps", 1.0f/deltaTime}}, DataReporter.TimeStamp());
-        //     frame = 0;
-        // }
-
-        if(Input.GetKeyDown(quitKey)) {
-            Quit();
-        }
-
         int i = 0;
         while(mainEvents.Process() && (i < eventsPerFrame)) {
             i++;
@@ -198,7 +188,7 @@ public class InterfaceManager : MonoBehaviour
         GameObject inputReporters = GameObject.Find("DataManager");
         if(inputReporters != null) {
             scriptedInput = inputReporters.GetComponent<ScriptedEventReporter>();   
-            peripheralInput = inputReporters.GetComponent<PeripheralInputReporter>();
+            peripheralInput = inputReporters.GetComponent<InputReporter>();
             uiInput = inputReporters.GetComponent<UIDataReporter>();
             Debug.Log("Found InputReporters");
         }
@@ -256,30 +246,28 @@ public class InterfaceManager : MonoBehaviour
     // **** that may be called from outside the main Thread.   *****
     //////////
 
-    public  dynamic GetSetting(string setting) {
-        lock(configLock) {
-            JToken value = null;
+    public dynamic GetSetting(string setting) {
+        object value = null;
 
-            if(experimentConfig != null) {
-                if(experimentConfig.TryGetValue(setting, out value)) {
-                    if(value != null) {
-                        return value;
-                    }
-                }
-            }
-
-            if(systemConfig != null) {
-                if(systemConfig.TryGetValue(setting, out value)) {
+        if(experimentConfig != null) {
+            if(experimentConfig.TryGetValue(setting, out value)) {
+                if(value != null) {
                     return value;
                 }
+            }
+        }
+
+        if(systemConfig != null) {
+            if(systemConfig.TryGetValue(setting, out value)) {
+                return value;
             }
         }
 
         throw new MissingFieldException("Missing Setting " + setting + ".");
     }
 
-    public  void ChangeSetting(string setting, dynamic value) {
-        JToken existing;
+    public void ChangeSetting(string setting, dynamic value) {
+        object existing;
 
         try {
             existing = GetSetting(setting);
@@ -288,29 +276,25 @@ public class InterfaceManager : MonoBehaviour
             existing = null;
         }
 
-        lock(configLock) {
-            if(existing == null) {
-                // even if setting belongs to systemConfig, experimentConfig setting s
-                if(experimentConfig == null) {
-                    systemConfig.Add(setting, value);
-                }
-                else {
-                    experimentConfig.Add(setting, value);
-                }
-
-                return;
+        // experiment config overrides system config
+        if(existing == null) {
+            if(experimentConfig == null) {
+                systemConfig.TryAdd(setting, value);
             }
             else {
-                // even if setting belongs to systemConfig, experimentConfig setting s
-                if(experimentConfig == null) {
-                    systemConfig[setting] = value;
-                }
-                else {
-                    experimentConfig[setting] = value;
-                }
-
-                return;
+                experimentConfig.TryAdd(setting, value);
             }
+
+            return;
+        }
+        else {
+            if(experimentConfig == null) {
+                systemConfig[setting] = value;
+            }
+            else {
+                experimentConfig[setting] = value;
+            }
+            return;
         }
     }
 
@@ -326,7 +310,6 @@ public class InterfaceManager : MonoBehaviour
         DoIn(new EventBase(callback), 5000); 
     }
 
-    // TODO: deal with error states if conditions not met
     public void LaunchExperiment() {
         // launch scene with exp, 
         // instantiate experiment,
@@ -345,9 +328,8 @@ public class InterfaceManager : MonoBehaviour
             // create path for current participant/session
             fileManager.CreateSession();
 
-            Do(new EventBase(() => {mainEvents.Pause(true);
-                                    SceneManager.LoadScene((string)GetSetting("experimentScene"));
-                                }));
+            mainEvents.Pause(true);
+            SceneManager.LoadScene((string)GetSetting("experimentScene"));
 
             Do(new EventBase(() => {
                 // Start syncbox
@@ -371,12 +353,10 @@ public class InterfaceManager : MonoBehaviour
     }
 
     public  void ReportEvent(string type, Dictionary<string, object> data, DateTime time) {
-        // TODO: time stamps
         scriptedInput.ReportScriptedEvent(type, data, time );
     }
 
     public  void ReportEvent(string type, Dictionary<string, object> data) {
-        // TODO: time stamps
         scriptedInput.ReportScriptedEvent(type, data);
     }
 
@@ -391,19 +371,17 @@ public class InterfaceManager : MonoBehaviour
     }
 
     public void LaunchLauncher() {
+            // reset external hardware state if exiting task
+            syncBox.StopPulse();
+            hostPC?.Disconnect();
 
-        Debug.Log("Launching: " + (string)GetSetting("launcherScene"));
-        Do(new EventBase(() => {
-                                mainEvents.Pause(true);
-                                SceneManager.LoadScene((string)GetSetting("launcherScene"));
-                            }));
+            mainEvents.Pause(true);
+            SceneManager.LoadScene((string)GetSetting("launcherScene"));
     }
 
     public void LoadExperimentConfig(string name) {
-        lock(configLock) {
-            string text = System.IO.File.ReadAllText(System.IO.Path.Combine(fileManager.ConfigPath(), name + ".json"));
-            experimentConfig = FlexibleConfig.LoadFromText(text); 
-        }
+        string text = System.IO.File.ReadAllText(System.IO.Path.Combine(fileManager.ConfigPath(), name + ".json"));
+        experimentConfig = new ConcurrentDictionary<string, dynamic>(FlexibleConfig.LoadFromText(text));
     }
 
     public void ShowText(string tag, string text, string color) {
@@ -418,6 +396,7 @@ public class InterfaceManager : MonoBehaviour
             textDisplayer.DisplayText(tag, text);
         }
     }
+
     public void ShowText(string tag, string text) {
         if(textDisplayer == null) {
             throw new Exception("No text displayer in current scene");
@@ -426,6 +405,7 @@ public class InterfaceManager : MonoBehaviour
             textDisplayer.DisplayText(tag, text);
         }
     }
+
     public void ClearText() {
         if(textDisplayer == null) {
             throw new Exception("No text displayer in current scene");
@@ -469,32 +449,15 @@ public class InterfaceManager : MonoBehaviour
         videoControl.StartVideo(videoPath, skippable, callback);
     }
 
-    public void ShowWarning(string warnMsg, int duration) {
-        warning.SetActive(true);
-        TextDisplayer warnText = warning.GetComponent<TextDisplayer>();
-        warnText.DisplayText("warning", warnMsg);
-
-        DoIn(new EventBase(() => { warnText.ClearText();
-                                   warning.SetActive(false);}), duration);
-
-    }
-
-    public  void Notify(Exception e) {
-        Debug.Log("Popup now displayed... invisibly");
-        Debug.Log(e);
-
-        // FIXME
+    public void Notify(Exception e) {
         warning.SetActive(true);
         TextDisplayer warnText = warning.GetComponent<TextDisplayer>();
         warnText.DisplayText("warning", e.Message);
-
-        DoIn(new EventBase(() => { warnText.ClearText();
-                                   warning.SetActive(false);}), 5000);
-
+        mainEvents.Pause(true);
     }
 
     public  void SetHostPCStatus(string status) {
-        // TODO
+        // TODO: at this point, nothing actually uses this
         Debug.Log("Host PC Status");
         Debug.Log(status);
     }
@@ -507,13 +470,12 @@ public class InterfaceManager : MonoBehaviour
         //write versions to logfile
         Dictionary<string, object> versionsData = new Dictionary<string, object>();
         versionsData.Add("application version", Application.version);
-        versionsData.Add("build date", BuildInfo.Date());
+        versionsData.Add("build date", BuildInfo.ToString()); // compiler magic, gives compile date
         versionsData.Add("experiment version", (string)GetSetting("experimentName"));
         versionsData.Add("logfile version", "0");
         versionsData.Add("participant", (string)GetSetting("participantCode"));
         versionsData.Add("session", (int)GetSetting("session"));
 
-        // occurring during loading, so reference may not yet be obtained
         ReportEvent("session start", versionsData);
     }
 
@@ -537,7 +499,7 @@ public class InterfaceManager : MonoBehaviour
     }
 
     //////////
-    // Wrappers to make event management interface consistent
+    // Wrappers to re export methods for EventQueue
     //////////
 
     public  void Do(IEventBase thisEvent) {

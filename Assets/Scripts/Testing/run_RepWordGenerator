@@ -1,8 +1,8 @@
 #!/bin/bash
 
 TEST="RepWordGenerator"
-INCLUDES="stubsRepWordGenerator.cs"
+INCLUDES="stubsRepWordGenerator.cs ../Experiments/ExperimentState.cs"
 
-mcs Test"$TEST".cs ../"$TEST".cs $INCLUDES -d:TESTING &&
+mcs Test"$TEST".cs ../Experiments/"$TEST".cs $INCLUDES -d:TESTING &&
 mono Test"$TEST".exe
 

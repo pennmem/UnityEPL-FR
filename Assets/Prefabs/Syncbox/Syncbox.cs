@@ -28,6 +28,7 @@ public class Syncbox : MonoBehaviour
     private const int SECONDS_TO_MILLISECONDS = 1000;
 
     private Thread syncpulseThread;
+    private System.Random random;
 
     public int testField;
 
@@ -38,6 +39,8 @@ public class Syncbox : MonoBehaviour
 		Debug.Log(Marshal.PtrToStringAuto (OpenUSB()));
         Debug.Log(testField);
 
+        random = new System.Random();
+
         //start a thread which will send the pulses
         syncpulseThread = new Thread(Pulse);
         syncpulseThread.Start();
@@ -45,7 +48,6 @@ public class Syncbox : MonoBehaviour
 
 	void Pulse ()
     {
-        System.Random random = new System.Random();
 
         //delay before starting pulses
         Thread.Sleep((int)(PULSE_START_DELAY*SECONDS_TO_MILLISECONDS));

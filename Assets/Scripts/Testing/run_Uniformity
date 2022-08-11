@@ -1,7 +1,7 @@
 #!/bin/bash
 
 TEST="Uniformity"
-INCLUDES="stubsRepWordGenerator.cs ../RepWordGenerator.cs"
+INCLUDES="stubsRepWordGenerator.cs ../Experiments/RepWordGenerator.cs ../Experiments/ExperimentState.cs"
 
 mcs Test"$TEST".cs $INCLUDES -d:TESTING &&
 mono Test"$TEST".exe

@@ -37,3 +37,8 @@ sysinfo.txt
 *.apk
 *.unitypackage
 Assets/VikingVillage/Textures/wood_tiled_01_n.tif
+
+data/
+tags
+*.swp
+*.swo
