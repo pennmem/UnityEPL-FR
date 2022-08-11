@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 
+// TODO: These are not used anywhere
 public class CoroutineToEvent {
     public static void StartCoroutine(IEnumerator coroutine, EventQueue queue) {
         queue.Do(new EventBase(() => {

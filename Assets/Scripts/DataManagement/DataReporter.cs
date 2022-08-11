@@ -21,12 +21,7 @@ public abstract class DataReporter : MonoBehaviour
 
     protected bool IsMacOS()
     {
-#if UNITY_EDITOR
-        return false;
-#else
         return Application.platform == RuntimePlatform.OSXEditor || Application.platform == RuntimePlatform.OSXPlayer;
-#endif
-
     }
 
     void Awake()

@@ -246,7 +246,7 @@ public class InterfaceManager : MonoBehaviour
     // **** that may be called from outside the main Thread.   *****
     //////////
 
-    public  dynamic GetSetting(string setting) {
+    public dynamic GetSetting(string setting) {
         object value = null;
 
         if(experimentConfig != null) {
@@ -449,15 +449,11 @@ public class InterfaceManager : MonoBehaviour
         videoControl.StartVideo(videoPath, skippable, callback);
     }
 
-    public  void Notify(Exception e) {
+    public void Notify(Exception e) {
         warning.SetActive(true);
         TextDisplayer warnText = warning.GetComponent<TextDisplayer>();
         warnText.DisplayText("warning", e.Message);
         mainEvents.Pause(true);
-    }
-    public  void Notify(Exception e, int duration) {
-        // DEPRECATED: the duration parameter is ignored
-        Notify(e);
     }
 
     public  void SetHostPCStatus(string status) {

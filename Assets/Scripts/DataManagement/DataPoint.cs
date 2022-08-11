@@ -3,6 +3,7 @@ using System;
 using System.Threading;
 using UnityEngine;
 
+
 //these datapoints represent behavioral events
 //data about the event is currently stored in a dictionary
 public class DataPoint
@@ -86,8 +87,13 @@ public class DataPoint
                 return "\"" + valueString + "\"";
             }
         }
-        else {
-            throw new Exception("Data logging type not supported");
+        else if (value is DateTime)
+        {
+            return value.ToString();
+        }
+        else
+        {
+            throw new Exception("Data logging type not supported: (" + value.GetType() + ") " + value);
         }
     }
 
