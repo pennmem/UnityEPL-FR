@@ -424,6 +424,7 @@ public class InterfaceManager : MonoBehaviour
             textDisplayer.DisplayTitle(tag, text);
         }
     }
+
     public void ClearTitle() {
         if(textDisplayer == null) {
             throw new Exception("No text displayer in current scene");
