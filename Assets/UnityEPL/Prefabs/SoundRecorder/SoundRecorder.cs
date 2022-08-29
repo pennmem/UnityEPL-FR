@@ -96,18 +96,18 @@ public class SoundRecorder : MonoBehaviour
         UnityWebRequest audioFile = UnityWebRequestMultimedia.GetAudioClip(url, AudioType.WAV);
         //audioFile.timeout = 10; // timeout in ten seconds
         audioFile.SendWebRequest();
-        while(!audioFile.isDone) {
+        while (!audioFile.isDone) {
 
             // FIXME
-    
+
             Debug.Log("blocking");
             // block
         }
 
-        if(audioFile.isNetworkError) {
+        if (audioFile.result == UnityWebRequest.Result.ConnectionError) {
             throw new System.Exception(audioFile.error);
         }
-        if(audioFile.isHttpError) {
+        else if (audioFile.result == UnityWebRequest.Result.ProtocolError) {
             throw new System.Exception(audioFile.responseCode.ToString());
         }
 

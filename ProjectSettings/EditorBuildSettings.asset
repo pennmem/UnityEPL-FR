@@ -6,10 +6,10 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/manager.unity
+    path: Assets/UnityEPL/Scenes/manager.unity
     guid: 588f715ba8461420d91eda0aa982e51e
   - enabled: 1
-    path: Assets/Startup.unity
+    path: Assets/UnityEPL/Scenes/Startup.unity
     guid: e60995bef08ae48cfb4e2c9a4811de73
   - enabled: 0
     path: Assets/ram_fr.unity

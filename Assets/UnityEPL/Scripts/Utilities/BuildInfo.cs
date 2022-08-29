@@ -2,7 +2,7 @@
 using UnityEngine;
 using System.Collections;
 
-[assembly:AssemblyVersion("1.0.*")]
+[assembly:AssemblyVersion("1.0.0.0")]
 
 [RequireComponent(typeof(UnityEngine.UI.Text))]
 
