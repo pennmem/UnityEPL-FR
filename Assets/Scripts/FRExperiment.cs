@@ -4,16 +4,16 @@ using System.Linq;
 using System.IO;
 //using UnityEngine; // to read resource files packaged with Unity
 
-public class RepFRExperiment : ExperimentBase {
+public class FRExperiment : ExperimentBase {
   protected List<string> source_words;
   protected List<string> blank_words;
   protected RepCounts rep_counts = null;
   protected int words_per_list;
   protected int unique_words_per_list;
 
-  protected RepFRSession currentSession;
+  protected FRSession currentSession;
 
-  public RepFRExperiment(InterfaceManager _manager) : base(_manager) {
+  public FRExperiment(InterfaceManager _manager) : base(_manager) {
     // Repetition specification:
     int[] repeats = manager.GetSetting("wordRepeats");
     int[] counts = manager.GetSetting("wordCounts");
@@ -55,17 +55,13 @@ public class RepFRExperiment : ExperimentBase {
 
     // TODO: reformat
     stateMachine["Run"] = new ExperimentTimeline(new List<Action<StateMachine>> {
-        Distractor,
+        Introduction, // runs Introduction states
+        MicrophoneTest, // runs MicrophoneTest states
+        QuitPrompt,
+        Practice, // runs Practice states
+        ConfirmStart,
+        MainLoop, // runs MainLoop states
         FinishExperiment});
-        //IntroductionPrompt,
-        //IntroductionVideo,
-        //RepeatVideo,
-        //MicrophoneTest, // runs MicrophoneTest states
-        //QuitPrompt,
-        //Practice, // runs Practice states
-        //ConfirmStart,
-        //MainLoop, // runs MainLoop states
-        //FinishExperiment});
 
     // though it is largely the same as the main loop,
     // practice is a conceptually distinct state machine
@@ -77,7 +73,7 @@ public class RepFRExperiment : ExperimentBase {
         CountdownVideo,
         EncodingDelay,
         Encoding,
-        Rest,
+        Distractor,
         RecallPrompt,
         Recall,
         EndPracticeTrial});
@@ -89,10 +85,15 @@ public class RepFRExperiment : ExperimentBase {
         CountdownVideo,
         EncodingDelay,
         Encoding,
-        Rest,
+        Distractor,
         RecallPrompt,
         Recall,
         EndTrial});
+
+    stateMachine["Introduction"] = new LoopTimeline(new List<Action<StateMachine>> {
+        IntroductionPrompt,
+        IntroductionVideo,
+        RepeatVideo});
 
     stateMachine["MicrophoneTest"] = new LoopTimeline(new List<Action<StateMachine>> {
         MicTestPrompt,
@@ -227,6 +228,12 @@ public class RepFRExperiment : ExperimentBase {
     Run();
   }
 
+  protected void Introduction(StateMachine state) {
+    state.IncrementState();
+    state.PushTimeline("IntroductionVideo");
+    Run();
+  }
+
   protected void MicrophoneTest(StateMachine state) {
     state.IncrementState();
     state.PushTimeline("MicrophoneTest");
@@ -297,16 +304,16 @@ public class RepFRExperiment : ExperimentBase {
 
   }
 
-  public RepFRRun MakeRun(RandomSubset subset_gen, bool enc_stim,
+  public FRRun MakeRun(RandomSubset subset_gen, bool enc_stim,
       bool rec_stim) {
     var enclist = RepWordGenerator.Generate(rep_counts,
         subset_gen.Get(unique_words_per_list), enc_stim);
     var reclist = RepWordGenerator.Generate(rep_counts, blank_words, rec_stim);
-    return new RepFRRun(enclist, reclist, enc_stim, rec_stim);
+    return new FRRun(enclist, reclist, enc_stim, rec_stim);
   }
 
 
-  public RepFRSession GenerateSession() {
+  public FRSession GenerateSession() {
     // Parameters retrieved from experiment config, given default
     // value if null.
     // Numbers of list types:
@@ -319,7 +326,7 @@ public class RepFRExperiment : ExperimentBase {
     
     RandomSubset subset_gen = new RandomSubset(source_words);
 
-    var session = new RepFRSession();
+    var session = new FRSession();
 
     for (int i=0; i<practice_lists; i++) {
       session.Add(MakeRun(subset_gen, false, false));
@@ -329,7 +336,7 @@ public class RepFRExperiment : ExperimentBase {
       session.Add(MakeRun(subset_gen, false, false));
     }
 
-    var randomized_list = new RepFRSession();
+    var randomized_list = new FRSession();
 
     for (int i=0; i<encoding_only_lists; i++) {
       randomized_list.Add(MakeRun(subset_gen, true, false));
@@ -357,14 +364,14 @@ public class RepFRExperiment : ExperimentBase {
   }
 }
 
-public class RepFRRun
+public class FRRun
 {
     public StimWordList encoding;
     public StimWordList recall;
     public bool encoding_stim;
     public bool recall_stim;
 
-    public RepFRRun(StimWordList encoding_list, StimWordList recall_list,
+    public FRRun(StimWordList encoding_list, StimWordList recall_list,
         bool set_encoding_stim = false, bool set_recall_stim = false)
     {
         encoding = encoding_list;
@@ -375,7 +382,7 @@ public class RepFRRun
 }
 
 [Serializable]
-public class RepFRSession : Timeline<RepFRRun> {
+public class FRSession : Timeline<FRRun> {
 
   public bool NextWord() {
       return GetState().encoding.IncrementState();

@@ -1,7 +1,11 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using Newtonsoft.Json;
 using KeyAction = System.Func<InputHandler, KeyMsg, bool>;
+
+using UnityEngine;
 
 
 // TODO: it would be great to have a system that can handle the state more implicitly,
@@ -125,22 +129,28 @@ public abstract class ExperimentBase : EventLoop {
                                 manager.GetSetting("stimulusDuration"));
     }
 
-    // protected void Distractor(StateMachine state) {
-    //     int[] nums = new int[] { InterfaceManager.rnd.Value.Next(1, 10),
-    //                              InterfaceManager.rnd.Value.Next(1, 10),
-    //                              InterfaceManager.rnd.Value.Next(1, 10) };
+    protected void Distractor(StateMachine state)
+    {
+        int[] nums = new int[] { InterfaceManager.rnd.Value.Next(1, 10),
+                                    InterfaceManager.rnd.Value.Next(1, 10),
+                                    InterfaceManager.rnd.Value.Next(1, 10) };
 
-    //     string problem = nums[0].ToString() + " + " + nums[1].ToString() + " + " + nums[2].ToString() + " = ";
+        string problem = nums[0].ToString() + " + " + nums[1].ToString() + " + " + nums[2].ToString() + " = ";
 
-    //     state.distractorProblem = nums;
-    //     state.distractorAnswer = "";
+        // TODO: JPB: Pass callback to DistractorAnswer that repeats this stuff
+        //            Poll for timing
+        inputHandler.SetAction(DistractorAnswer(nums));
+        inputHandler.active = true;
 
-    //     inputHandler.SetAction((KeyAction)DistractorAnswer);
-    //     manager.Do(new EventBase<string, string>(manager.ShowText, "display distractor problem", problem));
+        manager.Do(new EventBase<string, string>(manager.ShowText, "display distractor problem", problem));
 
-    //     state.IncrementState();
-    //     DoIn(new EventBase(Run), manager.distractorDuration);
-    // }
+        DoIn(new EventBase(Run), manager.GetSetting("distractorDuration"));
+    }
+
+    protected void DistractorHelper(StateMachine state)
+    {
+
+    }
 
     protected void Orientation(StateMachine state) {
         int[] limits = manager.GetSetting("stimulusInterval");
@@ -355,72 +365,64 @@ public abstract class ExperimentBase : EventLoop {
     // manager. Input may also be handled by registering another handler as a child of manager.
     //////////
 
-    // TODO: rather than accessing stateMachine, these should receive a closure on state from
-    // their caller
+    protected KeyAction DistractorAnswer(int[] summands) {
+        return (handler, key) => DistractorAnswerHandler(handler, key, summands);
+    }
 
-    // protected bool DistractorAnswer(InputHandler handler, KeyMsg msg) {
-    //     // FIXME: this needs a different scratchpad than state with the new structure
+    protected static string distractorAnswer = "";
+    protected bool DistractorAnswerHandler(InputHandler handler, KeyMsg msg, int[] summands) {
+        if(!msg.down) {
+            return true;
+        }
 
-    //     int Sum(int[] arg){
-    //         int sum = 0;
-    //         for(int i=0; i < arg.Length; i++) {
-    //             sum += arg[i];
-    //         }
-    //         return sum;
-    //     }
+        string message = "distractor update";
+        var key = msg.key;
+        bool correct = false;
 
-    //     if(!msg.down) {
-    //         return true;
-    //     }
+        // enter only numbers
+        if (Regex.IsMatch(key, @"\d$")) {
+            key = key[key.Length-1].ToString(); // Unity gives numbers as Alpha# or Keypad#
+            if(distractorAnswer.Length < 3) {
+                distractorAnswer = distractorAnswer + key;
+            }
+            message = "modify distractor answer";
+        }
+        // delete key removes last character from answer
+        else if(key == "delete" || key == "backspace") {
+            if(distractorAnswer != "") {
+                distractorAnswer = distractorAnswer.Substring(0, distractorAnswer.Length - 1);
+            }
+            message = "modify distractor answer";
+        }
+        // submit answer and play tone depending on right or wrong answer 
+        else if(key == "enter" || key == "return") {
+            int result;
+            int.TryParse(distractorAnswer, out result) ;
+            correct = result == summands.Sum();
 
-    //     string message = "distractor update";
-    //     var key = msg.key;
-    //     bool correct = false;
+            message = "distractor answered";
+            if(correct) {
+                manager.Do(new EventBase(manager.lowBeep.Play));
+            } 
+            else {
+                manager.Do(new EventBase(manager.lowerBeep.Play));
+            }
 
-    //     // enter only numbers
-    //     if(Regex.IsMatch(key, @"\d$")) {
-    //         key = key[key.Length-1].ToString(); // Unity gives numbers as Alpha# or Keypad#
-    //         if(state.distractorAnswer.Length < 3) {
-    //             state.distractorAnswer = state.distractorAnswer + key;
-    //         }
-    //         message = "modify distractor answer";
-    //     }
-    //     // delete key removes last character from answer
-    //     else if(key == "delete" || key == "backspace") {
-    //         if(state.distractorAnswer != "") {
-    //             state.distractorAnswer = state.distractorAnswer.Substring(0, state.distractorAnswer.Length - 1);
-    //         }
-    //         message = "modify distractor answer";
-    //     }
-    //     // submit answer and play tone depending on right or wrong answer 
-    //     else if(key == "enter" || key == "return") {
-    //         int result;
-    //         int.TryParse(state.distractorAnswer, out result) ;
-    //         correct = result == Sum(state.distractorProblem);
+            Do(new EventBase(Run));
+            distractorAnswer = "";
 
-    //         message = "distractor answered";
-    //         if(correct) {
-    //             manager.Do(new EventBase(manager.lowBeep.Play));
-    //         } 
-    //         else {
-    //             manager.Do(new EventBase(manager.lowerBeep.Play));
-    //         }
+            handler.active = false; // stop the handler from reporting any more keys
+            stateMachine.IncrementState();
+        }
 
-    //         Do(new EventBase(Run));
-    //         state.distractorProblem = "";
-    //         state.distractorAnswer = "";
-
-    //         handler.active = false; // stop the handler from reporting any more keys
-    //     }
-
-    //     string problem = state.distractorProblem[0].ToString() + " + " 
-    //                     + state.distractorProblem[1].ToString() + " + " 
-    //                     + state.distractorProblem[2].ToString() + " = ";
-    //     string answer = state.distractorAnswer;
-    //     manager.Do(new EventBase<string, string>(manager.ShowText, message, problem + answer));
-    //     ReportDistractor(message, correct, problem, answer);
-    //     return false;
-    // }
+        string problem = summands[0].ToString() + " + " 
+                        + summands[1].ToString() + " + " 
+                        + summands[2].ToString() + " = ";
+        string answer = distractorAnswer;
+        manager.Do(new EventBase<string, string>(manager.ShowText, message, problem + answer));
+        ReportDistractor(message, correct, problem, answer);
+        return false;
+    }
 
     protected bool AnyKey(InputHandler handler, KeyMsg msg) {
         if(msg.down) {
