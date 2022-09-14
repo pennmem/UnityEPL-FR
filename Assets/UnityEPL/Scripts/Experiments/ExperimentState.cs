@@ -156,7 +156,7 @@ public class StateMachine : Dictionary<string, ExperimentTimeline> {
             // It would be optimal to make this into a static check without using dynamic.
             // I don't know how to do that and not have templates all over the code base.
             // Can't use dynamic because WebGL doesn't support it.
-            // DO SOMETHING BAD
+            ErrorNotification.Notify(new Exception("CurrentSession() template argument did not match the currentSessionType"));
         }
         return (T) currentSession;
     }
