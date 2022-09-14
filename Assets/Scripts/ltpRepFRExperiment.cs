@@ -5,8 +5,8 @@ using Newtonsoft.Json;
 using System.IO;
 using UnityEngine; // to read resource files packaged with Unity
 
-public class ltpRepFRExperiment : RepFRExperiment {
-  public ltpRepFRExperiment(InterfaceManager _manager) : base(_manager) {}
+public class LtpRepFRExperiment : RepFRExperiment {
+  public LtpRepFRExperiment(InterfaceManager _manager) : base(_manager) {}
 
   //////////
   // State Machine Constructor Functions
@@ -79,7 +79,7 @@ public class ltpRepFRExperiment : RepFRExperiment {
 
   protected override void StartTrial(StateMachine state) {
     Dictionary<string, object> data = new Dictionary<string, object>();
-    data.Add("trial", state.currentSession.GetListIndex());
+    data.Add("trial", state.CurrentSession<RepFRSession>().GetListIndex());
     // data.Add("stim", currentSession[state.listIndex].encoding_stim);
 
     ReportEvent("start trial", data);
@@ -88,7 +88,7 @@ public class ltpRepFRExperiment : RepFRExperiment {
 
     // check if this list exists in the configuration rest list
     // if(state.currentSession.GetList().restList) {
-    if(Array.IndexOf(manager.GetSetting("restLists"), state.currentSession.GetListIndex()) != -1) {
+    if(Array.IndexOf(manager.GetSetting("restLists"), state.CurrentSession<RepFRSession>().GetListIndex()) != -1) {
       Do(new EventBase<StateMachine>(WaitForResearcher, state));
     } 
     else {

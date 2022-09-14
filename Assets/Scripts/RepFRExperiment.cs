@@ -51,7 +51,7 @@ public class RepFRExperiment : ExperimentBase {
   //////////
 
   public override StateMachine GetStateMachine() {
-    StateMachine stateMachine = new StateMachine(currentSession);
+    StateMachine stateMachine = StateMachine.GenStateMachine(currentSession);
 
     // TODO: reformat
     stateMachine["Run"] = new ExperimentTimeline(new List<Action<StateMachine>> {
@@ -141,7 +141,7 @@ public class RepFRExperiment : ExperimentBase {
 
   protected virtual void StartTrial(StateMachine state) {
     Dictionary<string, object> data = new Dictionary<string, object>();
-    data.Add("trial", state.currentSession.GetListIndex());
+    data.Add("trial", state.CurrentSession<RepFRSession>().GetListIndex());
     data.Add("stim", currentSession.GetState().encoding_stim);
 
     ReportEvent("start trial", data);
@@ -153,7 +153,7 @@ public class RepFRExperiment : ExperimentBase {
   }
 
   protected void EndTrial(StateMachine state) {
-    if(state.currentSession.NextList()) {
+    if(state.CurrentSession<RepFRSession>().NextList()) {
       state.IncrementState();
     }
     else {
@@ -165,10 +165,10 @@ public class RepFRExperiment : ExperimentBase {
 
   // FIXME awkward handling of practice
   protected void EndPracticeTrial(StateMachine state) {
-    if(state.currentSession.NextList()) {
+    if(state.CurrentSession<RepFRSession>().NextList()) {
       state.IncrementState();
 
-      if(state.currentSession.GetListIndex() >= manager.GetSetting("practiceLists")) {
+      if(state.CurrentSession<RepFRSession>().GetListIndex() >= manager.GetSetting("practiceLists")) {
         state.PopTimeline();
       }
     }
@@ -200,7 +200,7 @@ public class RepFRExperiment : ExperimentBase {
 
   protected void NextListPrompt(StateMachine state) {
     // FIXME: awkward handling of practice
-    int list = (int)state.currentSession.GetListIndex() + 1 - manager.GetSetting("practiceLists");
+    int list = (int)state.CurrentSession<RepFRSession>().GetListIndex() + 1 - manager.GetSetting("practiceLists");
     WaitForKey("pause before list", 
                String.Format("Press any key for trial {0}.", list),
                AnyKey);
@@ -239,15 +239,15 @@ public class RepFRExperiment : ExperimentBase {
 
   // TODO: need to separately manage practice and encoding lists
   protected void Encoding(StateMachine state) {
-    Encoding((WordStim)state.currentSession.GetWord(), state.currentSession.GetSerialPos());
-    if(!state.currentSession.NextWord()) {
+    Encoding((WordStim)state.CurrentSession<RepFRSession>().GetWord(), state.CurrentSession<RepFRSession>().GetSerialPos());
+    if(!state.CurrentSession<RepFRSession>().NextWord()) {
         state.IncrementState();
     }
   }
 
   protected void Recall(StateMachine state) {
     string wavPath = System.IO.Path.Combine(manager.fileManager.SessionPath(), 
-                                            state.currentSession.GetListIndex().ToString() + ".wav");
+                                            state.CurrentSession<RepFRSession>().GetListIndex().ToString() + ".wav");
     state.IncrementState(); // TODO: JPB: Move this into ExperimentBase.cs
     bool stim = currentSession.GetState().recall_stim;
     Recall(wavPath, stim);

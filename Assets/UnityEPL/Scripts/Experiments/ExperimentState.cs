@@ -137,11 +137,28 @@ public class LoopTimeline : ExperimentTimeline {
 
 public class StateMachine : Dictionary<string, ExperimentTimeline> {
     // Must be a serializable type
-    public dynamic currentSession;
-    public bool isComplete {get; set; } = false;
+    public bool isComplete { get; set; } = false;
+    protected object currentSession;
+    protected Type currentSessionType;
 
-    public StateMachine(dynamic currentSession) : base() {
+    public static StateMachine GenStateMachine<T>(T currentSession) where T : Timeline<Object> {
+        return new StateMachine(currentSession, typeof(T));
+    }
+
+    private StateMachine(object currentSession, Type currentSessionType) : base() {
         this.currentSession = currentSession;
+        this.currentSessionType = currentSessionType;
+    }
+
+    public T CurrentSession<T>() where T : Timeline<Object> {
+        if (typeof(T) != currentSessionType)
+        {
+            // It would be optimal to make this into a static check without using dynamic.
+            // I don't know how to do that and not have templates all over the code base.
+            // Can't use dynamic because WebGL doesn't support it.
+            // DO SOMETHING BAD
+        }
+        return (T) currentSession;
     }
 
     public Action<StateMachine> GetState() {
