@@ -141,7 +141,7 @@ public class StateMachine : Dictionary<string, ExperimentTimeline> {
     protected object currentSession;
     protected Type currentSessionType;
 
-    public static StateMachine GenStateMachine<T>(T currentSession) where T : Timeline<Object> {
+    public static StateMachine GenStateMachine<T>(T currentSession) {
         return new StateMachine(currentSession, typeof(T));
     }
 
@@ -150,7 +150,7 @@ public class StateMachine : Dictionary<string, ExperimentTimeline> {
         this.currentSessionType = currentSessionType;
     }
 
-    public T CurrentSession<T>() where T : Timeline<Object> {
+    public T CurrentSession<T>() {
         if (typeof(T) != currentSessionType)
         {
             // It would be optimal to make this into a static check without using dynamic.
