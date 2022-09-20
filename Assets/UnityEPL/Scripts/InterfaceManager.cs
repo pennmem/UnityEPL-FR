@@ -130,6 +130,12 @@ public class InterfaceManager : MonoBehaviour
                 return true;
         });
 
+        #if !UNITY_WEBGL // System.IO
+            Config.SetupConfigPath(fileManager.ConfigPath());
+        #else // !UNITY_WEBGL
+            Config.SetupOnlineConfigs();
+        #endif // !UNITY_WEBGL
+
         string text = System.IO.File.ReadAllText(System.IO.Path.Combine(fileManager.ConfigPath(), SYSTEM_CONFIG));
         systemConfig = new ConcurrentDictionary<string, dynamic>(FlexibleConfig.LoadFromText(text));
 
@@ -152,13 +158,13 @@ public class InterfaceManager : MonoBehaviour
 
 
         // Syncbox interface
-        if(!(bool)GetSetting("isTest")) {
+        if(!Config.isTest) {
             syncBox.Init();
         }
 
         // Start experiment Launcher scene
         mainEvents.Do(new EventBase(LaunchLauncher));
-        eventsPerFrame = (int)(GetSetting("eventsPerFrame") ?? 5);
+        eventsPerFrame = Config.eventsPerFrame ?? 5;
     }
 
     void Update()
@@ -246,25 +252,25 @@ public class InterfaceManager : MonoBehaviour
     // **** that may be called from outside the main Thread.   *****
     //////////
 
-    public dynamic GetSetting(string setting) {
-        object value = null;
+    //public dynamic GetSetting(string setting) {
+    //    object value = null;
 
-        if(experimentConfig != null) {
-            if(experimentConfig.TryGetValue(setting, out value)) {
-                if(value != null) {
-                    return value;
-                }
-            }
-        }
+    //    if (experimentConfig != null) {
+    //        if (experimentConfig.TryGetValue(setting, out value)) {
+    //            if (value != null) {
+    //                return value;
+    //            }
+    //        }
+    //    }
 
-        if(systemConfig != null) {
-            if(systemConfig.TryGetValue(setting, out value)) {
-                return value;
-            }
-        }
+    //    if (systemConfig != null) {
+    //        if (systemConfig.TryGetValue(setting, out value)) {
+    //            return value;
+    //        }
+    //    }
 
-        throw new MissingFieldException("Missing Setting " + setting + ".");
-    }
+    //    throw new MissingFieldException("Missing Setting " + setting + ".");
+    //}
 
     public void ChangeSetting(string setting, dynamic value) {
         object existing;
@@ -322,28 +328,28 @@ public class InterfaceManager : MonoBehaviour
             Application.runInBackground = true;
 
             // Make the game run as fast as possible
-            QualitySettings.vSyncCount = (int)GetSetting("vSync");
-            Application.targetFrameRate = (int)GetSetting("frameRate");
+            QualitySettings.vSyncCount = Config.vSync;
+            Application.targetFrameRate = Config.frameRate;
             
             // create path for current participant/session
             fileManager.CreateSession();
 
             mainEvents.Pause(true);
-            SceneManager.LoadScene((string)GetSetting("experimentScene"));
+            SceneManager.LoadScene(Config.experimentScene);
 
             Do(new EventBase(() => {
                 // Start syncbox
                 syncBox.Do(new EventBase(syncBox.StartPulse));
 
-                if((bool)GetSetting("elemem")) {
+                if(Config.elemem) {
                     hostPC = new ElememInterface(this);
-                } else if((bool)GetSetting("ramulator")) {
+                } else if(Config.ramulator) {
                     hostPC = new RamulatorWrapper(this);
                 }
 
                 LogExperimentInfo();
 
-                Type t = Type.GetType((string)GetSetting("experimentClass")); 
+                Type t = Type.GetType(Config.experimentClass); 
                 exp = (ExperimentBase)Activator.CreateInstance(t, new object[] {this});
             }));
         }
@@ -362,11 +368,11 @@ public class InterfaceManager : MonoBehaviour
 
     public  void Quit() {
         Debug.Log("Quitting");
-    #if UNITY_EDITOR
+#if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
-    #else
+#else
         Application.Quit();
-    #endif
+#endif
     //no more calls to Run past this point
     }
 
@@ -376,7 +382,7 @@ public class InterfaceManager : MonoBehaviour
             hostPC?.Disconnect();
 
             mainEvents.Pause(true);
-            SceneManager.LoadScene((string)GetSetting("launcherScene"));
+            SceneManager.LoadScene(Config.launcherScene);
     }
 
     public void LoadExperimentConfig(string name) {
@@ -441,7 +447,7 @@ public class InterfaceManager : MonoBehaviour
         }
 
         // absolute video path
-        string videoPath = System.IO.Path.Combine(fileManager.ExperimentRoot(), (string)GetSetting(video));
+        string videoPath = System.IO.Path.Combine(fileManager.ExperimentRoot(), Config.video);
 
         if(videoPath == null) {
             throw new Exception("Video resource not found");
@@ -472,10 +478,10 @@ public class InterfaceManager : MonoBehaviour
         Dictionary<string, object> versionsData = new Dictionary<string, object>();
         versionsData.Add("application version", Application.version);
         versionsData.Add("build date", BuildInfo.ToString()); // compiler magic, gives compile date
-        versionsData.Add("experiment version", (string)GetSetting("experimentName"));
+        versionsData.Add("experiment version", Config.experimentName);
         versionsData.Add("logfile version", "0");
-        versionsData.Add("participant", (string)GetSetting("participantCode"));
-        versionsData.Add("session", (int)GetSetting("session"));
+        versionsData.Add("participant", Config.participantCode);
+        versionsData.Add("session", Config.session);
 
         ReportEvent("session start", versionsData);
     }
