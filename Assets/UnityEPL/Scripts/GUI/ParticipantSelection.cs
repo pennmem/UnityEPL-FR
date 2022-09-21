@@ -29,7 +29,7 @@ public class ParticipantSelection : MonoBehaviour
 
     void Update() {
         // update participants when new experiments are loaded
-        if(experimentUpdated && ((string)manager.GetSetting("experimentName") != null)) {
+        if(experimentUpdated && (Config.experimentName != null)) {
             experimentUpdated = false;
             FindParticipants();
         }

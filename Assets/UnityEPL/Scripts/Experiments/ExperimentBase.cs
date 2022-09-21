@@ -96,17 +96,17 @@ public abstract class ExperimentBase : EventLoop {
                                                     // could also subscribe to Unity event, if
                                                     // there is one
             }), 
-            manager.GetSetting("micTestDuration"));
+            Config.micTestDuration);
 
         DoIn(new EventBase(() => {
             Run();
-        }), manager.GetSetting("micTestDuration")*2);
+        }), Config.micTestDuration*2);
     }
 
     protected void Encoding(WordStim word, int index) {
         // This needs to be wrapped, as it relies on data external to the state itself
 
-        int[] limits = manager.GetSetting("stimulusInterval");
+        int[] limits = Config.stimulusInterval;
         int interval = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
 
         Dictionary<string, object> data = new Dictionary<string, object>();
@@ -126,7 +126,7 @@ public abstract class ExperimentBase : EventLoop {
 
                                     DoIn(new EventBase(Run), interval);
                                 }), 
-                                manager.GetSetting("stimulusDuration"));
+                                Config.stimulusDuration);
     }
 
     protected void Distractor(StateMachine state)
@@ -144,7 +144,7 @@ public abstract class ExperimentBase : EventLoop {
 
         manager.Do(new EventBase<string, string>(manager.ShowText, "display distractor problem", problem));
 
-        DoIn(new EventBase(Run), manager.GetSetting("distractorDuration"));
+        DoIn(new EventBase(Run), Config.distractorDuration);
     }
 
     protected void DistractorHelper(StateMachine state)
@@ -153,10 +153,10 @@ public abstract class ExperimentBase : EventLoop {
     }
 
     protected void Orientation(StateMachine state) {
-        int[] limits = manager.GetSetting("stimulusInterval");
+        int[] limits = Config.stimulusInterval;
         int interval = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
 
-        limits = manager.GetSetting("orientationDuration");
+        limits = Config.orientationDuration;
         int duration = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
         manager.Do(new EventBase<string, string>(manager.ShowText, "orientation stimulus", "+"));
 
@@ -179,9 +179,9 @@ public abstract class ExperimentBase : EventLoop {
 
     private bool SetupRecallStim() {
         // Uniform stim.
-        int recstim_interval = (int)manager.GetSetting("recStimulusInterval");
-        int stim_duration = (int)manager.GetSetting("stimulusDuration");
-        int rec_period = (int)manager.GetSetting("recallDuration");
+        int recstim_interval = Config.recStimulusInterval;
+        int stim_duration = Config.stimulusDuration;
+        int rec_period = Config.recallDuration;
         int stim_reps = rec_period / (stim_duration + recstim_interval);
 
         int total_interval = stim_duration + recstim_interval;
@@ -231,7 +231,7 @@ public abstract class ExperimentBase : EventLoop {
                             ReportEvent("start recall period", new Dictionary<string, object>());
                         }));
 
-        int duration = manager.GetSetting("recallDuration");
+        int duration = Config.recallDuration;
 
         SendHostPCMessage("RECALL", new Dictionary<string, object>() {{"duration", duration}});
 
@@ -262,7 +262,7 @@ public abstract class ExperimentBase : EventLoop {
                             ReportEvent("start final recall period", new Dictionary<string, object>());
                         }));
 
-        int duration = manager.GetSetting("finalRecallDuration");
+        int duration = Config.finalRecallDuration;
 
         SendHostPCMessage("FINAL RECALL", new Dictionary<string, object>() {{"duration", duration}});
 
@@ -291,8 +291,8 @@ public abstract class ExperimentBase : EventLoop {
     
     protected void QuitPrompt(StateMachine state) {
         WaitForKey("subject/session confirmation", 
-            "Running " + manager.GetSetting("participantCode") + " in session " 
-            + (int)manager.GetSetting("session") + " of " + manager.GetSetting("experimentName") 
+            "Running " + Config.participantCode + " in session " 
+            + Config.session + " of " + Config.experimentName 
             + ".\nPress Y to continue, N to quit.", 
             (KeyAction)QuitOrContinue);
     }

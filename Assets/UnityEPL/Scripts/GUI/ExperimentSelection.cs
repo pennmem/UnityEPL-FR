@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 /// <summary>
@@ -19,10 +20,10 @@ public class ExperimentSelection : MonoBehaviour
 
         UnityEngine.UI.Dropdown dropdown = GetComponent<UnityEngine.UI.Dropdown>();
 
-        List<string> experiments = manager.GetSetting("availableExperiments");
+        string[] experiments = Config.availableExperiments;
 
         dropdown.AddOptions(new List<string>(new string[] {"Select Task..."}));
-        dropdown.AddOptions(experiments);
+        dropdown.AddOptions(Config.availableExperiments.ToList());
         SetExperiment();
     }
 

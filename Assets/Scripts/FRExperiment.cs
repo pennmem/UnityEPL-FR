@@ -15,8 +15,8 @@ public class FRExperiment : ExperimentBase {
 
   public FRExperiment(InterfaceManager _manager) : base(_manager) {
     // Repetition specification:
-    int[] repeats = manager.GetSetting("wordRepeats");
-    int[] counts = manager.GetSetting("wordCounts");
+    int[] repeats = Config.wordRepeats;
+    int[] counts = Config.wordCounts;
 
     if(repeats.Length != counts.Length) {
       throw new Exception("Word Repeats and Counts not aligned");
@@ -109,21 +109,21 @@ public class FRExperiment : ExperimentBase {
   //////////
 
   protected void PauseBeforeRecall(StateMachine state) {
-    int[] limits = manager.GetSetting("recallDelay");
+    int[] limits = Config.recallDelay;
     int interval = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
     state.IncrementState();
     WaitForTime(interval);
   }
 
   protected void EncodingDelay(StateMachine state) {
-    int[] limits = manager.GetSetting("stimulusInterval"); 
+    int[] limits = Config.stimulusInterval; 
     int interval = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
     state.IncrementState();
     WaitForTime(interval);
   }
 
   protected void Rest(StateMachine state) {
-    int duration = (int)manager.GetSetting("restDuration");
+    int duration = (int)Config.restDuration;
     state.IncrementState();
     manager.Do(new EventBase<string, string>(manager.ShowText, "orientation stimulus", "+"));
     ReportEvent("rest", null);
@@ -169,7 +169,7 @@ public class FRExperiment : ExperimentBase {
     if(state.CurrentSession<FRSession>().NextList()) {
       state.IncrementState();
 
-      if(state.CurrentSession<FRSession>().GetListIndex() >= manager.GetSetting("practiceLists")) {
+      if(state.CurrentSession<FRSession>().GetListIndex() >= Config.practiceLists) {
         state.PopTimeline();
       }
     }
@@ -201,7 +201,7 @@ public class FRExperiment : ExperimentBase {
 
   protected void NextListPrompt(StateMachine state) {
     // FIXME: awkward handling of practice
-    int list = (int)state.CurrentSession<FRSession>().GetListIndex() + 1 - manager.GetSetting("practiceLists");
+    int list = (int)state.CurrentSession<FRSession>().GetListIndex() + 1 - Config.practiceLists;
     WaitForKey("pause before list", 
                String.Format("Press any key for trial {0}.", list),
                AnyKey);
@@ -317,12 +317,12 @@ public class FRExperiment : ExperimentBase {
     // Parameters retrieved from experiment config, given default
     // value if null.
     // Numbers of list types:
-    int practice_lists = manager.GetSetting("practiceLists");
-    int pre_no_stim_lists = manager.GetSetting("preNoStimLists");
-    int encoding_only_lists = manager.GetSetting("encodingOnlyLists");
-    int retrieval_only_lists = manager.GetSetting("retrievalOnlyLists");
-    int encoding_and_retrieval_lists = manager.GetSetting("encodingAndRetrievalLists");
-    int no_stim_lists = manager.GetSetting("noStimLists");
+    int practice_lists = Config.practiceLists;
+    int pre_no_stim_lists = Config.preNoStimLists;
+    int encoding_only_lists = Config.encodingOnlyLists;
+    int retrieval_only_lists = Config.retrievalOnlyLists;
+    int encoding_and_retrieval_lists = Config.encodingAndRetrievalLists;
+    int no_stim_lists = Config.noStimLists;
     
     RandomSubset subset_gen = new RandomSubset(source_words);
 

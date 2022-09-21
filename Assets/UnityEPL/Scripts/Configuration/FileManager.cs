@@ -32,7 +32,7 @@ public class FileManager {
         string experiment;
         
         try {
-            experiment = manager.GetSetting("experimentName");
+            experiment = Config.experimentName;
         }
         catch(MissingFieldException) {
             ErrorNotification.Notify(new Exception("No experiment selected"));
@@ -41,7 +41,7 @@ public class FileManager {
 
         string dir = System.IO.Path.Combine(root, "data", experiment);
         try {
-            return manager.GetSetting("dataPath");
+            return Config.dataPath;
         } catch {
             return  dir;
         }
@@ -57,7 +57,7 @@ public class FileManager {
         string participant;
 
         try{
-            participant = manager.GetSetting("participantCode");
+            participant = Config.participantCode;
         }
         catch(MissingFieldException) {
             ErrorNotification.Notify(new Exception("No participant selected"));
@@ -77,7 +77,7 @@ public class FileManager {
     public string SessionPath() {
         string session;
         try{
-            session = manager.GetSetting("session").ToString();
+            session = Config.session.ToString();
         }
         catch(MissingFieldException) {
             return null;
@@ -89,14 +89,14 @@ public class FileManager {
     }
 
     public bool isValidParticipant(string code) {
-        if((bool)manager.GetSetting("isTest")) {
+        if(Config.isTest) {
             return true;
         }
 
         string experiment, prefix;
         try{
-            experiment = manager.GetSetting("experimentName");
-            prefix = manager.GetSetting("prefix");
+            experiment = Config.experimentName;
+            prefix = Config.prefix;
         }
         catch(MissingFieldException) {
             return false;
@@ -113,7 +113,7 @@ public class FileManager {
 
     public string GetWordList() {
         string root = ExperimentRoot();
-        return System.IO.Path.Combine(root, manager.GetSetting("wordpool"));
+        return System.IO.Path.Combine(root, Config.wordpool);
     }
 
     public void CreateSession() {

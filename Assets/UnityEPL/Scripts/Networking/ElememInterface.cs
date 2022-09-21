@@ -147,7 +147,7 @@ public class ElememInterface : IHostPC
         elemem = new TcpClient(); 
 
         try {
-            IAsyncResult result = elemem.BeginConnect((string)im.GetSetting("ip"), (int)im.GetSetting("port"), null, null);
+            IAsyncResult result = elemem.BeginConnect(Config.elememServerIP, Config.elememServerPort, null, null);
             result.AsyncWaitHandle.WaitOne(messageTimeout);
             elemem.EndConnect(result);
         }
@@ -163,10 +163,10 @@ public class ElememInterface : IHostPC
                     "CONNECTED_OK", messageTimeout);
 
         Dictionary<string, object> configDict = new Dictionary<string, object>();
-        configDict.Add("stim_mode", (string)im.GetSetting("stimMode"));
-        configDict.Add("experiment", (string)im.GetSetting("experimentName"));
-        configDict.Add("subject", (string)im.GetSetting("participantCode"));
-        configDict.Add("session", (int)im.GetSetting("session"));
+        configDict.Add("stim_mode", Config.stimMode);
+        configDict.Add("experiment", Config.experimentName);
+        configDict.Add("subject", Config.participantCode);
+        configDict.Add("session", Config.session);
         SendAndWait("CONFIGURE", configDict,
                     "CONFIGURE_OK", messageTimeout);
 
@@ -174,7 +174,7 @@ public class ElememInterface : IHostPC
         DoLatencyCheck();
 
         // start heartbeats
-        int interval = (int)im.GetSetting("heartbeatInterval");
+        int interval = Config.heartbeatInterval;
         DoRepeating(new EventBase(Heartbeat), -1, 0, interval);
 
         SendMessage("READY", new Dictionary<string, object>());

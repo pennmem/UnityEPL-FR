@@ -154,7 +154,7 @@ public class InterfaceManager : MonoBehaviour
                 exps.Add(Path.GetFileNameWithoutExtension(configs[i]));
                 j++;
         }
-        ChangeSetting("availableExperiments", exps);
+        ChangeSetting("availableExperiments", exps.ToArray());
 
 
         // Syncbox interface

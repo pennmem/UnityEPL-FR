@@ -18,7 +18,7 @@ public class RamulatorWrapper : IHostPC {
     } 
 
     public override void Connect() {
-        manager.ramulator.StartCoroutine(manager.ramulator.BeginNewSession(manager.GetSetting("session")));
+        manager.ramulator.StartCoroutine(manager.ramulator.BeginNewSession(Config.session));
         // CoroutineToEvent.StartCoroutine(manager.ramulator.BeginNewSession(manager.GetSetting("session")), manager);
     }
 
@@ -81,9 +81,9 @@ public class RamulatorInterface : MonoBehaviour
 
         //SendSessionEvent//////////////////////////////////////////////////////////////////////
         System.Collections.Generic.Dictionary<string, object> sessionData = new Dictionary<string, object>();
-        sessionData.Add("name", manager.GetSetting("experimentName"));
+        sessionData.Add("name", Config.experimentName);
         sessionData.Add("version", Application.version);
-        sessionData.Add("subject", manager.GetSetting("participantCode"));
+        sessionData.Add("subject", Config.participantCode);
         sessionData.Add("session_number", sessionNumber.ToString());
         DataPoint sessionDataPoint = new DataPoint("SESSION", DataReporter.TimeStamp(), sessionData);
         SendMessageToRamulator(sessionDataPoint.ToJSON());

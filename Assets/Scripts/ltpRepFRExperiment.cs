@@ -84,11 +84,9 @@ public class LtpRepFRExperiment : RepFRExperiment {
 
     ReportEvent("start trial", data);
 
-    var restLists = manager.GetSetting("restLists");
-
     // check if this list exists in the configuration rest list
     // if(state.currentSession.GetList().restList) {
-    if(Array.IndexOf(manager.GetSetting("restLists"), state.CurrentSession<RepFRSession>().GetListIndex()) != -1) {
+    if(Array.IndexOf(Config.restLists, state.CurrentSession<RepFRSession>().GetListIndex()) != -1) {
       Do(new EventBase<StateMachine>(WaitForResearcher, state));
     } 
     else {
