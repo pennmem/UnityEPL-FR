@@ -126,7 +126,7 @@ public static partial class Config {
         #if !UNITY_WEBGL // System.IO
             GetSystemConfig();
         #else // UNITY_WEBGL
-            var ucr = new UnityCoroutineRunner();
+            var ucr = UnityCoroutineRunner.Generate();
             ucr.RunCoroutine(SetupOnlineSystemConfig());
         #endif // UNITY_WEBGL
     }
@@ -137,7 +137,7 @@ public static partial class Config {
         #if !UNITY_WEBGL // System.IO
             GetExperimentConfig();
         #else // UNITY_WEBGL
-            var ucr = new UnityCoroutineRunner();
+            var ucr = UnityCoroutineRunner.Generate();
             ucr.RunCoroutine(SetupOnlineExperimentConfig());
         #endif // UNITY_WEBGL
     }
