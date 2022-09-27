@@ -66,10 +66,8 @@ public class LaunchExperiment : MonoBehaviour
             return;
         }
 
-        int sessionNumber = ParticipantSelection.nextSessionNumber;
-
-        manager.ChangeSetting("participantCode", participantNameInput.text);
-        manager.ChangeSetting("session", sessionNumber);
+        Config.participantCode = participantNameInput.text;
+        Config.session = ParticipantSelection.nextSessionNumber;
 
         launchButton.SetActive(false);
         loadingButton.SetActive(true);

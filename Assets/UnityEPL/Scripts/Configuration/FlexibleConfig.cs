@@ -16,22 +16,16 @@ public static partial class Config {
 
     // Private Internal Variables
     private const string SYSTEM_CONFIG_NAME = "config.json";
-
-    private static string configPath = "CONFIG_PATH_NOT_SET";
     private static ConcurrentDictionary<string, object> systemConfig = null;
     private static ConcurrentDictionary<string, object> experimentConfig = null;
-    private static string onlineSystemConfigText = null;
-    private static string onlineExperimentConfigText = null;
+    private static string configPath = "CONFIG_PATH_NOT_SET";
 
     // Public Internal Variables
     public static string experimentConfigName = null;
     public static string elememStimMode = "none";
 
     // System Settings
-    public static string niclServerIP {
-        get { return Config.GetSetting<string>("niclServerIP"); }
-        set { Config.SetSetting("niclServerIP", value); }
-    }
+    public static string niclServerIP { get { return Config.GetSetting<string>("niclServerIP"); } }
     public static int niclServerPort { get { return Config.GetSetting<int>("niclServerPort"); } }
     public static string elememServerIP { get { return Config.GetSetting<string>("elememServerIP"); } }
     public static int elememServerPort { get { return Config.GetSetting<int>("elememServerPort"); } }
@@ -51,64 +45,56 @@ public static partial class Config {
     //public static bool skipNewEfrKeypressCheck { get { return (bool)Config.GetSetting("skipNewEfrKeypressCheck"); } }
     //public static bool skipNewEfrKeypressPractice { get { return (bool)Config.GetSetting("skipNewEfrKeypressPractice"); } }
 
-    // Game Logic
-    //public static bool efrEnabled { get { return (bool)Config.GetSetting("efrEnabled"); } }
-    //public static bool ecrEnabled { get { return (bool)Config.GetSetting("ecrEnabled"); } }
-    //public static bool twoBtnEfrEnabled { get { return (bool)Config.GetSetting("twoBtnEfrEnabled"); } }
-    //public static bool twoBtnEcrEnabled { get { return (bool)Config.GetSetting("twoBtnEcrEnabled"); } }
-    //public static bool counterBalanceCorrectIncorrectButton { get { return (bool)Config.GetSetting("counterBalanceCorrectIncorrectButton"); } }
+    // Local variables
+    public static string participantCode {
+        get { return Config.GetSetting<string>("participantCode"); }
+        set { Config.SetSetting("participantCode", value); }
+    }
+    public static int session {
+        get { return Config.GetSetting<int>("session"); }
+        set { Config.SetSetting("session", value); }
+    }
+    public static string[] availableExperiments
+    {
+        get { return Config.GetSetting<string[]>("availableExperiments"); }
+        set { Config.SetSetting("availableExperiments", value); }
+    }
 
-    //public static bool temporallySmoothedTurning { get { return (bool)Config.GetSetting("temporallySmoothedTurning"); } }
-    //public static bool sinSmoothedTurning { get { return (bool)Config.GetSetting("sinSmoothedTurning"); } }
-    //public static bool cubicSmoothedTurning { get { return (bool)Config.GetSetting("cubicSmoothedTurning"); } }
+    // InterfaceManager.cs
+    public static bool isTest { get { return Config.GetSetting<bool>("isTest"); } }
+    public static int? eventsPerFrame { get { return Config.GetNullableSetting<int>("eventsPerFrame"); } }
+    public static int vSync { get { return Config.GetSetting<int>("vSync"); } }
+    public static int frameRate { get { return Config.GetSetting<int>("frameRate"); } }
 
-    //public static bool singleStickController { get { return (bool)Config.GetSetting("singleStickController"); } }
+    public static string experimentScene { get { return Config.GetSetting<string>("experimentScene"); } }
+    public static bool elemem { get { return Config.GetSetting<bool>("elemem"); } }
+    public static bool ramulator { get { return Config.GetSetting<bool>("ramulator"); } }
 
-    // Constants
-    //public static int trialsPerSession
-    //{
-    //    get {
-    //        if (lessTrials) return 2;
-    //        else return (int)Config.GetSetting("trialsPerSession");
-    //    }
-    //}
-    //public static int trialsPerSessionSingleTownLearning
-    //{
-    //    get
-    //    {
-    //        if (lessTrials) return 2;
-    //        else return (int)Config.GetSetting("trialsPerSessionSingleTownLearning");
-    //    }
-    //}
-    //public static int trialsPerSessionDoubleTownLearning
-    //{
-    //    get
-    //    {
-    //        if (lessTrials) return 1;
-    //        else return (int)Config.GetSetting("trialsPerSessionDoubleTownLearning");
-    //    }
-    //}
-    //public static int deliveriesPerTrial
-    //{
-    //    get
-    //    {
-    //        if (lessDeliveries) return 3;
-    //        else return (int)Config.GetSetting("deliveriesPerTrial");
-    //    }
-    //}
-    //public static int deliveriesPerPracticeTrial
-    //{
-    //    get
-    //    {
-    //        if (lessDeliveries) return 3;
-    //        else return (int)Config.GetSetting("deliveriesPerPracticeTrial");
-    //    }
-    //}
-    //public static int newEfrKeypressPractices { get { return (int)Config.GetSetting("newEfrKeypressPractices"); } }
+    public static string experimentClass { get { return Config.GetSetting<string>("experimentClass"); } }
+    public static string launcherScene { get { return Config.GetSetting<string>("launcherScene"); } }
+    public static string video { get { return Config.GetSetting<string>("video"); } }
+    public static string experimentName { get { return Config.GetSetting<string>("experimentName"); } }
+
+    // FileManager.cs
+    public static string dataPath { get { return Config.GetSetting<string>("dataPath"); } }
+    public static string wordpool { get { return Config.GetSetting<string>("wordpool"); } }
+    public static string prefix { get { return Config.GetSetting<string>("prefix"); } }
+
+    // ExperimentBase.cs
+    public static int micTestDuration { get { return Config.GetSetting<int>("micTestDuration"); } }
+    public static int distractorDuration { get { return Config.GetSetting<int>("distractorDuration"); } }
+    public static int[] orientationDuration { get { return Config.GetSetting<int[]>("orientationDuration"); } }
+    public static int recStimulusInterval { get { return Config.GetSetting<int>("recStimulusInterval"); } }
+    public static int stimulusDuration { get { return Config.GetSetting<int>("stimulusDuration"); } }
+    public static int recallDuration { get { return Config.GetSetting<int>("recallDuration"); } }
+    public static int finalRecallDuration { get { return Config.GetSetting<int>("finalRecallDuration"); } }
+
+    // ElememInterface.cs
+    public static string stimMode { get { return Config.GetSetting<string>("stimMode"); } }
+    public static int heartbeatInterval { get { return Config.GetSetting<int>("heartbeatInterval"); } }
 
     // Functions
-    public static void SaveConfigs(ScriptedEventReporter scriptedEventReporter, string path)
-    {
+    public static void SaveConfigs(ScriptedEventReporter scriptedEventReporter, string path) {
         if (experimentConfig != null)
         {
             if (scriptedEventReporter != null)
@@ -128,58 +114,65 @@ public static partial class Config {
         }
     }
 
-#if !UNITY_WEBGL // System.IO
-    public static void SetupConfigPath(string configPath)
-    {
-        Config.configPath = configPath;
-        GetExperimentConfig();
-        GetSystemConfig();
-    }
-#else // UNITY_WEBGL
-    public static IEnumerator SetupOnlineConfigs()
-    {
-        yield return GetOnlineConfig();
+    public static bool IsExperimentConfigSetup() {
+        return experimentConfigName != null;
     }
 
-    // TODO: JPB: Refactor this to be of the singleton form (likely needs to use the new threading system)
-    public static IEnumerator GetOnlineConfig()
-    {
-        Debug.Log("setting web request");
-        string systemConfigPath = System.IO.Path.Combine(Application.streamingAssetsPath, "config.json");
+    // This has to be called before SetupExperimentConfig
+    public static void SetupSystemConfig(string configPath) {
+        systemConfig = null;
+        Config.configPath = configPath;
+
+        #if !UNITY_WEBGL // System.IO
+            GetSystemConfig();
+        #else // UNITY_WEBGL
+            var ucr = new UnityCoroutineRunner();
+            ucr.RunCoroutine(SetupOnlineSystemConfig());
+        #endif // UNITY_WEBGL
+    }
+
+    public static void SetupExperimentConfig() {
+        experimentConfig = null;
+
+        #if !UNITY_WEBGL // System.IO
+            GetExperimentConfig();
+        #else // UNITY_WEBGL
+            var ucr = new UnityCoroutineRunner();
+            ucr.RunCoroutine(SetupOnlineExperimentConfig());
+        #endif // UNITY_WEBGL
+    }
+
+#if UNITY_WEBGL // System.IO
+    private static IEnumerator SetupOnlineSystemConfig() {
+        string systemConfigPath = System.IO.Path.Combine(configPath, SYSTEM_CONFIG_NAME);
         UnityWebRequest systemWWW = UnityWebRequest.Get(systemConfigPath);
         yield return systemWWW.SendWebRequest();
 
-        if (systemWWW.result != UnityWebRequest.Result.Success)
-        {
+        if (systemWWW.result != UnityWebRequest.Result.Success) {
             Debug.Log("Network error " + systemWWW.error);
-        }
-        else
-        {
-            onlineSystemConfigText = systemWWW.downloadHandler.text;
+        } else {
+            var onlineSystemConfigText = systemWWW.downloadHandler.text;
             Debug.Log("Online System Config fetched!!");
             Debug.Log(onlineSystemConfigText);
+            systemConfig = new ConcurrentDictionary<string, dynamic>(FlexibleConfig.LoadFromText(onlineSystemConfigText));
         }
+    }
 
-        string experimentConfigPath = System.IO.Path.Combine(Application.streamingAssetsPath, "CourierOnline.json");
+    private static IEnumerator SetupOnlineExperimentConfig() {
+        string experimentConfigPath = System.IO.Path.Combine(configPath, experimentConfigName);
         UnityWebRequest experimentWWW = UnityWebRequest.Get(experimentConfigPath);
         yield return experimentWWW.SendWebRequest();
 
-        if (experimentWWW.result != UnityWebRequest.Result.Success)
-        {
+        if (experimentWWW.result != UnityWebRequest.Result.Success){
             Debug.Log("Network error " + experimentWWW.error);
-        }
-        else
-        {
-            onlineExperimentConfigText = experimentWWW.downloadHandler.text;
+        } else {
+            var onlineExperimentConfigText = experimentWWW.downloadHandler.text;
             Debug.Log("Online Experiment Config fetched!!");
-            Debug.Log(Config.onlineExperimentConfigText);
+            Debug.Log(onlineExperimentConfigText);
+            experimentConfig = new ConcurrentDictionary<string, dynamic>(FlexibleConfig.LoadFromText(onlineExperimentConfigText));
         }
     }
-#endif // !UNITY_WEBGL
-
-    private static bool IsExperimentConfigSetup() {
-        return experimentConfigName != null;
-    }
+#endif // UNITY_WEBGL
 
     private static Nullable<T> GetNullableSetting<T>(string setting) where T: struct{
         object value;
@@ -197,9 +190,6 @@ public static partial class Config {
         return null;
     }
 
-    // TODO: JPB: (Hokua) Should this function be templated? What are the pros and cons?
-    //            Note: It could also be a "dynamic" type, but WebGL doesn't support it (so we can't use dynamic)
-    //            Should it be a nullable type and remove the Get<T> function? (hint: Look up the ?? operator)
     private static T GetSetting<T>(string setting)
     {
         object value;
@@ -214,7 +204,7 @@ public static partial class Config {
         if (systemConfig.TryGetValue(setting, out value))
             return (T) value;
 
-        string expConfigNotLoaded = IsExperimentConfigSetup() ? "Note: Experiment config not loaded yet." : "";
+        string expConfigNotLoaded = IsExperimentConfigSetup() ? "" : "\nNote: Experiment config not loaded yet.";
         throw new MissingFieldException("Missing Config Setting " + setting + "." + expConfigNotLoaded);
     }
 
@@ -242,12 +232,12 @@ public static partial class Config {
             // Setup config file
             #if !UNITY_WEBGL // System.IO
                 string text = File.ReadAllText(Path.Combine(configPath, SYSTEM_CONFIG_NAME));
-                systemConfig = FlexibleConfig.LoadFromText(text);
+                systemConfig = new ConcurrentDictionary<string, dynamic>(FlexibleConfig.LoadFromText(text));
             #else
                 if (onlineSystemConfigText == null)
                     Debug.Log("Missing config from web");
                 else
-                    systemConfig = FlexibleConfig.LoadFromText(onlineSystemConfigText);
+                    systemConfig = new ConcurrentDictionary<string, dynamic>(FlexibleConfig.LoadFromText(onlineSystemConfigText));
             #endif
         }
         return (IDictionary<string, object>)systemConfig;
@@ -260,12 +250,12 @@ public static partial class Config {
             // Setup config file
             #if !UNITY_WEBGL // System.IO
                 string text = File.ReadAllText(Path.Combine(configPath, experimentConfigName + ".json"));
-                experimentConfig = FlexibleConfig.LoadFromText(text);
+                experimentConfig = new ConcurrentDictionary<string, dynamic>(FlexibleConfig.LoadFromText(text));
             #else
                 if (onlineExperimentConfigText == null)
                     Debug.Log("Missing config from web");
                 else
-                    experimentConfig = FlexibleConfig.LoadFromText(onlineExperimentConfigText);
+                    experimentConfig = new ConcurrentDictionary<string, dynamic>(FlexibleConfig.LoadFromText(onlineExperimentConfigText));
             #endif
         }
         return (IDictionary<string, object>)experimentConfig;
@@ -273,14 +263,13 @@ public static partial class Config {
 }
 
 
-
 public static class FlexibleConfig {
-    public static dynamic LoadFromText(string json) {
+    public static IDictionary<string, object> LoadFromText(string json) {
         JObject cfg = JObject.Parse(json);
         return CastToStatic(cfg);
     }
 
-    public static void WriteToText(dynamic data, string filename) {
+    public static void WriteToText(object data, string filename) {
     JsonSerializer serializer = new JsonSerializer();
 
     using (StreamWriter sw = new StreamWriter(filename))
@@ -290,12 +279,12 @@ public static class FlexibleConfig {
       }
     }
 
-    private static dynamic CastToStatic(JObject cfg) {
+    public static IDictionary<string, object> CastToStatic(JObject cfg) {
         // casts a JObject consisting of simple types (int, bool, string,
         // float, and single dimensional arrays) to a C# expando object, obviating
         // the need for casts to work in C# native types
 
-        dynamic settings = new ExpandoObject();
+        var settings = new ExpandoObject();  // dynamic
 
         foreach(JProperty prop in cfg.Properties()) {
             // convert from JObject types to .NET internal types
@@ -319,39 +308,38 @@ public static class FlexibleConfig {
 
                 Type cType = JTypeConversion((int)jType);
                 if(cType  == typeof(string)) {
-                    ((IDictionary<string, dynamic>)settings).Add(prop.Name, prop.Value.ToObject<string[]>());
+                    ((IDictionary<string, object>)settings).Add(prop.Name, prop.Value.ToObject<string[]>());
                 } 
                 else if(cType == typeof(int)) {
-                    ((IDictionary<string, dynamic>)settings).Add(prop.Name, prop.Value.ToObject<int[]>());
+                    ((IDictionary<string, object>)settings).Add(prop.Name, prop.Value.ToObject<int[]>());
                 }
                 else if(cType == typeof(float)) {
-                    ((IDictionary<string, dynamic>)settings).Add(prop.Name, prop.Value.ToObject<float[]>());
+                    ((IDictionary<string, object>)settings).Add(prop.Name, prop.Value.ToObject<float[]>());
                 }
                 else if(cType == typeof(bool)) {
-                    ((IDictionary<string, dynamic>)settings).Add(prop.Name, prop.Value.ToObject<bool[]>());
+                    ((IDictionary<string, object>)settings).Add(prop.Name, prop.Value.ToObject<bool[]>());
                 }
             }
             else {
                 Type cType = JTypeConversion((int)prop.Value.Type);
                 if(cType == typeof(string)) {
-                    ((IDictionary<string, dynamic>)settings).Add(prop.Name, prop.Value.ToObject<string>());
+                    ((IDictionary<string, object>)settings).Add(prop.Name, prop.Value.ToObject<string>());
                 }
                 else if(cType == typeof(int)) {
-                    ((IDictionary<string, dynamic>)settings).Add(prop.Name, prop.Value.ToObject<int>());
+                    ((IDictionary<string, object>)settings).Add(prop.Name, prop.Value.ToObject<int>());
                 }
                 else if(cType == typeof(float)) {
-                    ((IDictionary<string, dynamic>)settings).Add(prop.Name, prop.Value.ToObject<float>());
+                    ((IDictionary<string, object>)settings).Add(prop.Name, prop.Value.ToObject<float>());
                 }
                 else if(cType == typeof(bool)) {
-                    ((IDictionary<string, dynamic>)settings).Add(prop.Name, prop.Value.ToObject<bool>());
+                    ((IDictionary<string, object>)settings).Add(prop.Name, prop.Value.ToObject<bool>());
                 }
             }
         }
-
-        return settings;
+        return (IDictionary<string, object>)settings;
     }
 
-    private static Type JTypeConversion(int t) {
+    public static Type JTypeConversion(int t) {
         switch(t) {
             case 6:
                 return typeof(int);
@@ -365,4 +353,103 @@ public static class FlexibleConfig {
                 throw new Exception("Unsupported Type");
         }
     }
-}   
+}
+
+// This is a dynamic version of the FlexibleConfig class
+// This cannot be used right now because WebGL does not support the dynamic keyword
+// The moment it does, this version of the class should be used instead of the one above
+// Other code will need to be restructured when this is used
+// Make sure it stays thread safe though
+
+//public static class FlexibleConfig {
+//    public static dynamic LoadFromText(string json) {
+//        JObject cfg = JObject.Parse(json);
+//        return CastToStatic(cfg);
+//    }
+
+//    public static void WriteToText(dynamic data, string filename) {
+//    JsonSerializer serializer = new JsonSerializer();
+
+//    using (StreamWriter sw = new StreamWriter(filename))
+//      using (JsonWriter writer = new JsonTextWriter(sw))
+//      {
+//        serializer.Serialize(writer, data);
+//      }
+//    }
+
+//    private static dynamic CastToStatic(JObject cfg) {
+//        // casts a JObject consisting of simple types (int, bool, string,
+//        // float, and single dimensional arrays) to a C# expando object, obviating
+//        // the need for casts to work in C# native types
+
+//        dynamic settings = new ExpandoObject();
+
+//        foreach(JProperty prop in cfg.Properties()) {
+//            // convert from JObject types to .NET internal types
+//            // and add to dynamic settings object
+//            // if JSON contains arrays, we need to peek at the
+//            // type of the contents to get the right cast, as
+//            // C# doesn't implicitly cast the contents of an
+//            // array when casting the array
+
+//            if(prop.Value is Newtonsoft.Json.Linq.JArray) {
+//                JTokenType jType = JTokenType.None;
+
+//                foreach(JToken child in prop.Value.Children()) {
+//                    if(jType == JTokenType.None) {
+//                        jType = child.Type;
+//                    }
+//                    else if (jType != child.Type) {
+//                        throw new Exception("Mixed type arrays not supported");
+//                    }
+//                }
+
+//                Type cType = JTypeConversion((int)jType);
+//                if(cType  == typeof(string)) {
+//                    ((IDictionary<string, dynamic>)settings).Add(prop.Name, prop.Value.ToObject<string[]>());
+//                }
+//                else if(cType == typeof(int)) {
+//                    ((IDictionary<string, dynamic>)settings).Add(prop.Name, prop.Value.ToObject<int[]>());
+//                }
+//                else if(cType == typeof(float)) {
+//                    ((IDictionary<string, dynamic>)settings).Add(prop.Name, prop.Value.ToObject<float[]>());
+//                }
+//                else if(cType == typeof(bool)) {
+//                    ((IDictionary<string, dynamic>)settings).Add(prop.Name, prop.Value.ToObject<bool[]>());
+//                }
+//            }
+//            else {
+//                Type cType = JTypeConversion((int)prop.Value.Type);
+//                if(cType == typeof(string)) {
+//                    ((IDictionary<string, dynamic>)settings).Add(prop.Name, prop.Value.ToObject<string>());
+//                }
+//                else if(cType == typeof(int)) {
+//                    ((IDictionary<string, dynamic>)settings).Add(prop.Name, prop.Value.ToObject<int>());
+//                }
+//                else if(cType == typeof(float)) {
+//                    ((IDictionary<string, dynamic>)settings).Add(prop.Name, prop.Value.ToObject<float>());
+//                }
+//                else if(cType == typeof(bool)) {
+//                    ((IDictionary<string, dynamic>)settings).Add(prop.Name, prop.Value.ToObject<bool>());
+//                }
+//            }
+//        }
+
+//        return settings;
+//    }
+
+//    private static Type JTypeConversion(int t) {
+//        switch(t) {
+//            case 6:
+//                return typeof(int);
+//            case 7:
+//                return typeof(float);
+//            case 8:
+//                return typeof(string);
+//            case 9:
+//                return typeof(bool);
+//            default:
+//                throw new Exception("Unsupported Type");
+//        }
+//    }
+//}

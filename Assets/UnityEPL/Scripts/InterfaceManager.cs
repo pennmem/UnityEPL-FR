@@ -64,8 +64,6 @@ public class InterfaceManager : MonoBehaviour
 
     // system configurations, generated on the fly by
     // FlexibleConfig
-    public ConcurrentDictionary<string, dynamic> systemConfig = null;
-    public ConcurrentDictionary<string, dynamic> experimentConfig = null;
     private ExperimentBase exp;
     public InputHandler inputHandler;
     public FileManager fileManager;
@@ -131,13 +129,10 @@ public class InterfaceManager : MonoBehaviour
         });
 
         #if !UNITY_WEBGL // System.IO
-            Config.SetupConfigPath(fileManager.ConfigPath());
+            Config.SetupSystemConfig(fileManager.ConfigPath());
         #else // !UNITY_WEBGL
-            Config.SetupOnlineConfigs();
+            Config.SetupSystemConfig(Application.streamingAssetsPath);
         #endif // !UNITY_WEBGL
-
-        string text = System.IO.File.ReadAllText(System.IO.Path.Combine(fileManager.ConfigPath(), SYSTEM_CONFIG));
-        systemConfig = new ConcurrentDictionary<string, dynamic>(FlexibleConfig.LoadFromText(text));
 
         // Get all configuration files
         string configPath = fileManager.ConfigPath();
@@ -154,8 +149,7 @@ public class InterfaceManager : MonoBehaviour
                 exps.Add(Path.GetFileNameWithoutExtension(configs[i]));
                 j++;
         }
-        ChangeSetting("availableExperiments", exps.ToArray());
-
+        Config.availableExperiments = exps.ToArray();
 
         // Syncbox interface
         if(!Config.isTest) {
@@ -243,68 +237,6 @@ public class InterfaceManager : MonoBehaviour
     }
 
     //////////
-    // Function that provides a clean interface for accessing
-    // experiment and system settings. Settings in experiment
-    // override those in system. Attempts to read non-existent
-    // settings return null.
-    //
-    // **** These are the only two InterfaceManager functions  *****
-    // **** that may be called from outside the main Thread.   *****
-    //////////
-
-    //public dynamic GetSetting(string setting) {
-    //    object value = null;
-
-    //    if (experimentConfig != null) {
-    //        if (experimentConfig.TryGetValue(setting, out value)) {
-    //            if (value != null) {
-    //                return value;
-    //            }
-    //        }
-    //    }
-
-    //    if (systemConfig != null) {
-    //        if (systemConfig.TryGetValue(setting, out value)) {
-    //            return value;
-    //        }
-    //    }
-
-    //    throw new MissingFieldException("Missing Setting " + setting + ".");
-    //}
-
-    public void ChangeSetting(string setting, dynamic value) {
-        object existing;
-
-        try {
-            existing = GetSetting(setting);
-        }
-        catch(MissingFieldException) {
-            existing = null;
-        }
-
-        // experiment config overrides system config
-        if(existing == null) {
-            if(experimentConfig == null) {
-                systemConfig.TryAdd(setting, value);
-            }
-            else {
-                experimentConfig.TryAdd(setting, value);
-            }
-
-            return;
-        }
-        else {
-            if(experimentConfig == null) {
-                systemConfig[setting] = value;
-            }
-            else {
-                experimentConfig[setting] = value;
-            }
-            return;
-        }
-    }
-
-    //////////
     // Functions to be called from other
     // scripts through the messaging system
     //////////
@@ -322,7 +254,7 @@ public class InterfaceManager : MonoBehaviour
         // call start function
 
         // Check if settings are loaded
-        if(experimentConfig != null) {
+        if (Config.IsExperimentConfigSetup()) {
 
             Cursor.visible = false;
             Application.runInBackground = true;
@@ -386,8 +318,8 @@ public class InterfaceManager : MonoBehaviour
     }
 
     public void LoadExperimentConfig(string name) {
-        string text = System.IO.File.ReadAllText(System.IO.Path.Combine(fileManager.ConfigPath(), name + ".json"));
-        experimentConfig = new ConcurrentDictionary<string, dynamic>(FlexibleConfig.LoadFromText(text));
+        Config.experimentConfigName = name;
+        Config.SetupExperimentConfig();
     }
 
     public void ShowText(string tag, string text, string color) {
