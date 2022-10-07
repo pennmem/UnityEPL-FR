@@ -170,7 +170,7 @@ public abstract class ExperimentBase : EventLoop {
                     }
                     message = "modify distractor answer";
                 }
-                // submit answer and play tone depending on right or wrong answer 
+                // submit answer and play tone depending on right or wrong answer
                 else if (key == "enter" || key == "return") {
                     int result;
                     int.TryParse(answer, out result);
