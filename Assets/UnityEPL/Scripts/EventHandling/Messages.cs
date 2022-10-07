@@ -63,10 +63,9 @@ public class MessageTreeNode<T> : MessageHandler<T> {
     public override void Do(T msg) {
         // handle passes event to host queue
         // to be invoke'd in its thread
-
         base.Do(new MessageEvent<T>( (arg) => {
             // operator short circuits if not active
-            if( active && (action?.Invoke(this, arg) ?? false)) {
+            if(active && (action?.Invoke(this, arg) ?? false)) {
                 Propagate(arg);
             }
         }, msg));

@@ -13,6 +13,7 @@ public class EventLoop : EventQueue {
 
     ~EventLoop()
     {
+        StopTimers();
         wait.Dispose();
     }
 
