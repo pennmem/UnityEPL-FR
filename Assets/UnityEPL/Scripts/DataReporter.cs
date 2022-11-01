@@ -1,5 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 
 //this superclass implements an interface for retrieving behavioral events from a queue
@@ -11,7 +13,8 @@ public abstract class DataReporter : MonoBehaviour
     private static bool nativePluginRunning = false;
     private static bool startTimeInitialized = false;
 
-    protected System.Collections.Concurrent.ConcurrentQueue<DataPoint> eventQueue = new ConcurrentQueue<DataPoint>();
+    //protected System.Collections.Concurrent.ConcurrentQueue<DataPoint> eventQueue = new ConcurrentQueue<DataPoint>();
+    protected ReporterQueue eventQueue = new ReporterQueue();
 
     private static double OSStartTime;
     private static float unityTimeStartTime;
@@ -122,5 +125,36 @@ public abstract class DataReporter : MonoBehaviour
     public static System.DateTime GetStartTime()
     {
         return realWorldStartTime;
+    }
+
+    // TODO: JPB: This is a hack and should be removed
+    protected class ReporterQueue {
+        private ConcurrentQueue<DataPoint> events;
+        private ElememInterface elememInterface;
+
+        public int Count { get { return events.Count; } }
+
+        public void Enqueue(DataPoint item) {
+            events.Enqueue(item);
+            #if !UNITY_WEBGL
+                if (FRExperimentSettings.GetSettingsByName(UnityEPL.GetExperimentName()).useElemem) {
+                    if (elememInterface == null)
+                        elememInterface = GameObject.Find("ElememInterface").GetComponent<ElememInterface>();
+
+                    string type = item.type.ToUpper();
+                    type = type.Replace(' ', '_');
+
+                    var data = item.dataDict;
+                    if (data == null)
+                        data = new Dictionary<string, object>();
+
+                    elememInterface.SendMessage(type, data);
+                }
+            #endif
+        }
+
+        public bool TryDequeue(out DataPoint result) {
+            return events.TryDequeue(out result);
+        }
     }
 }
