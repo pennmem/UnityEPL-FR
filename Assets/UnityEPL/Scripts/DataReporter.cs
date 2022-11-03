@@ -129,28 +129,29 @@ public abstract class DataReporter : MonoBehaviour
 
     // TODO: JPB: This is a hack and should be removed
     protected class ReporterQueue {
-        private ConcurrentQueue<DataPoint> events;
-        private ElememInterface elememInterface;
+        private ConcurrentQueue<DataPoint> events = new ConcurrentQueue<DataPoint>();
+        private ElememInterface elememInterface = null;
 
         public int Count { get { return events.Count; } }
 
         public void Enqueue(DataPoint item) {
             events.Enqueue(item);
-            #if !UNITY_WEBGL
-                if (FRExperimentSettings.GetSettingsByName(UnityEPL.GetExperimentName()).useElemem) {
-                    if (elememInterface == null)
-                        elememInterface = GameObject.Find("ElememInterface").GetComponent<ElememInterface>();
+            //#if !UNITY_WEBGL
+            //    if (elememInterface == null)
+            //        elememInterface = GameObject.Find("ElememInterface").GetComponent<ElememInterface>();
 
-                    string type = item.type.ToUpper();
-                    type = type.Replace(' ', '_');
+            //    Debug.Log(elememInterface.isEnabled);
+            //    if (elememInterface.isEnabled) {
+            //        string type = item.type.ToUpper();
+            //        type = type.Replace(' ', '_');
 
-                    var data = item.dataDict;
-                    if (data == null)
-                        data = new Dictionary<string, object>();
+            //        var data = item.dataDict;
+            //        if (data == null)
+            //            data = new Dictionary<string, object>();
 
-                    elememInterface.SendMessage(type, data);
-                }
-            #endif
+            //        elememInterface.SendMessage(type, data);
+            //    }
+            //#endif
         }
 
         public bool TryDequeue(out DataPoint result) {

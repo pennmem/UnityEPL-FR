@@ -367,9 +367,14 @@ public class ElememInterface : MonoBehaviour
 
     private ElememInterfaceHelper elememInterfaceHelper = null;
 
+    public bool isDisabled { get; private set; } = true;
+    public bool isEnabled { get; private set; } = false;
+
     // CONNECTED, CONFIGURE, READY, and HEARTBEAT
     public IEnumerator BeginNewSession(int sessionNum, bool disableInterface = false)
     {
+        isEnabled = !disableInterface;
+        isDisabled = disableInterface;
         yield return new WaitForSeconds(1);
         elememInterfaceHelper = new ElememInterfaceHelper(scriptedEventReporter, disableInterface);
         if (!disableInterface)

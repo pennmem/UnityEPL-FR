@@ -164,7 +164,7 @@ public static class FRExperimentSettings
 
         FR5Settings.experimentName = "FR5";
         FR5Settings.version = "5.1";
-        FR5Settings.wordListGenerator = new FRListGenerator(16, 6, 4, 11, 0, 0, 1);
+        FR5Settings.wordListGenerator = new FRListGenerator(16, 6, 4, 16, 0, 0, 1);
         FR5Settings.isCategoryPool = false;
         FR5Settings.numberOfLists = 26;
         FR5Settings.wordsPerList = 12;
