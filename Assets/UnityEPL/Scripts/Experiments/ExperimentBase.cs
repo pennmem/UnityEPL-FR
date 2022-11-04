@@ -133,6 +133,14 @@ public abstract class ExperimentBase : EventLoop {
                                 Config.stimulusDuration);
     }
 
+    // This is used because there is a blocking function (WaitOnKey) inside Distractor
+    // TODO: JPB: Decide if this is needed for all cases
+    protected void DistractorLoop(StateMachine state) {
+        var el = new EventLoop();
+        el.Start();
+        el.Do(new EventBase(() => Distractor(state)));
+    }
+
     protected void Distractor(StateMachine state) {
         var stopWatch = new Stopwatch();
         stopWatch.Start();
