@@ -9,6 +9,7 @@ using UnityEngine;
 using System.Diagnostics;
 using UnityEditor.VersionControl;
 using System.Threading;
+using System.Threading.Tasks;
 
 
 // TODO: it would be great to have a system that can handle the state more implicitly,
@@ -132,10 +133,7 @@ public abstract class ExperimentBase : EventLoop {
                                 Config.stimulusDuration);
     }
 
-
-
-    protected void Distractor(StateMachine state)
-    {
+    protected void Distractor(StateMachine state) {
         var stopWatch = new Stopwatch();
         stopWatch.Start();
 
@@ -152,7 +150,7 @@ public abstract class ExperimentBase : EventLoop {
             manager.Do(new EventBase<string, string>(manager.ShowText, "display distractor problem", problem));
 
             while (true) {
-                var key = inputHandler.WaitOnKey(ref manager).key;
+                var key = inputHandler.WaitOnKey(manager).key;
                 UnityEngine.Debug.Log("Distractor keypress: " + key);
 
                 // enter only numbers

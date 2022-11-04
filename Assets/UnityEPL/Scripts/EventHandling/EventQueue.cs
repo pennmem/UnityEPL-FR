@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Collections.Concurrent;
 using System;
+using System.Threading.Tasks;
+using UnityEngine.UI;
 
 public class EventQueue {
     public ConcurrentQueue<IEventBase> eventQueue;
@@ -41,6 +43,22 @@ public class EventQueue {
     public virtual void DoRepeating(IEventBase thisEvent, int iterations, int delay, int interval) {
         // timers should only be created if running
         DoRepeating(new RepeatingEvent(thisEvent, iterations, delay, interval, this));
+    }
+
+    // Avoid using this if possible
+    public virtual void DoBlocking(IEventBase thisEvent) {
+        // Create a new EventBase (put in event queue)
+        //    that starts a task that invokes the original event
+        // Then wait on that task to finish
+        var task = new Task(() => thisEvent.Invoke());
+        eventQueue.Enqueue(new EventBase(() => task.Start()));
+        task.Wait();
+    }
+
+    // Avoid using this if possible
+    public virtual T DoGet<T>(Task<T> task) {
+        eventQueue.Enqueue(new EventBase(() => task.Start()));
+        return task.Result;
     }
 
     // Process one event in the queue.

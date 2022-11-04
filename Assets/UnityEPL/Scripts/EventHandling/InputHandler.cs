@@ -1,16 +1,19 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Threading;
+using System.Threading.Tasks;
 using NetMQ;
 using UnityEditorInternal;
 using static UnityEditor.ShaderData;
+
+using InputHandlerFunc = System.Func<InputHandler, KeyMsg, bool>;
 
 public class InputHandler : MessageTreeNode<KeyMsg> {
     protected KeyMsg keyMsg;
     protected AutoResetEvent keyMsgWritten = null;
     protected EventLoop waitOnKeyEventLoop = null;
 
-    public InputHandler(EventQueue host, Func<InputHandler, KeyMsg, bool> action) {
+    public InputHandler(EventQueue host, InputHandlerFunc action) {
         this.host = host;
         SetAction(action);
 
@@ -31,8 +34,8 @@ public class InputHandler : MessageTreeNode<KeyMsg> {
     }
 
     // TODO: JPB: Change this to a Do and make it work on other threads
-    //            WaitOnKey needs to change like this too at the same time
-    public virtual void SetAction(Func<InputHandler, KeyMsg, bool> action) {
+    //            WaitOnKey needs to change like this at the same time
+    public virtual void SetAction(InputHandlerFunc action) {
         // should only be run from host's thread
         this.action = (node, msg) => action((InputHandler)node, msg);
     }
@@ -47,25 +50,47 @@ public class InputHandler : MessageTreeNode<KeyMsg> {
         return true;
     }
 
-    // TODO: JPB: Add feature to turn off the other handlers
-    //            I don't want "q" to quit if I'm recording keyboard input
-    public KeyMsg WaitOnKey(ref InterfaceManager im) {
-        // Turn off current handler
-        var priorActiveState = this.active;
-        this.active = false;
+    // There can only be one call to this at a time
+    // TODO: JPB: This can be improved by setting the action of the inputHandler to do nothing
+    //            and then adding the new event as a child. This could then be called multiple times
+    public KeyMsg WaitOnKey(InterfaceManager im, bool turnOffAllHandlers = true) {
+        if (turnOffAllHandlers) {
+            // Set up temporary InputHandler
+            var tempInputHandler = new InputHandler(waitOnKeyEventLoop);
 
-        // Set up temporary InputHandler
-        var tempInputHandler = new InputHandler(waitOnKeyEventLoop);
-        im.inputHandler.RegisterChild(tempInputHandler);
+            // Replace im input handler
+            var priorImInputHandler = im.DoGet(new Task<InputHandler>(() => {
+                return im.inputHandler;
+            }));
+            im.DoBlocking(new EventBase(() => im.inputHandler = tempInputHandler));
 
-        // Wait on key
-        tempInputHandler.keyMsgWritten.WaitOne();
+            // Wait on key
+            tempInputHandler.keyMsgWritten.WaitOne();
 
-        // Teardown
-        im.inputHandler.UnRegisterChild(tempInputHandler);
-        this.active = priorActiveState;
+            // Teardown
+            im.DoBlocking(new EventBase(() => im.inputHandler = priorImInputHandler));
 
-        return tempInputHandler.keyMsg;
+            return tempInputHandler.keyMsg;
+
+        } else {
+            // Turn off current handler
+            var priorActiveState = this.active;
+            this.active = false;
+
+            // Set up temporary InputHandler
+            var tempInputHandler = new InputHandler(waitOnKeyEventLoop);
+            
+            im.DoBlocking(new EventBase(() => im.inputHandler.RegisterChild(tempInputHandler)));
+
+            // Wait on key
+            tempInputHandler.keyMsgWritten.WaitOne();
+
+            // Teardown
+            im.DoBlocking(new EventBase(() => im.inputHandler.UnRegisterChild(tempInputHandler)));
+            this.active = priorActiveState;
+
+            return tempInputHandler.keyMsg;
+        }        
     }
 }
 

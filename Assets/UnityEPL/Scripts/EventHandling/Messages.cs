@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Linq;
+using System.Threading.Tasks;
 
 
 public class MessageEvent<T> : EventBase<T> {
@@ -34,6 +35,10 @@ public class MessageHandler<T> {
     }
     protected void Do(MessageEvent<T> msg) {
         host.Do(msg);
+    }
+
+    public virtual T DoGet<T>(Task<T> task) {
+        return host.DoGet(task);
     }
 }
 
@@ -70,6 +75,8 @@ public class MessageTreeNode<T> : MessageHandler<T> {
             }
         }, msg));
     }
+
+
 
     public virtual void SetAction(Func<MessageTreeNode<T>, T, bool> action) {
         // should only be run from host's thread

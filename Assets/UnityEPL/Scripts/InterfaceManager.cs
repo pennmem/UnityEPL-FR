@@ -5,6 +5,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using UnityEngine;
+using System.Threading.Tasks;
 
 // It is up to objects that are referenced in this class to 
 // have adequate protection levels on all members, as classes
@@ -13,7 +14,7 @@ using UnityEngine;
 
 public class InterfaceManager : MonoBehaviour 
 {
-    private static string quitKey = "Escape"; // escape to quit
+    private static string quitKey = "escape"; // escape to quit
     const string SYSTEM_CONFIG = "config.json";
 
     //////////
@@ -120,12 +121,13 @@ public class InterfaceManager : MonoBehaviour
 
         // configure default key handling to quit experiment
         inputHandler = new InputHandler(mainEvents, (handler, msg) => {
-                if(msg.down && msg.key == quitKey) {
-                    Quit();
-                    handler.active = false;
-                    return false;
-                }
-                return true;
+            UnityEngine.Debug.Log(msg.key + " " + quitKey + " " + msg.down);
+            if(msg.down && msg.key == quitKey) {
+                Quit();
+                handler.active = false;
+                return false;
+            }
+            return true;
         });
 
         #if !UNITY_WEBGL // System.IO
@@ -152,7 +154,7 @@ public class InterfaceManager : MonoBehaviour
         Config.availableExperiments = exps.ToArray();
 
         // Syncbox interface
-        if(!Config.isTest) {
+        if(!Config.isTest && !Config.noSyncbox) {
             syncBox.Init();
         }
 
@@ -441,15 +443,27 @@ public class InterfaceManager : MonoBehaviour
     // Wrappers to re export methods for EventQueue
     //////////
 
-    public  void Do(IEventBase thisEvent) {
+    public void Do(IEventBase thisEvent) {
         mainEvents.Do(thisEvent);
     }
 
-    public  void DoIn(IEventBase thisEvent, int delay) {
+    public void DoIn(IEventBase thisEvent, int delay) {
         mainEvents.DoIn(thisEvent, delay);
     }
 
-    public  void DoRepeating(IEventBase thisEvent, int iterations, int delay, int interval) {
+    public void DoRepeating(IEventBase thisEvent, int iterations, int delay, int interval) {
         mainEvents.DoRepeating(thisEvent, iterations, delay, interval);
+    }
+
+    // Do not use this unless you HAVE to
+    // This will block all things on the callers EventLoop
+    public void DoBlocking(IEventBase thisEvent) {
+        mainEvents.DoBlocking(thisEvent);
+    }
+
+    // Do not use this unless you HAVE to
+    // This will block all things on the callers EventLoop
+    public T DoGet<T>(Task<T> task) {
+        return mainEvents.DoGet(task);
     }
 }
