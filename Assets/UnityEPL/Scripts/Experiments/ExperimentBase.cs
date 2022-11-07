@@ -144,24 +144,28 @@ public abstract class ExperimentBase : EventLoop {
     // ––––––––––––––––––––––––––––––––––––––––––––––––––
     // ––––––––––––––––––––––––––––––––––––––––––––––––––
 
-    Stopwatch stopwatch = new Stopwatch();
-    int[] nums = new int[3] { -1, -1, -1 };
-    string message = "distractor update";
-    string problem = "";    
-    string answer = "";
+    protected class DistractorState {
+        public Stopwatch stopwatch = new Stopwatch();
+        public int[] nums = new int[3] { -1, -1, -1 };
+        public string message = "distractor update";
+        public string problem = "";
+        public string answer = "";
+    }
+    protected DistractorState ds = new DistractorState();
 
-    protected void Distractor2(StateMachine state) {
-        nums = new int[] { InterfaceManager.rnd.Value.Next(1, 10),
+    protected void Distractor(StateMachine state) {
+        ds.nums = new int[] { InterfaceManager.rnd.Value.Next(1, 10),
                            InterfaceManager.rnd.Value.Next(1, 10),
                            InterfaceManager.rnd.Value.Next(1, 10) };
-        message = "distractor update";
-        problem = nums[0].ToString() + " + " + nums[1].ToString() + " + " + nums[2].ToString() + " = ";
-        answer = "";
+        ds.message = "distractor update";
+        ds.problem = ds.nums[0].ToString() + " + " +
+                     ds.nums[1].ToString() + " + " +
+                     ds.nums[2].ToString() + " = ";
+        ds.answer = "";
 
         inputHandler.SetAction(DistractorHandler);
-        // TODO: JPB: DoBlocking?
-        manager.Do(new EventBase<string, string>(manager.ShowText, message, problem + answer));
-        stopwatch.Start();
+        manager.Do(new EventBase<string, string>(manager.ShowText, ds.message, ds.problem + ds.answer));
+        ds.stopwatch.Start();
         inputHandler.active = true;
     }
 
@@ -174,21 +178,21 @@ public abstract class ExperimentBase : EventLoop {
         // Enter only numbers
         if (Regex.IsMatch(key, @"\d$")) {
             key = key[key.Length - 1].ToString(); // Unity gives numbers as Alpha# or Keypad#
-            if (answer.Length < 3) {
-                answer = answer + key;
+            if (ds.answer.Length < 3) {
+                ds.answer += key;
             }
-            message = "modify distractor answer";
+            ds.message = "modify distractor answer";
         }
         // Delete key removes last character from answer
         else if (key == "delete" || key == "backspace") {
-            if (answer != "") {
-                answer = answer.Substring(0, answer.Length - 1);
+            if (ds.answer != "") {
+                ds.answer = ds.answer.Substring(0, ds.answer.Length - 1);
             }
-            message = "modify distractor answer";
+            ds.message = "modify distractor answer";
         }
         // Submit answer
         else if (key == "enter" || key == "return") {
-            bool correct = int.Parse(answer) == nums.Sum();
+            bool correct = int.Parse(ds.answer) == ds.nums.Sum();
 
             // Play tone depending on right or wrong answer
             if (correct) {
@@ -198,95 +202,32 @@ public abstract class ExperimentBase : EventLoop {
             }
 
             // Report results
-            message = "distractor answered";
-            manager.Do(new EventBase<string, string>(manager.ShowText, message, problem + answer));
-            ReportDistractor(message, correct, problem, answer);
+            ds.message = "distractor answered";
+            manager.Do(new EventBase<string, string>(manager.ShowText, ds.message, ds.problem + ds.answer));
+            ReportDistractor(ds.message, correct, ds.problem, ds.answer);
 
             // End distractor or setup next math problem
-            if (stopwatch.ElapsedMilliseconds > Config.distractorDuration) {
-                stopwatch.Reset();
+            if (ds.stopwatch.ElapsedMilliseconds > Config.distractorDuration) {
+                ds.stopwatch.Reset();
                 stateMachine.IncrementState();
                 Do(new EventBase(Run));
                 handler.active = false;
                 return false;
             } else {
-                nums = new int[] { InterfaceManager.rnd.Value.Next(1, 10),
+                ds.nums = new int[] { InterfaceManager.rnd.Value.Next(1, 10),
                                    InterfaceManager.rnd.Value.Next(1, 10),
                                    InterfaceManager.rnd.Value.Next(1, 10) };
-                message = "distractor update";
-                problem = nums[0].ToString() + " + " + nums[1].ToString() + " + " + nums[2].ToString() + " = ";
-                answer = "";
+                ds.message = "distractor update";
+                ds.problem = ds.nums[0].ToString() + " + " +
+                             ds.nums[1].ToString() + " + " +
+                             ds.nums[2].ToString() + " = ";
+                ds.answer = "";
             }
         }
 
         // Update screen
-        manager.Do(new EventBase<string, string>(manager.ShowText, message, problem + answer));
+        manager.Do(new EventBase<string, string>(manager.ShowText, ds.message, ds.problem + ds.answer));
         return true;
-    }
-
-    // ––––––––––––––––––––––––––––––––––––––––––––––––––
-    // ––––––––––––––––––––––––––––––––––––––––––––––––––
-
-    protected void Distractor(StateMachine state) {
-        var stopWatch = new Stopwatch();
-        stopWatch.Start();
-
-        while (stopWatch.ElapsedMilliseconds < Config.distractorDuration) {
-            UnityEngine.Debug.Log("Timing: " + Config.distractorDuration + " " + stopWatch.ElapsedMilliseconds);
-            int[] nums = new int[] { InterfaceManager.rnd.Value.Next(1, 10),
-                                 InterfaceManager.rnd.Value.Next(1, 10),
-                                 InterfaceManager.rnd.Value.Next(1, 10) };
-            string problem = nums[0].ToString() + " + " + nums[1].ToString() + " + " + nums[2].ToString() + " = ";
-            string message = "distractor update";
-            string answer = "";
-            bool correct = false;
-
-            manager.Do(new EventBase<string, string>(manager.ShowText, "display distractor problem", problem));
-
-            while (true) {
-                var key = inputHandler.WaitOnKey(manager).key;
-                UnityEngine.Debug.Log("Distractor keypress: " + key);
-
-                // enter only numbers
-                if (Regex.IsMatch(key, @"\d$")) {
-                    key = key[key.Length - 1].ToString(); // Unity gives numbers as Alpha# or Keypad#
-                    if (answer.Length < 3) {
-                        answer = answer + key;
-                    }
-                    message = "modify distractor answer";
-                }
-                // delete key removes last character from answer
-                else if (key == "delete" || key == "backspace") {
-                    if (answer != "") {
-                        answer = answer.Substring(0, answer.Length - 1);
-                    }
-                    message = "modify distractor answer";
-                }
-                // submit answer and play tone depending on right or wrong answer
-                else if (key == "enter" || key == "return") {
-                    int result;
-                    int.TryParse(answer, out result);
-                    correct = result == nums.Sum();
-
-                    message = "distractor answered";
-                    if (correct) {
-                        manager.Do(new EventBase(manager.lowBeep.Play));
-                    } else {
-                        manager.Do(new EventBase(manager.lowerBeep.Play));
-                    }
-
-                    break;
-                }
-
-                manager.Do(new EventBase<string, string>(manager.ShowText, message, problem + answer));
-            }
-
-            manager.Do(new EventBase<string, string>(manager.ShowText, message, problem + answer));
-            ReportDistractor(message, correct, problem, answer);
-        }
-
-        state.IncrementState();
-        Do(new EventBase(Run));
     }
 
     protected void Orientation(StateMachine state) {

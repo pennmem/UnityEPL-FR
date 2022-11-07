@@ -55,7 +55,7 @@ public class RepFRExperiment : ExperimentBase {
 
     // TODO: reformat
     stateMachine["Run"] = new ExperimentTimeline(new List<Action<StateMachine>> {
-        Distractor2,
+        Distractor,
         FinishExperiment});
         //IntroductionPrompt,
         //IntroductionVideo,
