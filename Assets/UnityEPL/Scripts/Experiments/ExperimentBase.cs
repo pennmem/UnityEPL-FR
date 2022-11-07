@@ -10,6 +10,7 @@ using System.Diagnostics;
 using UnityEditor.VersionControl;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Runtime.Remoting.Messaging;
 
 
 // TODO: it would be great to have a system that can handle the state more implicitly,
@@ -64,7 +65,7 @@ public abstract class ExperimentBase : EventLoop {
 
     protected void IntroductionVideo(StateMachine state) {
         state.IncrementState();
-        manager.Do(new EventBase<string, bool, Action>(manager.ShowVideo, 
+        manager.Do(new EventBase<string, bool, Action>(manager.ShowVideo,
                                                         "introductionVideo", true,
                                                         () => this.Do(new EventBase(Run))));
     }
@@ -74,8 +75,8 @@ public abstract class ExperimentBase : EventLoop {
         SendHostPCMessage("COUNTDOWN", null);
 
         state.IncrementState();
-        manager.Do(new EventBase<string, bool, Action>(manager.ShowVideo, 
-                                                            "countdownVideo", false, 
+        manager.Do(new EventBase<string, bool, Action>(manager.ShowVideo,
+                                                            "countdownVideo", false,
                                                             () => this.Do(new EventBase(Run))));
     }
 
@@ -84,7 +85,7 @@ public abstract class ExperimentBase : EventLoop {
     // is really a hack that lets us get through the mic test unscathed. More time critical
     // applications need a different approach
     protected void RecordTest(StateMachine state) {
-        string wavPath =  System.IO.Path.Combine(manager.fileManager.SessionPath(), "microphone_test_" 
+        string wavPath = System.IO.Path.Combine(manager.fileManager.SessionPath(), "microphone_test_"
                     + DataReporter.TimeStamp().ToString("yyyy-MM-dd_HH_mm_ss") + ".wav");
 
         manager.Do(new EventBase(manager.lowBeep.Play));
@@ -93,18 +94,18 @@ public abstract class ExperimentBase : EventLoop {
 
         state.IncrementState();
         manager.DoIn(new EventBase(() => {
-                        manager.ShowText("microphone test playing", "Playing...", "green");
-                        manager.playback.clip = manager.recorder.StopRecording();
-                        manager.playback.Play(); // can't block manager thread, but could block
-                                                    // experiment to wait on play finishing;
-                                                    // could also subscribe to Unity event, if
-                                                    // there is one
-            }), 
+            manager.ShowText("microphone test playing", "Playing...", "green");
+            manager.playback.clip = manager.recorder.StopRecording();
+            manager.playback.Play(); // can't block manager thread, but could block
+                                     // experiment to wait on play finishing;
+                                     // could also subscribe to Unity event, if
+                                     // there is one
+        }),
             Config.micTestDuration);
 
         DoIn(new EventBase(() => {
             Run();
-        }), Config.micTestDuration*2);
+        }), Config.micTestDuration * 2);
     }
 
     protected void Encoding(WordStim word, int index) {
@@ -123,23 +124,108 @@ public abstract class ExperimentBase : EventLoop {
 
         manager.Do(new EventBase<string, string>(manager.ShowText, "word stimulus", word.word));
 
-        DoIn(new EventBase(() => { 
-                                    CleanSlate();
-                                    ReportEvent("clear word stimulus", new Dictionary<string, object>());
-                                    SendHostPCMessage("ISI", new Dictionary<string, object>() {{"duration", interval}});
+        DoIn(new EventBase(() => {
+            CleanSlate();
+            ReportEvent("clear word stimulus", new Dictionary<string, object>());
+            SendHostPCMessage("ISI", new Dictionary<string, object>() { { "duration", interval } });
 
-                                    DoIn(new EventBase(Run), interval);
-                                }), 
+            DoIn(new EventBase(Run), interval);
+        }),
                                 Config.stimulusDuration);
     }
 
     // This is used because there is a blocking function (WaitOnKey) inside Distractor
-    // TODO: JPB: Decide if this is needed for all cases
     protected void DistractorLoop(StateMachine state) {
         var el = new EventLoop();
         el.Start();
         el.Do(new EventBase(() => Distractor(state)));
     }
+
+    // ––––––––––––––––––––––––––––––––––––––––––––––––––
+    // ––––––––––––––––––––––––––––––––––––––––––––––––––
+
+    Stopwatch stopwatch = new Stopwatch();
+    int[] nums = new int[3] { -1, -1, -1 };
+    string message = "distractor update";
+    string problem = "";    
+    string answer = "";
+
+    protected void Distractor2(StateMachine state) {
+        nums = new int[] { InterfaceManager.rnd.Value.Next(1, 10),
+                           InterfaceManager.rnd.Value.Next(1, 10),
+                           InterfaceManager.rnd.Value.Next(1, 10) };
+        message = "distractor update";
+        problem = nums[0].ToString() + " + " + nums[1].ToString() + " + " + nums[2].ToString() + " = ";
+        answer = "";
+
+        inputHandler.SetAction(DistractorHandler);
+        // TODO: JPB: DoBlocking?
+        manager.Do(new EventBase<string, string>(manager.ShowText, message, problem + answer));
+        stopwatch.Start();
+        inputHandler.active = true;
+    }
+
+    protected bool DistractorHandler(InputHandler handler, KeyMsg msg) {
+        if (msg.down != true) { return true; }
+
+        var key = msg.key;
+        UnityEngine.Debug.Log("Distractor keypress: " + key);
+
+        // Enter only numbers
+        if (Regex.IsMatch(key, @"\d$")) {
+            key = key[key.Length - 1].ToString(); // Unity gives numbers as Alpha# or Keypad#
+            if (answer.Length < 3) {
+                answer = answer + key;
+            }
+            message = "modify distractor answer";
+        }
+        // Delete key removes last character from answer
+        else if (key == "delete" || key == "backspace") {
+            if (answer != "") {
+                answer = answer.Substring(0, answer.Length - 1);
+            }
+            message = "modify distractor answer";
+        }
+        // Submit answer
+        else if (key == "enter" || key == "return") {
+            bool correct = int.Parse(answer) == nums.Sum();
+
+            // Play tone depending on right or wrong answer
+            if (correct) {
+                manager.Do(new EventBase(manager.lowBeep.Play));
+            } else {
+                manager.Do(new EventBase(manager.lowerBeep.Play));
+            }
+
+            // Report results
+            message = "distractor answered";
+            manager.Do(new EventBase<string, string>(manager.ShowText, message, problem + answer));
+            ReportDistractor(message, correct, problem, answer);
+
+            // End distractor or setup next math problem
+            if (stopwatch.ElapsedMilliseconds > Config.distractorDuration) {
+                stopwatch.Reset();
+                stateMachine.IncrementState();
+                Do(new EventBase(Run));
+                handler.active = false;
+                return false;
+            } else {
+                nums = new int[] { InterfaceManager.rnd.Value.Next(1, 10),
+                                   InterfaceManager.rnd.Value.Next(1, 10),
+                                   InterfaceManager.rnd.Value.Next(1, 10) };
+                message = "distractor update";
+                problem = nums[0].ToString() + " + " + nums[1].ToString() + " + " + nums[2].ToString() + " = ";
+                answer = "";
+            }
+        }
+
+        // Update screen
+        manager.Do(new EventBase<string, string>(manager.ShowText, message, problem + answer));
+        return true;
+    }
+
+    // ––––––––––––––––––––––––––––––––––––––––––––––––––
+    // ––––––––––––––––––––––––––––––––––––––––––––––––––
 
     protected void Distractor(StateMachine state) {
         var stopWatch = new Stopwatch();

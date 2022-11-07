@@ -121,7 +121,6 @@ public class InterfaceManager : MonoBehaviour
 
         // configure default key handling to quit experiment
         inputHandler = new InputHandler(mainEvents, (handler, msg) => {
-            UnityEngine.Debug.Log(msg.key + " " + quitKey + " " + msg.down);
             if(msg.down && msg.key == quitKey) {
                 Quit();
                 handler.active = false;
