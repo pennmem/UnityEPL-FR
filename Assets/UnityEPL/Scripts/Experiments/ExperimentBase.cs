@@ -141,9 +141,6 @@ public abstract class ExperimentBase : EventLoop {
         el.Do(new EventBase(() => Distractor(state)));
     }
 
-    // ––––––––––––––––––––––––––––––––––––––––––––––––––
-    // ––––––––––––––––––––––––––––––––––––––––––––––––––
-
     protected class DistractorState {
         public Stopwatch stopwatch = new Stopwatch();
         public int[] nums = new int[3] { -1, -1, -1 };
