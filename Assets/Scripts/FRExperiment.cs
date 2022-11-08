@@ -123,7 +123,7 @@ public class FRExperiment : ExperimentBase {
   }
 
   protected void Rest(StateMachine state) {
-    int duration = (int)Config.restDuration;
+    int duration = Config.restDuration;
     state.IncrementState();
     manager.Do(new EventBase<string, string>(manager.ShowText, "orientation stimulus", "+"));
     ReportEvent("rest", null);

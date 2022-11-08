@@ -55,17 +55,13 @@ public class RepFRExperiment : ExperimentBase {
 
     // TODO: reformat
     stateMachine["Run"] = new ExperimentTimeline(new List<Action<StateMachine>> {
-        Distractor,
+        Introduction, // runs Introduction states
+        MicrophoneTest, // runs MicrophoneTest states
+        QuitPrompt,
+        Practice, // runs Practice states
+        ConfirmStart,
+        MainLoop, // runs MainLoop states
         FinishExperiment});
-        //IntroductionPrompt,
-        //IntroductionVideo,
-        //RepeatVideo,
-        //MicrophoneTest, // runs MicrophoneTest states
-        //QuitPrompt,
-        //Practice, // runs Practice states
-        //ConfirmStart,
-        //MainLoop, // runs MainLoop states
-        //FinishExperiment});
 
     // though it is largely the same as the main loop,
     // practice is a conceptually distinct state machine
@@ -93,6 +89,11 @@ public class RepFRExperiment : ExperimentBase {
         RecallPrompt,
         Recall,
         EndTrial});
+
+    stateMachine["Introduction"] = new LoopTimeline(new List<Action<StateMachine>> {
+        IntroductionPrompt,
+        IntroductionVideo,
+        RepeatVideo});
 
     stateMachine["MicrophoneTest"] = new LoopTimeline(new List<Action<StateMachine>> {
         MicTestPrompt,
@@ -224,6 +225,12 @@ public class RepFRExperiment : ExperimentBase {
   protected void MainLoop(StateMachine state) {
     state.IncrementState();
     state.PushTimeline("MainLoop");
+    Run();
+  }
+
+  protected void Introduction(StateMachine state) {
+    state.IncrementState();
+    state.PushTimeline("IntroductionVideo");
     Run();
   }
 
