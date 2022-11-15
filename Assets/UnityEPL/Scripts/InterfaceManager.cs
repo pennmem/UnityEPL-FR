@@ -380,7 +380,7 @@ public class InterfaceManager : MonoBehaviour
         }
 
         // absolute video path
-        string videoPath = System.IO.Path.Combine(fileManager.ExperimentRoot(), Config.video);
+        string videoPath = System.IO.Path.Combine(fileManager.ExperimentRoot(), video);
 
         if(videoPath == null) {
             throw new Exception("Video resource not found");

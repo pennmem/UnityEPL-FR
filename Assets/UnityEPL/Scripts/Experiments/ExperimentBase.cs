@@ -66,8 +66,8 @@ public abstract class ExperimentBase : EventLoop {
     protected void IntroductionVideo(StateMachine state) {
         state.IncrementState();
         manager.Do(new EventBase<string, bool, Action>(manager.ShowVideo,
-                                                        "introductionVideo", true,
-                                                        () => this.Do(new EventBase(Run))));
+                                                       Config.introductionVideo, true,
+                                                       () => this.Do(new EventBase(Run))));
     }
 
     protected void CountdownVideo(StateMachine state) {
@@ -76,8 +76,8 @@ public abstract class ExperimentBase : EventLoop {
 
         state.IncrementState();
         manager.Do(new EventBase<string, bool, Action>(manager.ShowVideo,
-                                                            "countdownVideo", false,
-                                                            () => this.Do(new EventBase(Run))));
+                                                       Config.countdownVideo, false,
+                                                       () => this.Do(new EventBase(Run))));
     }
 
     // NOTE: rather than use flags for the audio test, this is entirely based off of timings.
@@ -228,10 +228,7 @@ public abstract class ExperimentBase : EventLoop {
     }
 
     protected void Orientation(StateMachine state) {
-        int[] limits = Config.stimulusInterval;
-        int interval = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
-
-        limits = Config.orientationDuration;
+        int[] limits = Config.orientationDuration;
         int duration = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
         manager.Do(new EventBase<string, string>(manager.ShowText, "orientation stimulus", "+"));
 
@@ -239,11 +236,11 @@ public abstract class ExperimentBase : EventLoop {
 
         state.IncrementState();
         DoIn(new EventBase(() => {
-                                    CleanSlate();
-                                    SendHostPCMessage("ISI", new Dictionary<string, object>() {{"duration", interval}});
-                                    DoIn(new EventBase(Run), interval);
-                                }), 
-                                duration);
+                CleanSlate();
+                SendHostPCMessage("ISI", new Dictionary<string, object>() {{"duration", duration} });
+                Do(new EventBase(Run));
+            }), 
+            duration);
     }
 
     private void RecallStim() {
@@ -461,16 +458,17 @@ public abstract class ExperimentBase : EventLoop {
         return true;
     }
 
-    protected bool RepeatOrContinue(InputHandler handler, KeyMsg msg) {
+    // Repeats state or continues to next state
+    protected bool RepeatStateOrContinue(InputHandler handler, KeyMsg msg) {
         if(msg.down && msg.key == "n") {
-            // repeat the previous state
+            // Repeat the previous state
             stateMachine.DecrementState();
             handler.active = false;
             Do(new EventBase(Run));
             return false;
         }
         else if(msg.down && msg.key == "y") {
-            // proceed to the next state
+            // Proceed to the next state
             stateMachine.IncrementState();
             handler.active = false;
             Do(new EventBase(Run));
@@ -479,16 +477,36 @@ public abstract class ExperimentBase : EventLoop {
         return true;
     }
 
-    protected bool LoopOrContinue(InputHandler handler, KeyMsg msg) {
+    // Repeats state or exits loop timeline
+    protected bool RepeatStateOrExitLoop(InputHandler handler, KeyMsg msg) {
+        if (msg.down && msg.key == "n") {
+            // Repeat the previous state
+            stateMachine.DecrementState();
+            handler.active = false;
+            Do(new EventBase(Run));
+            return false;
+        } else if (msg.down && msg.key == "y") {
+            // This ends the loop timeline and resumes the outer scope
+            stateMachine.PopTimeline();
+            handler.active = false;
+            Do(new EventBase(Run));
+            return false;
+        }
+        return true;
+    }
+
+    // Repeats loop for entire LoopTimeline or exits loop timeline
+    // If this is not used at the END of a LoopTimeline, then it acts as ContinueOrExitLoop
+    protected bool RepeatLoopOrExitLoop(InputHandler handler, KeyMsg msg) {
         if(msg.down && msg.key == "n") {
-            // this brings us back to the top of a loop timeline
+            // This brings us back to the top of a loop timeline
             stateMachine.IncrementState();
             handler.active = false;
             Do(new EventBase(Run));
             return false;
         }
         else if(msg.down && msg.key == "y") {
-            // this ends the loop timeline and resumes the outer scope
+            // This ends the loop timeline and resumes the outer scope
             stateMachine.PopTimeline();
             handler.active = false;
             Do(new EventBase(Run));

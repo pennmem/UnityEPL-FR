@@ -64,7 +64,8 @@ public static partial class Config {
 
     public static string experimentClass { get { return Config.GetSetting<string>("experimentClass"); } }
     public static string launcherScene { get { return Config.GetSetting<string>("launcherScene"); } }
-    public static string video { get { return Config.GetSetting<string>("video"); } }
+    public static string introductionVideo { get { return Config.GetSetting<string>("introductionVideo"); } }
+    public static string countdownVideo { get { return Config.GetSetting<string>("countdownVideo"); } }
     public static string experimentName { get { return Config.GetSetting<string>("experimentName"); } }
 
     // FileManager.cs

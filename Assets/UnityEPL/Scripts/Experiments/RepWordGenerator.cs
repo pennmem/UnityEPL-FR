@@ -101,7 +101,7 @@ public class RandomSubset {
   protected int index;
 
   public RandomSubset(List<String> source_words) {
-    shuffled = RepWordGenerator.Shuffle(source_words);
+    shuffled = source_words.Shuffle();
     index = 0;
   }
 
@@ -254,23 +254,8 @@ class RepWordList : StimWordList {
   }
 }
 
-
 // Generates well-spaced RepFR wordlists with open-loop stimulation assigned.
 class RepWordGenerator {
-  // TODO - This should be moved to a more general location for reuse.
-  // Fisher-Yates shuffle
-  public static List<T> Shuffle<T>(IList<T> list) {
-    var shuf = new List<T>(list);
-    for (int i=shuf.Count-1; i>0; i--) {
-      int j = InterfaceManager.rnd.Value.Next(i+1);
-      T tmp = shuf[i];
-      shuf[i] = shuf[j];
-      shuf[j] = tmp;
-    }
-    
-    return shuf;
-  }
-
   // perm is the permutation to be assigned to the specified repword_lists,
   // interpreted in order.  If the first word in the first RepWordList is to
   // be repeated 3 times, the first three indices in perm are its locations
@@ -329,7 +314,7 @@ class RepWordGenerator {
       var perm = new List<int>();
       while (give_up > 0 && double.IsInfinity(score)) {
         var range = Enumerable.Range(0, word_len).ToList();
-        perm = Shuffle(range);
+        perm = range.Shuffle();
 
         score = SpacingScore(perm, repword_lists);
         give_up--;
@@ -397,7 +382,7 @@ class RepWordGenerator {
       bool do_stim,
       double top_percent_spaced=0.2) {
 
-    var shuffled = Shuffle(input_words);
+    var shuffled = input_words.Shuffle();
 
     var repeats = new List<RepWordList>();
     var singles = new RepWordList();

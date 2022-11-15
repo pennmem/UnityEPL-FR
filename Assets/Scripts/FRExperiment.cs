@@ -69,8 +69,8 @@ public class FRExperiment : ExperimentBase {
     stateMachine["Practice"] = new LoopTimeline(new List<Action<StateMachine>> {
         StartTrial,
         NextPracticeListPrompt,
-        Rest,
         CountdownVideo,
+        Orientation,
         EncodingDelay,
         Encoding,
         Distractor,
@@ -81,8 +81,8 @@ public class FRExperiment : ExperimentBase {
     stateMachine["MainLoop"] =  new LoopTimeline(new List<Action<StateMachine>> {
         StartTrial,
         NextListPrompt,
-        Rest,
         CountdownVideo,
+        Orientation,
         EncodingDelay,
         Encoding,
         Distractor,
@@ -177,7 +177,6 @@ public class FRExperiment : ExperimentBase {
       state.PopTimeline();
     }
 
-    
     Run();
   }
 
@@ -186,13 +185,13 @@ public class FRExperiment : ExperimentBase {
   //////////
 
   protected void RepeatVideo(StateMachine state) {
-    WaitForKey("repeat introduction video", "Press Y to continue to practice list, \n Press N to replay instructional video.", 
-                RepeatOrContinue);
+    WaitForKey("repeat introduction video", "Press Y to continue to practice list, \n Press N to replay instructional video.",
+                RepeatLoopOrExitLoop);
   }
 
   protected void RepeatMicTest(StateMachine state) {
     WaitForKey("repeat mic test", "Did you hear the recording? \n(Y=Continue / N=Try Again).", 
-                LoopOrContinue);
+                RepeatLoopOrExitLoop);
   }
 
   protected void IntroductionPrompt(StateMachine state) {
@@ -230,7 +229,7 @@ public class FRExperiment : ExperimentBase {
 
   protected void Introduction(StateMachine state) {
     state.IncrementState();
-    state.PushTimeline("IntroductionVideo");
+    state.PushTimeline("Introduction");
     Run();
   }
 
@@ -354,7 +353,7 @@ public class FRExperiment : ExperimentBase {
       randomized_list.Add(MakeRun(subset_gen, false, false));
     }
 
-    session.AddRange(RepWordGenerator.Shuffle(randomized_list));
+    session.AddRange(randomized_list.Shuffle());
 
     for (int i=0; i<session.Count; i++) {
       WriteLstFile(session[i].encoding, i);

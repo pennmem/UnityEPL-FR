@@ -177,7 +177,6 @@ public class RepFRExperiment : ExperimentBase {
       state.PopTimeline();
     }
 
-    
     Run();
   }
 
@@ -187,12 +186,12 @@ public class RepFRExperiment : ExperimentBase {
 
   protected void RepeatVideo(StateMachine state) {
     WaitForKey("repeat introduction video", "Press Y to continue to practice list, \n Press N to replay instructional video.", 
-                RepeatOrContinue);
+                RepeatStateOrContinue);
   }
 
   protected void RepeatMicTest(StateMachine state) {
     WaitForKey("repeat mic test", "Did you hear the recording? \n(Y=Continue / N=Try Again).", 
-                LoopOrContinue);
+                RepeatLoopOrExitLoop);
   }
 
   protected void IntroductionPrompt(StateMachine state) {
@@ -230,7 +229,7 @@ public class RepFRExperiment : ExperimentBase {
 
   protected void Introduction(StateMachine state) {
     state.IncrementState();
-    state.PushTimeline("IntroductionVideo");
+    state.PushTimeline("Introduction");
     Run();
   }
 
@@ -354,7 +353,7 @@ public class RepFRExperiment : ExperimentBase {
       randomized_list.Add(MakeRun(subset_gen, false, false));
     }
 
-    session.AddRange(RepWordGenerator.Shuffle(randomized_list));
+    session.AddRange(randomized_list.Shuffle());
 
     for (int i=0; i<session.Count; i++) {
       WriteLstFile(session[i].encoding, i);
