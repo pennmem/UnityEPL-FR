@@ -72,7 +72,7 @@ public class RepFRExperiment : ExperimentBase {
         Rest,
         CountdownVideo,
         EncodingDelay,
-        Encoding,
+        EncodingPostDelay,
         Rest,
         RecallPrompt,
         Recall,
@@ -84,7 +84,7 @@ public class RepFRExperiment : ExperimentBase {
         Rest,
         CountdownVideo,
         EncodingDelay,
-        Encoding,
+        EncodingPostDelay,
         Rest,
         RecallPrompt,
         Recall,
@@ -244,8 +244,8 @@ public class RepFRExperiment : ExperimentBase {
   //////////
 
   // TODO: need to separately manage practice and encoding lists
-  protected void Encoding(StateMachine state) {
-    Encoding((WordStim)state.CurrentSession<RepFRSession>().GetWord(), state.CurrentSession<RepFRSession>().GetSerialPos());
+  protected void EncodingPostDelay(StateMachine state) {
+    EncodingPostDelay((WordStim)state.CurrentSession<RepFRSession>().GetWord(), state.CurrentSession<RepFRSession>().GetSerialPos());
     if(!state.CurrentSession<RepFRSession>().NextWord()) {
         state.IncrementState();
     }

@@ -119,6 +119,33 @@ public abstract class ExperimentBase : EventLoop {
         data.Add("serialpos", index);
         data.Add("stim", word.stim);
 
+        SendHostPCMessage("ISI", new Dictionary<string, object>() { { "duration", interval } });
+        DoIn(new EventBase(() => {
+            ReportEvent("word stimulus info", data);
+            SendHostPCMessage("WORD", data);
+
+            manager.Do(new EventBase<string, string>(manager.ShowText, "word stimulus", word.word));
+
+            DoIn(new EventBase(() => {
+                CleanSlate();
+                ReportEvent("clear word stimulus", new Dictionary<string, object>());
+                Do(new EventBase(Run));
+            }), Config.stimulusDuration);
+        }), interval);
+    }
+
+    // TODO: JPB: Remove EncodingPostDelay
+    protected void EncodingPostDelay(WordStim word, int index) {
+        // This needs to be wrapped, as it relies on data external to the state itself
+
+        int[] limits = Config.stimulusInterval;
+        int interval = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
+
+        Dictionary<string, object> data = new Dictionary<string, object>();
+        data.Add("word", word.word);
+        data.Add("serialpos", index);
+        data.Add("stim", word.stim);
+
         ReportEvent("word stimulus info", data);
         SendHostPCMessage("WORD", data);
 
@@ -130,15 +157,7 @@ public abstract class ExperimentBase : EventLoop {
             SendHostPCMessage("ISI", new Dictionary<string, object>() { { "duration", interval } });
 
             DoIn(new EventBase(Run), interval);
-        }),
-                                Config.stimulusDuration);
-    }
-
-    // This is used because there is a blocking function (WaitOnKey) inside Distractor
-    protected void DistractorLoop(StateMachine state) {
-        var el = new EventLoop();
-        el.Start();
-        el.Do(new EventBase(() => Distractor(state)));
+        }), Config.stimulusDuration);
     }
 
     protected class DistractorState {
@@ -356,7 +375,7 @@ public abstract class ExperimentBase : EventLoop {
             }));
 
         state.IncrementState();
-        DoIn(new EventBase(Run), 500); // magic number is the duration of beep
+        DoIn(new EventBase(Run), Config.recallPromptDuration); // magic number is the duration of beep
     }
     
     

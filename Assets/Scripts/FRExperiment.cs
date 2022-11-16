@@ -71,9 +71,9 @@ public class FRExperiment : ExperimentBase {
         NextPracticeListPrompt,
         CountdownVideo,
         Orientation,
-        EncodingDelay,
         Encoding,
         Distractor,
+        PauseBeforeRecall,
         RecallPrompt,
         Recall,
         EndPracticeTrial});
@@ -83,9 +83,9 @@ public class FRExperiment : ExperimentBase {
         NextListPrompt,
         CountdownVideo,
         Orientation,
-        EncodingDelay,
         Encoding,
         Distractor,
+        PauseBeforeRecall,
         RecallPrompt,
         Recall,
         EndTrial});
@@ -99,7 +99,7 @@ public class FRExperiment : ExperimentBase {
         MicTestPrompt,
         RecordTest,
         RepeatMicTest});
-    
+
     stateMachine.PushTimeline("Run");
     return stateMachine;
   }

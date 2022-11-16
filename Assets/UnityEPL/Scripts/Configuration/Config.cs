@@ -80,6 +80,7 @@ public static partial class Config {
     public static int recStimulusInterval { get { return Config.GetSetting<int>("recStimulusInterval"); } }
     public static int stimulusDuration { get { return Config.GetSetting<int>("stimulusDuration"); } }
     public static int recallDuration { get { return Config.GetSetting<int>("recallDuration"); } }
+    public static int recallPromptDuration { get { return Config.GetSetting<int>("recallPromptDuration"); } }
     public static int finalRecallDuration { get { return Config.GetSetting<int>("finalRecallDuration"); } }
 
     // ElememInterface.cs

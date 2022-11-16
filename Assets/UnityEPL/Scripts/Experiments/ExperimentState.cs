@@ -131,7 +131,7 @@ public class LoopTimeline : ExperimentTimeline {
         else {
             index = this.Count - 1;
         }
-            return true;
+        return true;
     }
 }
 
