@@ -67,7 +67,7 @@ public abstract class ExperimentBase : EventLoop {
         state.IncrementState();
         manager.Do(new EventBase<string, bool, Action>(manager.ShowVideo,
                                                        Config.introductionVideo, true,
-                                                       () => this.Do(new EventBase(Run))));
+                                                       () => Do(new EventBase(Run))));
     }
 
     protected void CountdownVideo(StateMachine state) {
@@ -77,7 +77,7 @@ public abstract class ExperimentBase : EventLoop {
         state.IncrementState();
         manager.Do(new EventBase<string, bool, Action>(manager.ShowVideo,
                                                        Config.countdownVideo, false,
-                                                       () => this.Do(new EventBase(Run))));
+                                                       () => Do(new EventBase(Run))));
     }
 
     // NOTE: rather than use flags for the audio test, this is entirely based off of timings.
@@ -129,7 +129,7 @@ public abstract class ExperimentBase : EventLoop {
             DoIn(new EventBase(() => {
                 CleanSlate();
                 ReportEvent("clear word stimulus", new Dictionary<string, object>());
-                Do(new EventBase(Run));
+                Run();
             }), Config.stimulusDuration);
         }), interval);
     }
@@ -226,7 +226,7 @@ public abstract class ExperimentBase : EventLoop {
             if (ds.stopwatch.ElapsedMilliseconds > Config.distractorDuration) {
                 ds.stopwatch.Reset();
                 stateMachine.IncrementState();
-                Do(new EventBase(Run));
+                Run();
                 handler.active = false;
                 return false;
             } else {
@@ -257,9 +257,8 @@ public abstract class ExperimentBase : EventLoop {
         DoIn(new EventBase(() => {
                 CleanSlate();
                 SendHostPCMessage("ISI", new Dictionary<string, object>() {{"duration", duration} });
-                Do(new EventBase(Run));
-            }), 
-            duration);
+                Run();
+        }), duration);
     }
 
     private void RecallStim() {
@@ -375,7 +374,7 @@ public abstract class ExperimentBase : EventLoop {
             }));
 
         state.IncrementState();
-        DoIn(new EventBase(Run), Config.recallPromptDuration); // magic number is the duration of beep
+        DoIn(new EventBase(Run), Config.recallPromptDuration);
     }
     
     
@@ -434,8 +433,10 @@ public abstract class ExperimentBase : EventLoop {
             (handler, msg) => {
                 if(msg.down && msg.key == key) {
                     handler.active = false;
-                    stateMachine.IncrementState();
-                    Do(new EventBase(Run));
+                    Do(new EventBase(() => {
+                        stateMachine.IncrementState();
+                        Run();
+                    }));
                     return false;
                 }
                 return true;
@@ -457,8 +458,10 @@ public abstract class ExperimentBase : EventLoop {
     protected bool AnyKey(InputHandler handler, KeyMsg msg) {
         if(msg.down) {
             handler.active = false; // also done by CleanSlate
-            stateMachine.IncrementState();
-            Do(new EventBase(Run));
+            Do(new EventBase(() => {
+                stateMachine.IncrementState();
+                Run();
+            }));
             return false;
         }
         return true;
@@ -466,8 +469,10 @@ public abstract class ExperimentBase : EventLoop {
 
     protected bool QuitOrContinue(InputHandler handler, KeyMsg msg) {
         if(msg.down && msg.key == "y") {
-            stateMachine.IncrementState();
-            this.Do(new EventBase(Run));
+            Do(new EventBase(() => {
+                stateMachine.IncrementState();
+                Run();
+            }));
             return false;
         }
         else if(msg.down && msg.key == "n") {
@@ -481,16 +486,20 @@ public abstract class ExperimentBase : EventLoop {
     protected bool RepeatStateOrContinue(InputHandler handler, KeyMsg msg) {
         if(msg.down && msg.key == "n") {
             // Repeat the previous state
-            stateMachine.DecrementState();
             handler.active = false;
-            Do(new EventBase(Run));
+            Do(new EventBase(() => {
+                stateMachine.DecrementState();
+                Run();
+            }));
             return false;
         }
         else if(msg.down && msg.key == "y") {
             // Proceed to the next state
-            stateMachine.IncrementState();
             handler.active = false;
-            Do(new EventBase(Run));
+            Do(new EventBase(() => {
+                stateMachine.IncrementState();
+                Run();
+            }));
             return false;
         }
         return true;
@@ -500,15 +509,19 @@ public abstract class ExperimentBase : EventLoop {
     protected bool RepeatStateOrExitLoop(InputHandler handler, KeyMsg msg) {
         if (msg.down && msg.key == "n") {
             // Repeat the previous state
-            stateMachine.DecrementState();
             handler.active = false;
-            Do(new EventBase(Run));
+            Do(new EventBase(() => {
+                stateMachine.DecrementState();
+                Run();
+            }));
             return false;
         } else if (msg.down && msg.key == "y") {
             // This ends the loop timeline and resumes the outer scope
-            stateMachine.PopTimeline();
             handler.active = false;
-            Do(new EventBase(Run));
+            Do(new EventBase(() => {
+                stateMachine.PopTimeline();
+                Run();
+            }));
             return false;
         }
         return true;
@@ -519,16 +532,20 @@ public abstract class ExperimentBase : EventLoop {
     protected bool RepeatLoopOrExitLoop(InputHandler handler, KeyMsg msg) {
         if(msg.down && msg.key == "n") {
             // This brings us back to the top of a loop timeline
-            stateMachine.IncrementState();
             handler.active = false;
-            Do(new EventBase(Run));
+            Do(new EventBase(() => {
+                stateMachine.IncrementState();
+                Run();
+            }));
             return false;
         }
         else if(msg.down && msg.key == "y") {
             // This ends the loop timeline and resumes the outer scope
-            stateMachine.PopTimeline();
             handler.active = false;
-            Do(new EventBase(Run));
+            Do(new EventBase(() => {
+                stateMachine.PopTimeline();
+                Run();
+            }));
             return false;
         }
         return true;
