@@ -4,7 +4,7 @@ using System.Linq;
 public static class IListExtensions {
     /// <summary>
     /// Knuth (Fisher-Yates) Shuffle
-    /// Shuffles the element order of the specified IList (in place).
+    /// Shuffles the element order (in place) of the specified IList derived type.
     /// </summary>
     public static T ShuffleInPlace<T, U>(this T list) where T : IList<U> {
         var count = list.Count;
@@ -19,7 +19,7 @@ public static class IListExtensions {
 
     /// <summary>
     /// Knuth (Fisher-Yates) Shuffle
-    /// Generates a shuffled version of the specified IList.
+    /// Generates a shuffled version of the specified IList derived type.
     /// </summary>
     public static T Shuffle<T, U>(this T list) where T : IList<U>, new() {
         // In the future, when c# supports it, just do "T shuf = new T(list);"

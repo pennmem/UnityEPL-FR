@@ -33,11 +33,12 @@ public class MessageHandler<T> {
     public virtual void Do(T msg) {
         Do(new MessageEvent<T>(action, msg));
     }
+
     protected void Do(MessageEvent<T> msg) {
         host.Do(msg);
     }
 
-    public virtual T DoGet<T>(Task<T> task) {
+    public virtual U DoGet<U>(Task<U> task) {
         return host.DoGet(task);
     }
 }

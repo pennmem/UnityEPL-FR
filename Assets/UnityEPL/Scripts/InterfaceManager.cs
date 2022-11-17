@@ -29,7 +29,7 @@ public class InterfaceManager : MonoBehaviour
     // pass references, rather than relying on Global
     //    public static InterfaceManager Instance { get { return _instance; } }
 
-    protected  void Awake()
+    protected void Awake()
     {
         if (_instance != null && _instance != this)
         {
@@ -50,10 +50,7 @@ public class InterfaceManager : MonoBehaviour
     //////////
     private EventQueue mainEvents = new EventQueue();
     // let interface manager be seen as an event queue
-    public static implicit operator EventQueue(InterfaceManager im) => im.mainEvents;
-
-    // Deprecated Key handling
-    private ConcurrentQueue<Action<string, bool>> onKey;
+    //public static implicit operator EventQueue(InterfaceManager im) => im.mainEvents;
 
     //////////
     // Experiment Settings and Experiment object
@@ -117,7 +114,6 @@ public class InterfaceManager : MonoBehaviour
         // create objects not tied to unity
         fileManager = new FileManager(this);
         syncBox = new NonUnitySyncbox(this);
-        onKey = new ConcurrentQueue<Action<string, bool>>();
 
         // configure default key handling to quit experiment
         inputHandler = new InputHandler(mainEvents, (handler, msg) => {
@@ -176,8 +172,6 @@ public class InterfaceManager : MonoBehaviour
     //////////
     void onSceneLoaded(Scene scene, LoadSceneMode mode) 
     {
-        onKey = new ConcurrentQueue<Action<string, bool>>(); // clear keyhandler queue on scene change
-
         // text displayer
         GameObject canvas =  GameObject.Find("MemoryWordCanvas");
         if(canvas != null) {
@@ -291,15 +285,15 @@ public class InterfaceManager : MonoBehaviour
         }
     }
 
-    public  void ReportEvent(string type, Dictionary<string, object> data, DateTime time) {
+    public void ReportEvent(string type, Dictionary<string, object> data, DateTime time) {
         scriptedInput.ReportScriptedEvent(type, data, time );
     }
 
-    public  void ReportEvent(string type, Dictionary<string, object> data) {
+    public void ReportEvent(string type, Dictionary<string, object> data) {
         scriptedInput.ReportScriptedEvent(type, data);
     }
 
-    public  void Quit() {
+    public void Quit() {
         Debug.Log("Quitting");
 #if UNITY_EDITOR
         UnityEditor.EditorApplication.isPlaying = false;
@@ -417,25 +411,6 @@ public class InterfaceManager : MonoBehaviour
         versionsData.Add("session", Config.session);
 
         ReportEvent("session start", versionsData);
-    }
-
-    //////////
-    // Key handling code that receives key inputs from
-    // an external script and modifies program behavior
-    // accordingly
-    //////////
-    
-    public void Key(string key, bool pressed) {
-        Action<string, bool> action;
-        while(onKey.Count != 0) {
-            if(onKey.TryDequeue(out action)) {
-                Do(new EventBase<string, bool>(action, key, pressed));
-            }
-        }
-    }
-
-    public void RegisterKeyHandler(Action<string, bool> handler) {
-        onKey.Enqueue(handler);
     }
 
     //////////
