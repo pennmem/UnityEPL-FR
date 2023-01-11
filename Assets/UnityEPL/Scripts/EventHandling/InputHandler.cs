@@ -22,6 +22,7 @@ public class InputHandler : MessageTreeNode<KeyMsg> {
     }
 
     // InputHandler for the WaitOnKey thread
+    // TODO: JPB: Convert to static function to make it more clear
     private InputHandler(EventQueue host) {
         this.host = host;
         SetAction(ReportKey);
@@ -60,14 +61,15 @@ public class InputHandler : MessageTreeNode<KeyMsg> {
 
             // Replace im input handler
             var priorImInputHandler = im.DoGet(new Task<InputHandler>(() => {
-                return im.inputHandler;
+                var priorInputHandler = im.inputHandler;
+                im.inputHandler = tempInputHandler;
+                return priorInputHandler;
             }));
-            im.DoBlocking(new EventBase(() => im.inputHandler = tempInputHandler));
 
             // Wait on key
             tempInputHandler.keyMsgWritten.WaitOne();
 
-            // Teardown
+            // Put original input handler back
             im.DoBlocking(new EventBase(() => im.inputHandler = priorImInputHandler));
 
             return tempInputHandler.keyMsg;

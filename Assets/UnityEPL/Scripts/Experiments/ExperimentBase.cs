@@ -233,17 +233,89 @@ public abstract class ExperimentBase : EventLoop {
                 ds.nums = new int[] { InterfaceManager.rnd.Value.Next(1, 10),
                                    InterfaceManager.rnd.Value.Next(1, 10),
                                    InterfaceManager.rnd.Value.Next(1, 10) };
-                ds.message = "distractor update";
+                ds.message = "display distractor problem";
                 ds.problem = ds.nums[0].ToString() + " + " +
                              ds.nums[1].ToString() + " + " +
                              ds.nums[2].ToString() + " = ";
                 ds.answer = "";
+                manager.Do(new EventBase<string, string>(manager.ShowText, ds.message, ds.problem + ds.answer));
             }
         }
 
         // Update screen
         manager.Do(new EventBase<string, string>(manager.ShowText, ds.message, ds.problem + ds.answer));
         return true;
+    }
+
+    protected void DistractorOriginal(StateMachine state) {
+        int[] nums = new int[] { InterfaceManager.rnd.Value.Next(1, 10),
+                                 InterfaceManager.rnd.Value.Next(1, 10),
+                                 InterfaceManager.rnd.Value.Next(1, 10) };
+        string message = "display distractor problem";
+        string problem = nums[0].ToString() + " + " +
+                         nums[1].ToString() + " + " +
+                         nums[2].ToString() + " = ";
+        string answer = "";
+        Stopwatch stopwatch = new Stopwatch();
+
+        stopwatch.Start();
+
+        // TODO: JPB: Add support for game pauses
+        while (true) {
+            manager.Do(new EventBase<string, string>(manager.ShowText, message, problem + answer));
+
+            string key = inputHandler.WaitOnKey(manager, false).key;
+
+            // Enter only numbers
+            if (Regex.IsMatch(key, @"\d$")) {
+                key = key[key.Length - 1].ToString(); // Unity gives numbers as Alpha# or Keypad#
+                if (answer.Length < 3) {
+                    answer += key;
+                }
+                message = "modify distractor answer";
+            }
+            // Delete key removes last character from answer
+            else if (key == "delete" || key == "backspace") {
+                if (answer != "") {
+                    answer = answer.Substring(0, answer.Length - 1);
+                }
+                message = "modify distractor answer";
+            }
+            // Submit answer
+            else if (key == "enter" || key == "return") {
+                bool correct = int.Parse(answer) == nums.Sum();
+
+                // Play tone depending on right or wrong answer
+                if (correct) {
+                    manager.Do(new EventBase(manager.lowBeep.Play));
+                } else {
+                    manager.Do(new EventBase(manager.lowerBeep.Play));
+                }
+
+                // Report results
+                message = "distractor answered";
+                manager.Do(new EventBase<string, string>(manager.ShowText, message, problem + answer));
+                ReportDistractor(message, correct, problem, answer);
+
+                // End distractor or setup next math problem
+                if (stopwatch.ElapsedMilliseconds > Config.distractorDuration) {
+                    break;
+                } else {
+                    nums = new int[] { InterfaceManager.rnd.Value.Next(1, 10),
+                                       InterfaceManager.rnd.Value.Next(1, 10),
+                                       InterfaceManager.rnd.Value.Next(1, 10) };
+                    message = "display distractor problem";
+                    problem = nums[0].ToString() + " + " +
+                              nums[1].ToString() + " + " +
+                              nums[2].ToString() + " = ";
+                    answer = "";
+                    manager.Do(new EventBase<string, string>(manager.ShowText, message, problem + answer));
+                }
+            }
+        }
+
+        state.IncrementState();
+        Do(new EventBase(Run));
     }
 
     protected void Orientation(StateMachine state) {
