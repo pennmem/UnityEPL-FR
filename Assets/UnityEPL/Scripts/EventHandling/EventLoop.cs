@@ -124,6 +124,7 @@ public class EventLoop : EventQueue {
                 if (yieldedFunc.isStarted) {
                     var current = yieldedFunc.enumerator.Current;
                     bool finished = !yieldedFunc.enumerator.MoveNext();
+                    //if (finished && yieldedFunc == lastStarted) {
                     if (finished && yieldedFunc == originalYieldedFunc) {
                         return;
                     }
