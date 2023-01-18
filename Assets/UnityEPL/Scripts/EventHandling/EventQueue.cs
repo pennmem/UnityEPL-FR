@@ -7,7 +7,7 @@ using UnityEngine.UI;
 using System.Collections;
 
 public class EventQueue {
-    public ConcurrentQueue<IEventBase> eventQueue;
+    protected ConcurrentQueue<IEventBase> eventQueue;
 
     protected int repeatingEventID = 0;
     protected List<RepeatingEvent> repeatingEvents = new List<RepeatingEvent>();

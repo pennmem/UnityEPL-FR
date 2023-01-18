@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 
-public class EventLoop2 : EventQueue2 {
+public class EventLoop2 : YieldedEventQueue {
     protected ManualResetEventSlim wait;
     private CancellationTokenSource tokenSource;
     private CancellationToken cancellationToken;
@@ -21,7 +21,7 @@ public class EventLoop2 : EventQueue2 {
     }
 
     public void Start(){
-        if(Running()) {
+        if(IsRunning()) {
             return;
         }
 
@@ -33,7 +33,7 @@ public class EventLoop2 : EventQueue2 {
     }
 
     public void Stop(){
-        if(!Running()) {
+        if(!IsRunning()) {
             return;
         }
 
@@ -57,15 +57,41 @@ public class EventLoop2 : EventQueue2 {
         while(!cancellationToken.IsCancellationRequested) {
             bool event_ran = Process();
             if(!event_ran) {
-                wait.Wait(200);
+                wait.Wait(20);
                 wait.Reset();
             }
         }
     }
 
-    public override void Do(IEvent thisEvent) {
+    public override void Do(IEnumerator thisEvent) {
         base.Do(thisEvent);
         wait.Set();
+    }
+
+    public override void DoIn(IEnumerator thisEvent, int delay) {
+        base.DoIn(thisEvent, delay);
+        wait.Set();
+    }
+
+    public override void DoRepeating(IEnumerator thisEvent, int iterations, int delay, int interval) {
+        base.DoRepeating(thisEvent, iterations, delay, interval);
+        wait.Set();
+    }
+    public override void DoRepeating(RepeatingEvent thisEvent) {
+        base.DoRepeating(thisEvent);
+        wait.Set();
+    }
+
+    public override void DoBlocking(IEnumerator thisEvent) {
+        base.DoBlocking(thisEvent);
+        // TODO: JPB: (bug) Set needs to be right before task.Wait() in EventQueue
+        // wait.Set();
+    }
+
+    public override T DoGet<T>(IEnumerator<T> thisEvent) {
+        return base.DoGet(thisEvent);
+        // TODO: JPB: (bug) Set needs to be right before task.Wait() in EventLoop
+        // wait.Set();
     }
 
     //public override void DoRepeating(RepeatingEvent thisEvent) {
@@ -117,7 +143,7 @@ public class EventLoop2 : EventQueue2 {
     //        yieldedFunc.Start();
     //        LoopYielded(yieldedFunc);
     //    }));
-        
+
     //    return enumerator.Current;
     //}
 

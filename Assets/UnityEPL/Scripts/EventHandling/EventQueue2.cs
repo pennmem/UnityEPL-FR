@@ -23,8 +23,9 @@ public class YieldedEvent {
 }
 
 public class YieldedEventQueue {
-    public ConcurrentQueue<Action> eventQueue;
+    protected ConcurrentQueue<Action> eventQueue;
     protected List<YieldedEvent> yieldedEvents = new List<YieldedEvent>();
+    protected List<RepeatingEvent> repeatingEvents = new List<RepeatingEvent>();
 
     protected volatile int threadID = -1;
     protected volatile bool running = true;
@@ -33,26 +34,7 @@ public class YieldedEventQueue {
         this.threadID = Thread.CurrentThread.ManagedThreadId;
     }
 
-    public bool Process() {
-        // Check all yielded events
-        foreach (var yieldedEvent in yieldedEvents) {
-            yieldedEvent.MoveNext();
-        }
-        yieldedEvents.RemoveAll(x => x.isFinished);
-
-        // Run the new event
-        Action thisEvent;
-        if (running && eventQueue.TryDequeue(out thisEvent)) {
-            try {
-                thisEvent.Invoke();
-            } catch (Exception e) {
-                ErrorNotification.Notify(e);
-            }
-            return true;
-        }
-        return false;
-    }
-
+    // TODO: JPB: Add Do that takes an Action or IEvent?
     public virtual void Do(IEnumerator thisEvent) {
         eventQueue.Enqueue(() => {
             if (thisEvent.MoveNext()) {
@@ -60,6 +42,11 @@ public class YieldedEventQueue {
                 yieldedEvents.Add(new YieldedEvent(thisEvent, true));
             }
         });
+    }
+
+    // TODO: JPB: Add DoIn
+    public virtual void DoIn(IEnumerator thisEvent, int delay) {
+        throw new NotImplementedException();
     }
 
     // TODO: JPB: Add DoRepeating
@@ -106,79 +93,20 @@ public class YieldedEventQueue {
         eventQueue.Enqueue(() => task.Start());
         return task.Result;
     }
-}
 
-public class EventQueue2 {
-    public ConcurrentQueue<IEvent> eventQueue;
-
-    protected int repeatingEventID = 0;
-    protected List<RepeatingEvent> repeatingEvents = new List<RepeatingEvent>();
-    protected List<YieldedEvent> yieldedEvents = new List<YieldedEvent>();
-    protected volatile bool running = true;
-
-    public EventQueue2() {
-        eventQueue = new ConcurrentQueue<IEvent>();
-    }
-
-    public virtual void Do(IEvent thisEvent) {
-        eventQueue.Enqueue(thisEvent);
-    }
-
-    //public virtual void DoIn(IEventBase thisEvent, int delay) {
-    //    if(Running()) {
-    //        RepeatingEvent repeatingEvent = new RepeatingEvent(thisEvent, 1, delay, Timeout.Infinite, this);
-    //        DoRepeating(repeatingEvent);
-    //    }
-    //    else {
-    //        throw new Exception("Can't add timed event to non running Queue");
-    //    }
-    //}
-
-    //public virtual void DoRepeating(RepeatingEvent thisEvent) {
-    //    // enqueues repeating event at set intervals. If timer isn't
-    //    // stopped, stopping processing thread will still stop execution
-    //    // of events
-
-    //    if(Running()) {
-    //        // use Do to synchronize repeatingEvents access
-    //        Do(new EventBase<RepeatingEvent>(repeatingEvents.Add, thisEvent));
-    //    }
-    //    else {
-    //        throw new Exception("Can't enqueue repeating event to non running Queue");
-    //    }
-    //}
-
-    //public virtual void DoRepeating(IEventBase thisEvent, int iterations, int delay, int interval) {
-    //    // timers should only be created if running
-    //    DoRepeating(new RepeatingEvent(thisEvent, iterations, delay, interval, this));
-    //}
-
-    // Avoid using this if possible
-    public virtual void DoBlocking(IEventBase thisEvent)
-    {
-        // Create a new EventBase (put in event queue)
-        //    that starts a task that invokes the original event
-        // Then wait on that task to finish
-        var task = new Task(() => thisEvent.Invoke());
-        eventQueue.Enqueue(new BaseEvent(() => task.Start()));
-        task.Wait();
-    }
-
-    // Avoid using this if possible
-    public virtual T DoGet<T>(Task<T> task)
-    {
-        eventQueue.Enqueue(new BaseEvent(() => task.Start()));
-        return task.Result;
-    }
-
-    // Process one event in the queue.
-    // Returns true if an event was available to process.
     public bool Process() {
-        IEvent thisEvent;
+        // Evaluate all yielded events
+        foreach (var yieldedEvent in yieldedEvents) {
+            yieldedEvent.MoveNext();
+        }
+        yieldedEvents.RemoveAll(x => x.isFinished);
+
+        // Run the new event
+        Action thisEvent;
         if (running && eventQueue.TryDequeue(out thisEvent)) {
             try {
                 thisEvent.Invoke();
-            } catch(Exception e) {
+            } catch (Exception e) {
                 ErrorNotification.Notify(e);
             }
             return true;
@@ -186,24 +114,26 @@ public class EventQueue2 {
         return false;
     }
 
-    public bool Running() {
+    public bool IsRunning() {
         return running;
     }
 
     public void Pause(bool pause) {
         running = !pause;
-        
-        foreach(RepeatingEvent re in repeatingEvents) {
+
+        foreach (RepeatingEvent re in repeatingEvents) {
             re.Pause(pause);
         }
     }
 
     public void ClearRepeatingEvent(RepeatingEvent thisEvent) {
-        if(repeatingEvents.Contains(thisEvent)) {
+        if (repeatingEvents.Contains(thisEvent)) {
             repeatingEvents.Remove(thisEvent);
         }
     }
 }
+
+// –––––––––––––––––––––––––––––––––––––––––––––––––––––
 
 public interface IEvent {
     void Invoke();
