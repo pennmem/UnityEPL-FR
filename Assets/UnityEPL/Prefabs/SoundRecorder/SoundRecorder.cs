@@ -17,26 +17,31 @@ public class SoundRecorder : MonoBehaviour
     void OnEnable()
     {
         //TODO: enable cycling through devices
-
+        // TODO: JPB: Make Microphone work in webgl
+#if !UNITY_WEBGL
         try  {
             recording = Microphone.Start("", true, SECONDS_IN_MEMORY, SAMPLE_RATE);
         }
         catch(Exception e) { // TODO
             ErrorNotification.Notify(e);
         }
+#endif
     }
 
     void OnDisable()
     {
+#if !UNITY_WEBGL
         // device = null;
         if(isRecording)
             StopRecording();
         Microphone.End("");
+#endif
     }
 
     //using the system's default device
     public void StartRecording(string outputFilePath)
     {
+#if !UNITY_WEBGL
         if (isRecording)
         {
             throw new UnityException("Already recording.  Please StopRecording first.");
@@ -46,10 +51,12 @@ public class SoundRecorder : MonoBehaviour
         startSample = Microphone.GetPosition("");
         startTime = Time.unscaledTime;
         isRecording = true;
+#endif
     }
 
     public AudioClip StopRecording()
     {
+#if !UNITY_WEBGL
         if (!isRecording)
         {
             throw new UnityException("Not recording.  Please StartRecording first.");
@@ -67,6 +74,9 @@ public class SoundRecorder : MonoBehaviour
 
         ThreadPool.QueueUserWorkItem((state) => SavWav.Save(nextOutputPath, croppedClip));
         return croppedClip;
+#else
+        return null;
+#endif
     }
 
     public float[] GetLastSamples(int howManySamples)

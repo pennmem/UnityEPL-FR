@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System;
 using System.Threading.Tasks;
 using UnityEngine.UI;
+using System.Collections;
 
 public class EventQueue {
     public ConcurrentQueue<IEventBase> eventQueue;
@@ -182,12 +183,13 @@ public class RepeatingEvent : IEventBase {
                                  _interval, _queue, _flag) {}
 
     private void SetTimer() {
-        this.timer = new Timer(delegate(System.Object obj) { 
-                                                            // event is a keyword
-                                                            var evnt = (RepeatingEvent)obj;
-                                                            if(!evnt.flag.IsSet) {queue.Do(evnt);} 
-                                                           }, 
-                                                this, delay, interval);
+        TimerCallback callback = (Object obj) => {
+            // event is a keyword
+            var evnt = (RepeatingEvent)obj;
+            if (!evnt.flag.IsSet) { queue.Do(evnt); }
+        };
+
+        this.timer = new Timer(callback, this, delay, interval);
     }
 
     public void Invoke() {

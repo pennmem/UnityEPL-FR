@@ -3,8 +3,8 @@ using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
 using NetMQ;
-using UnityEditorInternal;
-using static UnityEditor.ShaderData;
+//using UnityEditorInternal;
+//using static UnityEditor.ShaderData;
 
 using InputHandlerFunc = System.Func<InputHandler, KeyMsg, bool>;
 
@@ -94,6 +94,8 @@ public class InputHandler : MessageTreeNode<KeyMsg> {
             return tempInputHandler.keyMsg;
         }        
     }
+
+
 }
 
 public struct KeyMsg {

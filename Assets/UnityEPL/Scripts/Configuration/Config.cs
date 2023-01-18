@@ -1,7 +1,9 @@
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using UnityEngine.Networking;
 
 // This class is thread safe
 public static partial class Config {
@@ -11,6 +13,8 @@ public static partial class Config {
     private static ConcurrentDictionary<string, object> systemConfig = null;
     private static ConcurrentDictionary<string, object> experimentConfig = null;
     private static string configPath = "CONFIG_PATH_NOT_SET";
+    private static string onlineSystemConfigText = null;
+    private static string onlineExperimentConfigText = null;
 
     // Public Internal Variables
     public static string experimentConfigName = null;
@@ -51,6 +55,7 @@ public static partial class Config {
         get { return Config.GetSetting<string[]>("availableExperiments"); }
         set { Config.SetSetting("availableExperiments", value); }
     }
+    
 
     // InterfaceManager.cs
     public static bool isTest { get { return Config.GetSetting<bool>("isTest"); } }
@@ -143,11 +148,11 @@ public static partial class Config {
         yield return systemWWW.SendWebRequest();
 
         if (systemWWW.result != UnityWebRequest.Result.Success) {
-            Debug.Log("Network error " + systemWWW.error);
+            UnityEngine.Debug.Log("Network error " + systemWWW.error);
         } else {
             var onlineSystemConfigText = systemWWW.downloadHandler.text;
-            Debug.Log("Online System Config fetched!!");
-            Debug.Log(onlineSystemConfigText);
+            UnityEngine.Debug.Log("Online System Config fetched!!");
+            UnityEngine.Debug.Log(onlineSystemConfigText);
             systemConfig = new ConcurrentDictionary<string, dynamic>(FlexibleConfig.LoadFromText(onlineSystemConfigText));
         }
     }
@@ -158,11 +163,11 @@ public static partial class Config {
         yield return experimentWWW.SendWebRequest();
 
         if (experimentWWW.result != UnityWebRequest.Result.Success){
-            Debug.Log("Network error " + experimentWWW.error);
+            UnityEngine.Debug.Log("Network error " + experimentWWW.error);
         } else {
             var onlineExperimentConfigText = experimentWWW.downloadHandler.text;
-            Debug.Log("Online Experiment Config fetched!!");
-            Debug.Log(onlineExperimentConfigText);
+            UnityEngine.Debug.Log("Online Experiment Config fetched!!");
+            UnityEngine.Debug.Log(onlineExperimentConfigText);
             experimentConfig = new ConcurrentDictionary<string, dynamic>(FlexibleConfig.LoadFromText(onlineExperimentConfigText));
         }
     }
@@ -229,7 +234,7 @@ public static partial class Config {
                 systemConfig = new ConcurrentDictionary<string, dynamic>(FlexibleConfig.LoadFromText(text));
             #else
                 if (onlineSystemConfigText == null)
-                    Debug.Log("Missing config from web");
+                    UnityEngine.Debug.Log("Missing config from web");
                 else
                     systemConfig = new ConcurrentDictionary<string, dynamic>(FlexibleConfig.LoadFromText(onlineSystemConfigText));
             #endif
@@ -247,7 +252,7 @@ public static partial class Config {
                 experimentConfig = new ConcurrentDictionary<string, dynamic>(FlexibleConfig.LoadFromText(text));
             #else
                 if (onlineExperimentConfigText == null)
-                    Debug.Log("Missing config from web");
+                    UnityEngine.Debug.Log("Missing config from web");
                 else
                     experimentConfig = new ConcurrentDictionary<string, dynamic>(FlexibleConfig.LoadFromText(onlineExperimentConfigText));
             #endif
