@@ -2,63 +2,63 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-public class State {
-    protected List<State> subStates = new List<State>();
-    protected IEnumerator stateEvent = null;
+using StateEvent = System.Func<System.Collections.IEnumerator>;
 
-    // Make a leaf node
-    public State(IEnumerator stateEvent) {
-        this.stateEvent = stateEvent;
+public class States : IEnumerable<StateEvent> {
+    public List<StateEvent> stateEvents {
+        get; protected set;
     }
 
-    // Make a branch node
-    public State(List<State> subStates) {
-        this.subStates = subStates;
+    public States() {
+        stateEvents = new List<StateEvent>();
     }
-        
-    public IEnumerator GetEvents() {
-        if (stateEvent != null) {
-            yield return stateEvent;
-        } else {
-            foreach (var state in subStates) {
-                IEnumerator gns = state.GetEvents();
-                while(gns.MoveNext()) {
-                    yield return gns.Current;
-                }
-            }
-        }
+
+    public void Add(StateEvent stateEvent) {
+        stateEvents.Add(stateEvent);
     }
+
+    public void Add(States states) {
+        stateEvents.AddRange(states);
+    }
+
+    public IEnumerator<StateEvent> GetEnumerator() {
+        return stateEvents.GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator() {
+        return GetEnumerator();
+    }
+
+
+    // HOW TO USE
 
     public static IEnumerator A() {
         yield return 1;
         yield return 2;
     }
+
+    public static void Do(IEnumerator e) {
+        while (e.MoveNext()) {
+            Console.WriteLine(e.Current);
+        }
+    }
+
     public void HowToUse() {
-        var states = new State(new List<State> {
-            new State(new List<State>(){
-                new State(A()),
-                new State(A())
-            }),
-            new State(A()),
-        });
-        var stateEvents = states.GetEvents();
-        while (stateEvents.MoveNext()) {
-            var stateEvent = (IEnumerator) stateEvents.Current;
-            //Do(stateEvent);
-            while (stateEvent.MoveNext()) {
-                Console.WriteLine(stateEvent.Current);
-            }
+        var s1 = new States() { A, A };
+        var states = new States { s1, A };
+
+        foreach (var stateEvent in states) {
+            Console.WriteLine(stateEvent());
+            Do(stateEvent());
         }
     }
 
     public static void EvalEnumerator(IEnumerator enumerator) {
-        while (enumerator.MoveNext())
-            ;
+        while (enumerator.MoveNext());
     }
 
     public static T EvalEnumerator<T>(IEnumerator<T> enumerator) {
-        while (enumerator.MoveNext())
-            ;
+        while (enumerator.MoveNext());
         return enumerator.Current;
     }
 }
