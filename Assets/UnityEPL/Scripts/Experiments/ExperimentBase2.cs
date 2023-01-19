@@ -17,7 +17,7 @@ using System.Runtime.Remoting.Messaging;
 // such as changing it to an object that has Increment and Decrement state functions,
 // is aware of the current timeline of the state, and takes a function that can inspect
 // the current state and switch timelines
-public abstract class ExperimentBase : EventLoop {
+public abstract class ExperimentBase2 : EventLoop2 {
     public InterfaceManager manager;
 
     // dictionary containing lists of actions indexed
@@ -27,7 +27,7 @@ public abstract class ExperimentBase : EventLoop {
 
     protected InputHandler inputHandler;
 
-    public ExperimentBase(InterfaceManager _manager) {
+    public ExperimentBase2(InterfaceManager _manager) {
         manager = _manager;
 
         inputHandler = new InputHandler(this, null);
@@ -42,6 +42,7 @@ public abstract class ExperimentBase : EventLoop {
     protected void Run() {
         SaveState();
         CleanSlate();
+        Do(stateMachine.GetState());
         Do(new EventBase<StateMachine>(stateMachine.GetState(), stateMachine));
     }
 

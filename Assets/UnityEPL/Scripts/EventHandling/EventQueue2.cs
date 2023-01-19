@@ -64,7 +64,7 @@ public class YieldedEventQueue {
             throw new InvalidOperationException("Cannot call DoBlocking from the same thread as the EventQueue/EventLoop. It will deadlock.");
         }
 
-        // Create new task that will block until it finishes
+        // Create new task and block until it finishes
         var task = new Task(() => {
             if (thisEvent.MoveNext()) {
                 // Add event to yieldedEvents list if it didn't finish
@@ -82,7 +82,7 @@ public class YieldedEventQueue {
             throw new InvalidOperationException("Cannot call DoGet from the same thread as the EventQueue/EventLoop. It will deadlock.");
         }
 
-        // Create new task that will block until it gets the result
+        // Create new task and block until it gets the result
         var task = new Task<T>(() => {
             if (thisEvent.MoveNext()) {
                 // Add event to yieldedEvents list if it didn't finish

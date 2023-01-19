@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using UnityEngine.SceneManagement;
 using UnityEngine;
 using System.Threading.Tasks;
+using System.Collections;
 
 // It is up to objects that are referenced in this class to 
 // have adequate protection levels on all members, as classes
@@ -64,6 +65,7 @@ public class InterfaceManager : MonoBehaviour
     // FlexibleConfig
     private ExperimentBase exp;
     public InputHandler inputHandler;
+    public InputHandler2 inputHandler2; // TODO: JPB: REMOVE
     public FileManager fileManager;
 
     //////////
