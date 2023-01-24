@@ -1,24 +1,60 @@
-using System.Collections.Generic;
-using System.Threading;
-using System.Collections.Concurrent;
 using System;
-using System.Threading.Tasks;
 using System.Collections;
+using System.Collections.Generic;
+using System.Collections.Concurrent;
+using System.Threading;
+using System.Threading.Tasks;
 
-public class YieldedEvent {
-    public bool isStarted { get; protected set; } = false;
-    public bool isFinished { get; protected set; } = false;
-    public IEnumerator enumerator { get; protected set; }
+public class YieldedEvent : IEnumerator {
+    protected Stack<IEnumerator> _enumerators;
+    readonly object _lock = new object();
+    protected bool _completed = false;
 
-    public YieldedEvent(IEnumerator enumerator, bool isStarted = false) {
-        this.enumerator = enumerator;
-        this.isStarted = isStarted;
+    // TODO: JPB: Pass in a wait signal to indicate when it is done
+    //            This would be used in the EventLoop
+    public YieldedEvent(IEnumerator enumerator) {
+        _enumerators = new Stack<IEnumerator>();
+        _enumerators.Push(enumerator);
     }
 
+    public object Current {
+        get {
+            lock (_lock) {
+                return _enumerators.Peek().Current;
+            }
+        }
+    }
+
+    // This function should only be called from one thread at a time
+    // The lock is there to prevent this
     public bool MoveNext() {
-        this.isStarted = true;
-        this.isFinished = !this.enumerator.MoveNext();
-        return this.isFinished;
+        lock (_lock) {
+            while (_enumerators.Count > 0) {
+                IEnumerator currentEnumerator = _enumerators.Peek();
+                if (currentEnumerator.MoveNext()) {
+                    var current = currentEnumerator.Current;
+                    if (current is IEnumerator) {
+                        _enumerators.Push((IEnumerator)current);
+                    } else {
+                        return true;
+                    }
+                } else {
+                    _enumerators.Pop();
+                }
+            }
+            _completed = true;
+            return false;
+        }
+    }
+
+    public bool IsCompleted() {
+        lock (_lock) {
+            return _completed;
+        }
+    }
+
+    public void Reset() {
+        throw new NotSupportedException();
     }
 }
 
@@ -36,10 +72,11 @@ public class YieldedEventQueue {
 
     // TODO: JPB: Add Do that takes an Action or IEvent?
     public virtual void Do(IEnumerator thisEvent) {
+        var yieldedEvent = new YieldedEvent(thisEvent);
         eventQueue.Enqueue(() => {
-            if (thisEvent.MoveNext()) {
+            if (yieldedEvent.MoveNext()) {
                 // Add event to yieldedEvents list if it didn't finish
-                yieldedEvents.Add(new YieldedEvent(thisEvent, true));
+                yieldedEvents.Add(yieldedEvent);
             }
         });
     }
@@ -58,40 +95,36 @@ public class YieldedEventQueue {
     }
 
     // Avoid using this if possible
-    // Do not call this from the same thread as the EventQueue/EventLoop
-    public virtual void DoBlocking(IEnumerator thisEvent) {
-        if (this.threadID == Thread.CurrentThread.ManagedThreadId) {
-            throw new InvalidOperationException("Cannot call DoBlocking from the same thread as the EventQueue/EventLoop. It will deadlock.");
-        }
-
-        // Create new task and block until it finishes
-        var task = new Task(() => {
-            if (thisEvent.MoveNext()) {
+    public virtual IEnumerator DoBlocking(IEnumerator thisEvent) {
+        var yieldedEvent = new YieldedEvent(thisEvent);
+        eventQueue.Enqueue(() => {
+            if (yieldedEvent.MoveNext()) {
                 // Add event to yieldedEvents list if it didn't finish
-                yieldedEvents.Add(new YieldedEvent(thisEvent, true));
+                yieldedEvents.Add(yieldedEvent);
             }
         });
-        eventQueue.Enqueue(() => task.Start());
-        task.Wait();
+
+        while (!yieldedEvent.IsCompleted()) {
+            yield return null;
+        }
+        yield break;
     }
 
     // Avoid using this if possible
-    // Do not call this from the same thread as the EventQueue/EventLoop
-    public virtual T DoGet<T>(IEnumerator<T> thisEvent) {
-        if (this.threadID == Thread.CurrentThread.ManagedThreadId) {
-            throw new InvalidOperationException("Cannot call DoGet from the same thread as the EventQueue/EventLoop. It will deadlock.");
-        }
-
-        // Create new task and block until it gets the result
-        var task = new Task<T>(() => {
-            if (thisEvent.MoveNext()) {
+    public virtual IEnumerator<T> DoGet<T>(IEnumerator<T> thisEvent) {
+        var yieldedEvent = new YieldedEvent(thisEvent);
+        eventQueue.Enqueue(() => {
+            if (yieldedEvent.MoveNext()) {
                 // Add event to yieldedEvents list if it didn't finish
-                yieldedEvents.Add(new YieldedEvent(thisEvent, true));
+                yieldedEvents.Add(yieldedEvent);
             }
-            return thisEvent.Current;
         });
-        eventQueue.Enqueue(() => task.Start());
-        return task.Result;
+
+        var waiting = default(T);
+        while (!yieldedEvent.IsCompleted()) {
+            yield return waiting;
+        }
+        yield return (T) yieldedEvent.Current;
     }
 
     public bool Process() {
@@ -99,7 +132,7 @@ public class YieldedEventQueue {
         foreach (var yieldedEvent in yieldedEvents) {
             yieldedEvent.MoveNext();
         }
-        yieldedEvents.RemoveAll(x => x.isFinished);
+        yieldedEvents.RemoveAll(x => x.IsCompleted());
 
         // Run the new event
         Action thisEvent;

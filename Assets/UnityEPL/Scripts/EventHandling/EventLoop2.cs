@@ -82,13 +82,13 @@ public class EventLoop2 : YieldedEventQueue {
         wait.Set();
     }
 
-    public override void DoBlocking(IEnumerator thisEvent) {
-        base.DoBlocking(thisEvent);
+    public override IEnumerator DoBlocking(IEnumerator thisEvent) {
+        return base.DoBlocking(thisEvent);
         // TODO: JPB: (bug) Set needs to be right before task.Wait() in EventQueue
         // wait.Set();
     }
 
-    public override T DoGet<T>(IEnumerator<T> thisEvent) {
+    public override IEnumerator<T> DoGet<T>(IEnumerator<T> thisEvent) {
         return base.DoGet(thisEvent);
         // TODO: JPB: (bug) Set needs to be right before task.Wait() in EventLoop
         // wait.Set();
