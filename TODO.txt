@@ -1,0 +1,14 @@
+Change Experiment so that InputHandler is not on the same thread
+Change so that everything does drop stuff into the manager thread
+  Instead it should use manager to find the threads that it needs to actually access and call a do on those
+Refactor things so that Do is called by default on all the functions of an EventLoop
+
+
+
+Options
+  1) Use Tasks and the DoGet function to impliment an async way to get values from other threads
+    - When you get the result (say human input), you can use a Do on the original class (FRExperiment) to push the result from the task and resume the old execution...
+      - How do you get the caller to then wait until the other one is done executing? 
+      - This is honestly the same exact thing as unity co-routines
+  2) Make them convert tasks to event-driven "loops" (if statement functions)
+  3) 

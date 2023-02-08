@@ -60,13 +60,6 @@ public class VideoControl : MonoBehaviour
 
         videoPlayer.Play();
     }
-
-    // legacy support
-    public void StartVideo() {
-        skippable = true;
-        gameObject.SetActive(true);
-        videoPlayer.Play();
-    }
     
     public bool IsPlaying()
     {

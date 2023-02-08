@@ -65,9 +65,9 @@ public abstract class ExperimentBase : EventLoop {
 
     protected void IntroductionVideo(StateMachine state) {
         state.IncrementState();
-        manager.Do(new EventBase<string, bool, Action>(manager.ShowVideo,
-                                                       Config.introductionVideo, true,
-                                                       () => Do(new EventBase(Run))));
+        manager.Do(new EventBase<string, bool, Action>(
+            manager.ShowVideo, Config.introductionVideo, true,
+            () => Do(new EventBase(Run))));
     }
 
     protected void CountdownVideo(StateMachine state) {
@@ -75,9 +75,9 @@ public abstract class ExperimentBase : EventLoop {
         SendHostPCMessage("COUNTDOWN", null);
 
         state.IncrementState();
-        manager.Do(new EventBase<string, bool, Action>(manager.ShowVideo,
-                                                       Config.countdownVideo, false,
-                                                       () => Do(new EventBase(Run))));
+        manager.Do(new EventBase<string, bool, Action>(
+            manager.ShowVideo, Config.countdownVideo, false,
+            () => Do(new EventBase(Run))));
     }
 
     // NOTE: rather than use flags for the audio test, this is entirely based off of timings.

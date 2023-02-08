@@ -4,14 +4,13 @@ using System.Collections.Generic;
 
 using StateEvent = System.Func<System.Collections.IEnumerator>;
 
+
 // This doesn't just inherit from List<StateEvent> because the
 // list could hold structs with more internal information in it;
 // for example, an ID number.
 // TODO: JPB: Make a function that can wrap a state to tell the state machine to increment state
 public class States : IEnumerable<StateEvent> {
-    public List<StateEvent> stateEvents {
-        get; protected set;
-    }
+    public List<StateEvent> stateEvents { get; protected set; }
 
     public States() {
         stateEvents = new List<StateEvent>();
@@ -47,7 +46,7 @@ public class States : IEnumerable<StateEvent> {
         }
     }
 
-    public void HowToUse() {
+    public static void HowToUse() {
         var s1 = new States() { A, A };
         var states = new States { s1, A };
 

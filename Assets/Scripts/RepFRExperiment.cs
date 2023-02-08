@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
@@ -55,6 +56,7 @@ public class RepFRExperiment : ExperimentBase {
 
     // TODO: reformat
     stateMachine["Run"] = new ExperimentTimeline(new List<Action<StateMachine>> {
+        DistractorOriginal,
         Introduction, // runs Introduction states
         MicrophoneTest, // runs MicrophoneTest states
         QuitPrompt,
@@ -185,8 +187,8 @@ public class RepFRExperiment : ExperimentBase {
   //////////
 
   protected void RepeatVideo(StateMachine state) {
-    WaitForKey("repeat introduction video", "Press Y to continue to practice list, \n Press N to replay instructional video.", 
-                RepeatStateOrContinue);
+    WaitForKey("repeat introduction video", "Press Y to continue to practice list, \n Press N to replay instructional video.",
+                RepeatLoopOrExitLoop);
   }
 
   protected void RepeatMicTest(StateMachine state) {

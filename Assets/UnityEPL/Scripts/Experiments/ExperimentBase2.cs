@@ -1,9 +1,12 @@
 using System;
 using System.Linq;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json;
+
 using KeyAction = System.Func<InputHandler, KeyMsg, bool>;
+using StateRet = System.Collections.IEnumerator;
 
 using UnityEngine;
 using System.Diagnostics;
@@ -18,7 +21,7 @@ using System.Runtime.Remoting.Messaging;
 // is aware of the current timeline of the state, and takes a function that can inspect
 // the current state and switch timelines
 public abstract class ExperimentBase2 : EventLoop2 {
-    public InterfaceManager manager;
+    public InterfaceManager2 manager;
 
     // dictionary containing lists of actions indexed
     // by the name of the function incrementing through
@@ -27,16 +30,18 @@ public abstract class ExperimentBase2 : EventLoop2 {
 
     protected InputHandler inputHandler;
 
-    public ExperimentBase2(InterfaceManager _manager) {
+    public ExperimentBase2(InterfaceManager2 _manager) {
         manager = _manager;
 
-        inputHandler = new InputHandler(this, null);
+        inputHandler = new InputHandler2(this, null);
         manager.inputHandler.RegisterChild(inputHandler);
 
         CleanSlate(); // clear display, disable keyHandler
     }
 
     public abstract StateMachine GetStateMachine();
+
+    protected States states;
 
     // executes state machine current function
     protected void Run() {
@@ -64,11 +69,8 @@ public abstract class ExperimentBase2 : EventLoop2 {
     // Worker Functions for common experiment tasks.
     //////////
 
-    protected void IntroductionVideo(StateMachine state) {
-        state.IncrementState();
-        manager.Do(new EventBase<string, bool, Action>(manager.ShowVideo,
-                                                       Config.introductionVideo, true,
-                                                       () => Do(new EventBase(Run))));
+    protected StateRet IntroductionVideo() {
+        yield return manager.ShowVideo(Config.introductionVideo, true);
     }
 
     protected void CountdownVideo(StateMachine state) {
@@ -76,9 +78,9 @@ public abstract class ExperimentBase2 : EventLoop2 {
         SendHostPCMessage("COUNTDOWN", null);
 
         state.IncrementState();
-        manager.Do(new EventBase<string, bool, Action>(manager.ShowVideo,
-                                                       Config.countdownVideo, false,
-                                                       () => Do(new EventBase(Run))));
+        manager.Do(new EventBase<string, bool, Action>(
+            manager.ShowVideo, Config.countdownVideo, false,
+            () => Do(new EventBase(Run))));
     }
 
     // NOTE: rather than use flags for the audio test, this is entirely based off of timings.
