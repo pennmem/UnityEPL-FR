@@ -19,7 +19,7 @@
     "restDuration": 15000,
     "distractorDuration": 20000,
     "introductionVideo": "resources/RepFR1.mp4",
-    "countdownVideo": "resources/countdown_3s.mp4",
+    "countdownVideo": "resources/countdown.mp4",
     "orientationDuration": [1000, 1400],
     "micTestDuration": 3000,
     "recallDelay": [1000, 1400],

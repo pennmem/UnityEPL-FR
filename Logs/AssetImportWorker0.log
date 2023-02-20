@@ -395,3 +395,11 @@ Received Import Request.
 Number of updated assets reloaded before import = 0
 Start importing Assets/Resources/lower_beep.wav using Guid(ced5bf9a4c6314b618674a160180f41d) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: 'ba404ef66535c2e1da15c824959818d7') in 0.005543 seconds 
 Number of asset objects unloaded after import = 2
+========================================================================
+Received Import Request.
+  Time since last request: 2065.400586 seconds.
+  path: Assets/Resources/countdown_3s.mp4
+  artifactKey: Guid(3e2eabbbe3c3d4a56926bf1823484560) Importer(815301076,1909f56bfc062723c751e8b465ee728b)
+Number of updated assets reloaded before import = 0
+Start importing Assets/Resources/countdown_3s.mp4 using Guid(3e2eabbbe3c3d4a56926bf1823484560) Importer(815301076,1909f56bfc062723c751e8b465ee728b)  -> (artifact id: '8986c17cf5baf3945a04ad5d162cb9d9') in 0.626712 seconds 
+Number of asset objects unloaded after import = 1
