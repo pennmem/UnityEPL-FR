@@ -4,6 +4,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Threading;
 
+#if false
 public class NonUnitySyncbox : EventLoop 
 {
     public InterfaceManager im;
@@ -71,3 +72,18 @@ public class NonUnitySyncbox : EventLoop
         stopped = true;
     }
 }
+#else
+public class NonUnitySyncbox : EventLoop {
+    public NonUnitySyncbox(InterfaceManager _im) {}
+
+    public void Init() {}
+
+    public bool IsRunning() {return false;}
+
+    public void StartPulse() {}
+
+    private void Pulse() {}
+
+    public void StopPulse() {}
+}
+#endif

@@ -1,6 +1,6 @@
 {
-    "experimentClass": "ApemRepFRExperiment",
-    "experimentName": "ApemRepFR1",
+    "experimentClass": "ltpCatRepFRExperiment",
+    "experimentName": "ltpCatRepFR1",
     "experimentScene": "RepFR",
     "prefix": "any",
     "wordpool": "resources/ram_wordpool_en.txt",

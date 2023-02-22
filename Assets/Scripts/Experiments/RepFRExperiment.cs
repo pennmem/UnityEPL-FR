@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+using System.Text;
 //using UnityEngine; // to read resource files packaged with Unity
 
 public class RepFRExperiment : ExperimentBase {
-  protected List<string> source_words;
   protected List<string> blank_words;
   protected RepCounts rep_counts = null;
   protected int words_per_list;
@@ -22,7 +22,6 @@ public class RepFRExperiment : ExperimentBase {
       throw new Exception("Word Repeats and Counts not aligned");
     }
 
-
     for(int i=0; i < repeats.Length; i++) {
       if(rep_counts == null) {
         rep_counts = new RepCounts(repeats[i], counts[i]);
@@ -32,18 +31,25 @@ public class RepFRExperiment : ExperimentBase {
       }
     }
 
-    // boilerplate needed by RepWordGenerator
-    words_per_list = rep_counts.TotalWords();
-    unique_words_per_list = rep_counts.UniqueWords();
-    blank_words = new List<string>(Enumerable.Repeat(string.Empty, words_per_list));
-    source_words = ReadWordpool();
-
-    // TODO: Load Session
-    currentSession = GenerateSession();
+    // Init session
+    InitSession();
     stateMachine = GetStateMachine();
 
     Start();
     Do(new EventBase(Run));
+  }
+
+  protected virtual void InitSession(){
+    // boilerplate needed by RepWordGenerator
+    words_per_list = rep_counts.TotalWords();
+    unique_words_per_list = rep_counts.UniqueWords();
+    blank_words = new List<string>(Enumerable.Repeat(string.Empty, words_per_list));
+    var source_words = ReadWordpool();
+
+    var words = new RandomSubset(source_words);
+
+    // TODO: Load Session
+    currentSession = GenerateSession(words);
   }
 
   //////////
@@ -268,19 +274,18 @@ public class RepFRExperiment : ExperimentBase {
   // Word/Stim list generation
   //////////
 
-  public List<string> ReadWordpool() {
+  public virtual List<Word> ReadWordpool() {
     // wordpool is a file with 'word' as a header and one word per line.
     // repeats are described in the config file with two matched arrays,
     // repeats and counts, which describe the number of presentations
     // words can have and the number of words that should be assigned to
     // each of those presentation categories.
     string source_list = manager.fileManager.GetWordList();
-    source_words = new List<string>();
+    var source_words = new List<Word>();
 
     //skip line for csv header
-    foreach(var line in File.ReadLines(source_list).Skip(1))
-    {
-      source_words.Add(line);
+    foreach(var line in File.ReadLines(source_list).Skip(1)) {
+      source_words.Add(new Word(line));
     }
 
     // copy wordpool to session directory
@@ -288,19 +293,19 @@ public class RepFRExperiment : ExperimentBase {
     System.IO.File.Copy(source_list, path, true);
 
     return source_words;
-
   }
 
-  public RepFRRun MakeRun(RandomSubset subset_gen, bool enc_stim,
-      bool rec_stim) {
-    var enclist = RepWordGenerator.Generate(rep_counts,
-        subset_gen.Get(unique_words_per_list), enc_stim);
+  public RepFRRun MakeRun<T>(T subset_gen, bool enc_stim,
+      bool rec_stim) where T : RandomSubset {
+
+    var input_words = subset_gen.Get(unique_words_per_list).Select(x => x.word).ToList();
+    var enclist = RepWordGenerator.Generate(rep_counts, input_words, enc_stim);
     var reclist = RepWordGenerator.Generate(rep_counts, blank_words, rec_stim);
     return new RepFRRun(enclist, reclist, enc_stim, rec_stim);
   }
 
 
-  public RepFRSession GenerateSession() {
+  public RepFRSession GenerateSession<T>(T ramdomSubset) where T : RandomSubset {
     // Parameters retrieved from experiment config, given default
     // value if null.
     // Numbers of list types:
@@ -310,35 +315,33 @@ public class RepFRExperiment : ExperimentBase {
     int retrieval_only_lists = manager.GetSetting("retrievalOnlyLists");
     int encoding_and_retrieval_lists = manager.GetSetting("encodingAndRetrievalLists");
     int no_stim_lists = manager.GetSetting("noStimLists");
-    
-    RandomSubset subset_gen = new RandomSubset(source_words);
 
     var session = new RepFRSession();
 
     for (int i=0; i<practice_lists; i++) {
-      session.Add(MakeRun(subset_gen, false, false));
+      session.Add(MakeRun(ramdomSubset, false, false));
     }
 
     for (int i=0; i<pre_no_stim_lists; i++) {
-      session.Add(MakeRun(subset_gen, false, false));
+      session.Add(MakeRun(ramdomSubset, false, false));
     }
 
     var randomized_list = new RepFRSession();
 
     for (int i=0; i<encoding_only_lists; i++) {
-      randomized_list.Add(MakeRun(subset_gen, true, false));
+      randomized_list.Add(MakeRun(ramdomSubset, true, false));
     }
 
     for (int i=0; i<retrieval_only_lists; i++) {
-      randomized_list.Add(MakeRun(subset_gen, false, true));
+      randomized_list.Add(MakeRun(ramdomSubset, false, true));
     }
 
     for (int i=0; i<encoding_and_retrieval_lists; i++) {
-      randomized_list.Add(MakeRun(subset_gen, true, true));
+      randomized_list.Add(MakeRun(ramdomSubset, true, true));
     }
 
     for (int i=0; i<no_stim_lists; i++) {
-      randomized_list.Add(MakeRun(subset_gen, false, false));
+      randomized_list.Add(MakeRun(ramdomSubset, false, false));
     }
 
     session.AddRange(RepWordGenerator.Shuffle(randomized_list));
@@ -395,4 +398,19 @@ public class RepFRSession : Timeline<RepFRRun> {
   // {
   //   NextList();
   // }
+}
+
+public class Word {
+    public string word { get; protected set; }
+
+    public Word(string word) {
+        this.word = word;
+    }
+
+    public static implicit operator string(Word word) {
+        return word;
+    }
+    public override string ToString() {
+        return word;
+    }
 }

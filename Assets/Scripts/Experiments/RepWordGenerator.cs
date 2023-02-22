@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 // Stores a word and whether or not it should be stimulated during encoding.
 public class WordStim {
@@ -96,16 +97,18 @@ public static class EnumeratorExtensions
 }
 
 // Provides random subsets of a word pool without replacement.
-public class RandomSubset {
-  protected List<String> shuffled;
+public class RandomSubset{
+  protected List<Word> shuffled;
   protected int index;
 
-  public RandomSubset(List<String> source_words) {
+  protected RandomSubset() { index = 0; }
+
+  public RandomSubset(List<Word> source_words) {
     shuffled = RepWordGenerator.Shuffle(source_words);
     index = 0;
   }
 
-  public List<String> Get(int amount) {
+  public virtual List<Word> Get(int amount) {
     if ((shuffled.Count - index) < amount) {
       throw new IndexOutOfRangeException("Word list too small for session");
     }
@@ -385,6 +388,8 @@ class RepWordGenerator {
       int insert_at = InterfaceManager.rnd.Value.Next(prepared_words.Count+1);
       prepared_words.Insert(insert_at, word_stim);
     }
+
+    
     
     return prepared_words;
   }
