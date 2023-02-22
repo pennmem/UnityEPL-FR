@@ -13,27 +13,21 @@ public class CatRepFRExperiment : RepFRExperiment {
     // State Machine Constructor Functions
     //////////
 
-    protected void Test(StateMachine state) {
-        var a = currentSession.items;
-        Debug.Log(a);
-    }
-
     public override StateMachine GetStateMachine() {
         StateMachine stateMachine = new StateMachine(currentSession);
 
         // TODO: reformat
         stateMachine["Run"] = new ExperimentTimeline(
             new List<Action<StateMachine>> {
-                Test});
-                //IntroductionPrompt,
-                //IntroductionVideo,
-                //RepeatVideo,
-                //MicrophoneTest, // runs MicrophoneTest states
-                //QuitPrompt,
-                //Practice, // runs Practice states
-                //ConfirmStart,
-                //MainLoop, // runs MainLoop states
-                //FinishExperiment});
+                IntroductionPrompt,
+                IntroductionVideo,
+                RepeatVideo,
+                MicrophoneTest, // runs MicrophoneTest states
+                QuitPrompt,
+                Practice, // runs Practice states
+                ConfirmStart,
+                MainLoop, // runs MainLoop states
+                FinishExperiment});
 
         // though it is largely the same as the main loop,
         // practice is a conceptually distinct state machine
@@ -155,7 +149,7 @@ public class CategorizedRandomSubset : RandomSubset {
             throw new IndexOutOfRangeException("Word list too small for session");
         }
 
-        // Make sure to use the categories with more items first
+        // Make sure to use the categories with more items first to balance item usage
         remainingCategories.Sort((x,y) => y.Value.Count().CompareTo(x.Value.Count()));
 
         var words = new List<Word>();
