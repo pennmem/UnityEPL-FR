@@ -150,20 +150,20 @@ public class CategorizedRandomSubset : RandomSubset {
         var remainingCategories = shuffled
             .Where(x => x.Value.Count() > 0)
             .ToList().Shuffle();
+
         if (amount > remainingCategories.Count()) {
             throw new IndexOutOfRangeException("Word list too small for session");
         }
 
-        var words = new List<Word>();
+        // Make sure to use the categories with more items first
+        remainingCategories.Sort((x,y) => y.Value.Count().CompareTo(x.Value.Count()));
 
+        var words = new List<Word>();
         for (int i = 0; i < amount; ++i) {
             var catWords = remainingCategories[i];
             words.Add(catWords.Value.Last());
             shuffled[catWords.Key].RemoveAt(catWords.Value.Count - 1);
         }
-        Debug.Log(String.Join(", ", words));
-        Debug.Log(String.Join(", ", shuffled.Select(x => x.Key)));
-        Debug.Log(String.Join(", ", shuffled.Select(x => x.Value.Count())));
 
         return words;
     }
