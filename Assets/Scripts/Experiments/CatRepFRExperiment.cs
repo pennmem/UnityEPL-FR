@@ -72,11 +72,11 @@ public class CatRepFRExperiment : RepFRExperiment {
         int duration = (int)manager.GetSetting("preCountdownRestDuration");
         state.IncrementState();
         manager.Do(new EventBase<string, string>(manager.ShowText, "orientation stimulus", "+"));
-        ReportEvent("pre-countdown rest", null);
+        ReportEvent("rest", null);
         SendHostPCMessage("REST", null);
 
         DoIn(new EventBase(() => {
-            ReportEvent("pre-countdown rest end", null);
+            ReportEvent("rest end", null);
             Run();
         }), duration);
     }

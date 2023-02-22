@@ -114,7 +114,7 @@ public class RepFRExperiment : ExperimentBase {
     }
 
     protected void EncodingDelay(StateMachine state) {
-        int[] limits = manager.GetSetting("stimulusInterval");
+        int[] limits = manager.GetSetting("encodingDelay");
         int interval = InterfaceManager.rnd.Value.Next(limits[0], limits[1]);
         state.IncrementState();
         WaitForTime(interval);

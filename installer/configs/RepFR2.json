@@ -12,6 +12,7 @@
     "noStimLists": 0,
     "wordRepeats": [3, 2, 1],
     "wordCounts": [6, 3, 3],
+    "encodingDelay": [750, 1000],
     "stimulusDuration": 750,
     "stimulusInterval": [750, 1000],
     "restDuration": 7000,
