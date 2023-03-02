@@ -110,7 +110,7 @@ public class ElememInterface : IHostPC
     int messageTimeout = 1000;
     int heartbeatTimeout = 8000; // TODO: pull value from configuration
 
-    private TcpClient elemem;
+    private TcpClient tcpClient;
     private HostPCListener listener;
     private int heartbeatCount = 0;
 
@@ -125,35 +125,35 @@ public class ElememInterface : IHostPC
         Disconnect();
     }
 
-    public NetworkStream GetWriteStream() {
+    protected NetworkStream GetWriteStream() {
         // only one writer can be active at a time
-        if(elemem == null) {
+        if(tcpClient == null) {
             throw new InvalidOperationException("Socket not initialized.");
         }
 
-        return elemem.GetStream();
+        return tcpClient.GetStream();
     }
 
-    public NetworkStream GetReadStream() {
+    protected NetworkStream GetReadStream() {
         // only one reader can be active at a time
-        if(elemem == null) {
+        if(tcpClient == null) {
             throw new InvalidOperationException("Socket not initialized.");
         }
 
-        return elemem.GetStream();
+        return tcpClient.GetStream();
     }
 
     public override void Connect() {
-        elemem = new TcpClient(); 
+        tcpClient = new TcpClient(); 
 
         try {
-            IAsyncResult result = elemem.BeginConnect((string)im.GetSetting("ip"), (int)im.GetSetting("port"), null, null);
+            IAsyncResult result = tcpClient.BeginConnect((string)im.GetSetting("ip"), (int)im.GetSetting("port"), null, null);
             result.AsyncWaitHandle.WaitOne(messageTimeout);
-            elemem.EndConnect(result);
+            tcpClient.EndConnect(result);
         }
         catch(SocketException) {
             im.Do(new EventBase<string>(im.SetHostPCStatus, "ERROR")); 
-            throw new OperationCanceledException("Failed to Connect");
+            throw new OperationCanceledException("Failed to connect to elemem");
         }
 
         im.Do(new EventBase<string>(im.SetHostPCStatus, "INITIALIZING")); 
@@ -183,11 +183,11 @@ public class ElememInterface : IHostPC
 
     public override void Disconnect() {
         listener?.CancelRead();
-        elemem.Close();
-        elemem.Dispose();
+        tcpClient.Close();
+        tcpClient.Dispose();
     }
 
-    private void DoLatencyCheck() {
+    protected void DoLatencyCheck() {
         // except if latency is unacceptable
         Stopwatch sw = new Stopwatch();
         float[] delay = new float[20];

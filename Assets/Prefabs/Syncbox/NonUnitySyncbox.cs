@@ -4,7 +4,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-#if false
+#if !UNITY_WEBGL
 public class NonUnitySyncbox : EventLoop 
 {
     public InterfaceManager im;
@@ -77,13 +77,10 @@ public class NonUnitySyncbox : EventLoop {
     public NonUnitySyncbox(InterfaceManager _im) {}
 
     public void Init() {}
-
     public bool IsRunning() {return false;}
-
     public void StartPulse() {}
+    public void StopPulse() {}
 
     private void Pulse() {}
-
-    public void StopPulse() {}
 }
 #endif
