@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using System;
 using System.Threading;
 using UnityEngine;
@@ -26,10 +27,10 @@ public class DataPoint
     /// <param name="newType">New type.</param>
     /// <param name="newTime">New time.</param>
     /// <param name="newDataDict">New data dict.</param>
-    public DataPoint(string newType, System.DateTime newTime, System.Collections.Generic.Dictionary<string, object> newDataDict)
+    public DataPoint(string newType, System.DateTime newTime, Dictionary<string, object> newDataDict)
     {
         if (newDataDict == null)
-            newDataDict = new System.Collections.Generic.Dictionary<string, object>();
+            newDataDict = new();
 
         type = newType;
         dataDict = newDataDict;

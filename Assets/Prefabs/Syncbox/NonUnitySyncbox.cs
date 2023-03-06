@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 
 #if !UNITY_WEBGL
-public class NonUnitySyncbox : EventLoop 
+public class NonUnitySyncbox : EventLoop, ISyncBox
 {
     public InterfaceManager im;
 
@@ -31,19 +31,25 @@ public class NonUnitySyncbox : EventLoop
         im = _im;
     }
 
+
     public void Init() {
         if(Marshal.PtrToStringAuto(OpenUSB()) == "didn't open usb...") {
             im.ReportEvent("syncbox disconnected", null, DataReporter.TimeStamp());
+            throw new OperationCanceledException("Failed to connect to syncbox");
         }
         StopPulse();
         Start();
     }
 
+    // TODO: JPB: This is technically a race condition (should be a DoGet)
     public bool IsRunning() {
         return !stopped;
     }
 
     public void StartPulse() {
+        Do(new EventBase(() => StartPulseHandler()));
+    }
+    public void StartPulseHandler() {
         if (!IsRunning())
         {
             stopped = false;
@@ -51,25 +57,26 @@ public class NonUnitySyncbox : EventLoop
         }
     }
 
-	private void Pulse ()
-    {
-		if(!stopped)
-        {
+    public void StopPulse() {
+        Do(new EventBase(() => StopPulseHandler()));
+    }
+    public void StopPulseHandler() {
+        stopped = true;
+    }
+
+    protected void Pulse() {
+        if (!stopped) {
             // Send a pulse
-            im.Do(new EventBase<string, Dictionary<string, object>, DateTime>(im.ReportEvent, 
+            im.Do(new EventBase<string, Dictionary<string, object>, DateTime>(im.ReportEvent,
                                                                               "syncPulse",
-                                                                              null, 
+                                                                              null,
                                                                               DataReporter.TimeStamp()));
             SyncPulse();
 
             // Wait a random interval between min and max
             int timeBetweenPulses = (int)(TIME_BETWEEN_PULSES_MIN + (int)(InterfaceManager.rnd.Value.NextDouble() * (TIME_BETWEEN_PULSES_MAX - TIME_BETWEEN_PULSES_MIN)));
             DoIn(new EventBase(Pulse), timeBetweenPulses);
-		}
-	}
-
-    public void StopPulse() {
-        stopped = true;
+        }
     }
 }
 #else

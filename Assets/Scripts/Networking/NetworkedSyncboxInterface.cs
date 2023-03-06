@@ -8,35 +8,17 @@ using System.Threading.Tasks;
 using UnityEngine;
 using System.Net.Sockets;
 using Newtonsoft.Json.Linq;
-
-//public abstract class IHostPC : EventLoop
-//{
-//    public abstract JObject SendAndWait(string type, Dictionary<string, object> data,
-//                                        string response, int timeout);
-//    public abstract void Connect();
-//    public abstract void Disconnect();
-//    public abstract void HandleMessage(NetMsg msg);
-//    public abstract void SendMessage(string type, Dictionary<string, object> data);
-//}
+using System.Runtime.Remoting.Messaging;
+using NetMQ;
 
 public interface ISyncBox {
-    public void Init();
-    public bool IsRunning();
-    public void StartPulse();
-    public void StopPulse();
-    protected void Pulse();
+    void Init();
+    bool IsRunning();
+    void StartPulse();
+    void StopPulse();
 }
 
-public class NetworkedSyncboxInterface : IHostPC, ISyncBox {
-    public InterfaceManager im;
-
-    int messageTimeout = 1000;
-    int heartbeatTimeout = 8000; // TODO: pull value from configuration
-
-    private TcpClient tcpClient;
-    private HostPCListener listener;
-    private int heartbeatCount = 0;
-
+public class NetworkedSyncboxInterface : NetworkInterface, ISyncBox {
     private const int PULSE_START_DELAY = 1000; // ms
     private const int TIME_BETWEEN_PULSES_MIN = 800;
     private const int TIME_BETWEEN_PULSES_MAX = 1200;
@@ -44,10 +26,7 @@ public class NetworkedSyncboxInterface : IHostPC, ISyncBox {
     private volatile bool stopped = true;
 
     // Changed
-    public NetworkedSyncboxInterface(InterfaceManager _im) {
-        im = _im;
-        listener = new HostPCListener(this);
-        Start();
+    public NetworkedSyncboxInterface(InterfaceManager _im) : base(_im) {
     }
 
     ~NetworkedSyncboxInterface() {
@@ -55,7 +34,7 @@ public class NetworkedSyncboxInterface : IHostPC, ISyncBox {
     }
 
     // ------------
-    // IHostPC
+    // NetworkInterface
     // ------------
 
     // Changed
@@ -63,7 +42,7 @@ public class NetworkedSyncboxInterface : IHostPC, ISyncBox {
         tcpClient = new TcpClient();
 
         try {
-            IAsyncResult result = tcpClient.BeginConnect("127.0.0.1", (int)im.GetSetting("freiburgSyncboxPort"), null, null);
+            IAsyncResult result = tcpClient.BeginConnect("127.0.0.1", (int)im.GetSetting("networkedSyncboxPort"), null, null);
             result.AsyncWaitHandle.WaitOne(messageTimeout);
             tcpClient.EndConnect(result);
         } catch (SocketException) {
@@ -72,24 +51,25 @@ public class NetworkedSyncboxInterface : IHostPC, ISyncBox {
         }
 
         _ = listener.Listen(GetReadStream());
-        SendAndWait("NSBOPENUSB", new Dictionary<string, object>(),
-                    "NSBOPENUSB_OK", messageTimeout);
+        SendAndWait("NSBOPENUSB", new(), "NSBOPENUSB_OK", messageTimeout);
 
         // excepts if there's an issue with latency, else returns
-        DoLatencyCheck();
+        DoLatencyCheck("NSB");
     }
 
     // Changed
     public override void Disconnect() {
+        if (tcpClient != null && !tcpClient.Connected) {
+            SendAndWait("NSBCLOSEUSB", new(), "NSBCLOSEUSB_OK", messageTimeout);
+        }
         listener?.CancelRead();
-        tcpClient.Close();
-        tcpClient.Dispose();
+        tcpClient?.Close();
+        tcpClient?.Dispose();
     }
 
-    // Change to CSV?
-    public override JObject SendAndWait(string type, Dictionary<string, object> data,
+    // Change (for CSV)
+    public override void SendAndWait(string type, Dictionary<string, object> data,
                                         string response, int timeout) {
-        JObject json;
         var sw = new Stopwatch();
         var remainingWait = timeout;
         sw.Start();
@@ -116,14 +96,12 @@ public class NetworkedSyncboxInterface : IHostPC, ISyncBox {
                 // try to convert, null events are writes or other
                 // actions
                 var msgEv = ev as MessageEvent<NetMsg>;
-
                 if (msgEv == null) { continue; }
 
-                json = JObject.Parse(msgEv.msg.msg);
-                if (json.GetValue("type").Value<string>() == response) {
+                if (response == msgEv.msg.msg.Trim().Split(",")[0]) {
                     // once this chain returns, Loop continue on to 
                     // process all messages in queue
-                    return json;
+                    return;
                 }
             }
         }
@@ -131,11 +109,10 @@ public class NetworkedSyncboxInterface : IHostPC, ISyncBox {
         throw new TimeoutException();
     }
 
-    // Changed (only some exception text)
+    // Changed (for CSV)
     public override void HandleMessage(NetMsg msg) {
-        JObject json = JObject.Parse(msg.msg);
-        string type = json.GetValue("type").Value<string>();
-        ReportMessage(msg, false);
+        string type = msg.msg.Trim().Split(",")[0];
+        ReportNetworkMessage(msg, false);
 
         if (type.Contains("ERROR")) {
             throw new Exception("Error received from Networked Syncbox.");
@@ -147,10 +124,9 @@ public class NetworkedSyncboxInterface : IHostPC, ISyncBox {
         }
     }
 
-    // Change to CSV?
+    // Change (for CSV)
     public override void SendMessage(string type, Dictionary<string, object> data) {
-        DataPoint point = new DataPoint(type, DataReporter.TimeStamp(), data);
-        string message = point.ToJSON();
+        string message = type;
 
         UnityEngine.Debug.Log("Sent Message");
         UnityEngine.Debug.Log(message);
@@ -159,7 +135,7 @@ public class NetworkedSyncboxInterface : IHostPC, ISyncBox {
 
         NetworkStream stream = GetWriteStream();
         stream.Write(bytes, 0, bytes.Length);
-        ReportMessage(new NetMsg(message, DataReporter.TimeStamp()), true);
+        ReportNetworkMessage(new NetMsg(message, DataReporter.TimeStamp()), true);
     }
 
     // ------------
@@ -167,16 +143,22 @@ public class NetworkedSyncboxInterface : IHostPC, ISyncBox {
     // ------------
 
     public void Init() {
+        Do(new EventBase(() => InitHelper()));
+    }
+    public void InitHelper() {
         StopPulse();
-        Disconnect();
-        Do(new EventBase(Connect));
+        Connect();
     }
 
+    // TODO: JPB: This is technically a race condition (should be a DoGet)
     public bool IsRunning() {
         return !stopped;
     }
 
     public void StartPulse() {
+        Do(new EventBase(() => StartPulseHandler()));
+    }
+    public void StartPulseHandler() {
         if (!IsRunning()) {
             stopped = false;
             DoIn(new EventBase(Pulse), PULSE_START_DELAY);
@@ -184,15 +166,16 @@ public class NetworkedSyncboxInterface : IHostPC, ISyncBox {
     }
 
     public void StopPulse() {
+        Do(new EventBase(() => StopPulseHelper()));
+    }
+    public void StopPulseHelper() {
         stopped = true;
     }
 
     protected void Pulse() {
         if (!stopped) {
             // Send a pulse
-            im.Do(new EventBase<string, Dictionary<string, object>, DateTime>(
-                im.ReportEvent, "syncPulse", null, DataReporter.TimeStamp()));
-
+            im.SendHostPCMessage("syncPulse", new());
             SendMessage("NSBSYNCPULSE", new());
 
             // Wait a random interval between min and max
@@ -200,174 +183,5 @@ public class NetworkedSyncboxInterface : IHostPC, ISyncBox {
             DoIn(new EventBase(Pulse), timeBetweenPulses);
         }
     }
-
-    // ------------
-    // NetworkedInterface
-    // ------------
-
-    protected void Heartbeat() {
-        var data = new Dictionary<string, object>();
-        data.Add("count", heartbeatCount);
-        heartbeatCount++;
-        SendAndWait("HEARTBEAT", data, "HEARTBEAT_OK", heartbeatTimeout);
-    }
-
-    protected void DoLatencyCheck() {
-        // except if latency is unacceptable
-        Stopwatch sw = new Stopwatch();
-        float[] delay = new float[20];
-
-        // send 20 heartbeats, except if max latency is out of tolerance
-        for (int i = 0; i < 20; i++) {
-            sw.Restart();
-            Heartbeat();
-            sw.Stop();
-
-            // calculate manually to have sub millisecond resolution,
-            // as ElapsedMilliseconds returns an integer number of
-            // milliseconds.
-            delay[i] = sw.ElapsedTicks * (1000f / Stopwatch.Frequency);
-
-            if (delay[i] > 20) {
-                throw new TimeoutException("Network Latency too large.");
-            }
-
-            // send new heartbeat every 50 ms
-            Thread.Sleep(50 - (int)delay[i]);
-        }
-
-        float max = delay.Max();
-        float mean = delay.Sum() / delay.Length;
-
-        // the maximum resolution of the timer in nanoseconds
-        long acc = (1000L * 1000L * 1000L) / Stopwatch.Frequency;
-
-        Dictionary<string, object> dict = new Dictionary<string, object>();
-        dict.Add("max_latency", max);
-        dict.Add("mean_latency", mean);
-        dict.Add("accuracy", acc);
-
-        im.Do(new EventBase<string, Dictionary<string, object>>(im.ReportEvent, "latency check", dict));
-    }
-
-    protected void ReportMessage(NetMsg msg, bool sent) {
-        Dictionary<string, object> messageDataDict = new Dictionary<string, object>();
-        messageDataDict.Add("message", msg.msg);
-        messageDataDict.Add("sent", sent);
-
-        im.Do(new EventBase<string, Dictionary<string, object>, DateTime>(
-            im.ReportEvent, "network", messageDataDict, msg.time));
-    }
-
-    protected NetworkStream GetWriteStream() {
-        // only one writer can be active at a time
-        if (tcpClient == null) {
-            throw new InvalidOperationException("Socket not initialized.");
-        }
-
-        return tcpClient.GetStream();
-    }
-
-    protected NetworkStream GetReadStream() {
-        // only one reader can be active at a time
-        if (tcpClient == null) {
-            throw new InvalidOperationException("Socket not initialized.");
-        }
-
-        return tcpClient.GetStream();
-    }
 }
 
-public abstract class NetworkInterface : EventLoop {
-    protected InterfaceManager im;
-
-    private int messageTimeout = 1000;
-    private int heartbeatTimeout = 8000;
-
-    private TcpClient tcpClient;
-    private HostPCListener listener;
-    private int heartbeatCount = 0;
-
-    NetworkInterface(InterfaceManager _im) {
-        im = _im;
-    }
-
-    public abstract JObject SendAndWait(string type, Dictionary<string, object> data,
-                                        string response, int timeout);
-    public abstract void Connect();
-    public abstract void Disconnect();
-    public abstract void HandleMessage(NetMsg msg);
-    public abstract void SendMessage(string type, Dictionary<string, object> data);
-
-    protected void Heartbeat() {
-        var data = new Dictionary<string, object>();
-        data.Add("count", heartbeatCount);
-        heartbeatCount++;
-        SendAndWait("HEARTBEAT", data, "HEARTBEAT_OK", heartbeatTimeout);
-    }
-
-    protected void DoLatencyCheck() {
-        // except if latency is unacceptable
-        Stopwatch sw = new Stopwatch();
-        float[] delay = new float[20];
-
-        // send 20 heartbeats, except if max latency is out of tolerance
-        for (int i = 0; i < 20; i++) {
-            sw.Restart();
-            Heartbeat();
-            sw.Stop();
-
-            // calculate manually to have sub millisecond resolution,
-            // as ElapsedMilliseconds returns an integer number of
-            // milliseconds.
-            delay[i] = sw.ElapsedTicks * (1000f / Stopwatch.Frequency);
-
-            if (delay[i] > 20) {
-                throw new TimeoutException("Network Latency too large.");
-            }
-
-            // send new heartbeat every 50 ms
-            Thread.Sleep(50 - (int)delay[i]);
-        }
-
-        float max = delay.Max();
-        float mean = delay.Sum() / delay.Length;
-
-        // the maximum resolution of the timer in nanoseconds
-        long acc = (1000L * 1000L * 1000L) / Stopwatch.Frequency;
-
-        Dictionary<string, object> dict = new Dictionary<string, object>();
-        dict.Add("max_latency", max);
-        dict.Add("mean_latency", mean);
-        dict.Add("accuracy", acc);
-
-        im.Do(new EventBase<string, Dictionary<string, object>>(im.ReportEvent, "latency check", dict));
-    }
-
-    protected void ReportMessage(NetMsg msg, bool sent) {
-        Dictionary<string, object> messageDataDict = new Dictionary<string, object>();
-        messageDataDict.Add("message", msg.msg);
-        messageDataDict.Add("sent", sent);
-
-        im.Do(new EventBase<string, Dictionary<string, object>, DateTime>(
-            im.ReportEvent, "network", messageDataDict, msg.time));
-    }
-
-    protected NetworkStream GetWriteStream() {
-        // only one writer can be active at a time
-        if (tcpClient == null) {
-            throw new InvalidOperationException("Socket not initialized.");
-        }
-
-        return tcpClient.GetStream();
-    }
-
-    protected NetworkStream GetReadStream() {
-        // only one reader can be active at a time
-        if (tcpClient == null) {
-            throw new InvalidOperationException("Socket not initialized.");
-        }
-
-        return tcpClient.GetStream();
-    }
-}

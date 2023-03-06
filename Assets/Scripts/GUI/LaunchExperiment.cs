@@ -35,7 +35,7 @@ public class LaunchExperiment : MonoBehaviour
     }
 
     public void DoSyncBoxTest() {
-        if(!manager.syncBox.IsRunning())
+        if (!manager.syncBox?.IsRunning() ?? false)
             syncButton.GetComponent<UnityEngine.UI.Button>().interactable = false;
             manager.Do(new EventBase<Action>(manager.TestSyncbox, ResetSyncBoxButton));
     }
@@ -47,7 +47,7 @@ public class LaunchExperiment : MonoBehaviour
     // activated by UI launch button
     public void DoLaunchExperiment()
     {
-        if(manager.syncBox.IsRunning()) {
+        if(manager.syncBox?.IsRunning() ?? false) {
             cantGoPrompt.GetComponent<UnityEngine.UI.Text>().text = "Can't start while Syncbox Test is running";
             cantGoPrompt.SetActive(true);
             return;

@@ -88,8 +88,7 @@ public class InterfaceManager : MonoBehaviour
     // Devices that can be accessed by managed
     // scripts
     //////////
-    public IHostPC hostPC;
-    public NonUnitySyncbox syncBox;
+    public NetworkInterface hostPC;
     public VideoControl videoControl;
     public TextDisplayer textDisplayer;
     public SoundRecorder recorder;
@@ -99,6 +98,7 @@ public class InterfaceManager : MonoBehaviour
     public AudioSource lowerBeep;
     public AudioSource playback;
     public RamulatorInterface ramulator;
+    public ISyncBox syncBox;
 
     //////////
     // Input reporters
@@ -117,7 +117,6 @@ public class InterfaceManager : MonoBehaviour
 
         // create objects not tied to unity
         fileManager = new FileManager(this);
-        syncBox = new NonUnitySyncbox(this);
         onKey = new ConcurrentQueue<Action<string, bool>>();
 
         // configure default key handling to quit experiment
@@ -150,15 +149,19 @@ public class InterfaceManager : MonoBehaviour
         }
         ChangeSetting("availableExperiments", exps);
 
-
-        // Syncbox interface
-        if(!(bool)GetSetting("isTest")) {
-            syncBox.Init();
-        }
-
         // Start experiment Launcher scene
         mainEvents.Do(new EventBase(LaunchLauncher));
         eventsPerFrame = (int)(GetSetting("eventsPerFrame") ?? 5);
+
+        // Syncbox interface
+        if (!(bool)GetSetting("isTest") && (bool)GetSetting("syncboxOn")) {
+            if ((bool)GetSetting("networkedSyncboxOn")) {
+                syncBox = new NetworkedSyncboxInterface(this);
+            } else {
+                syncBox = new NonUnitySyncbox(this);
+            }
+        }
+        mainEvents.Do(new EventBase(() => syncBox?.Init()));
     }
 
     void Update()
@@ -168,7 +171,7 @@ public class InterfaceManager : MonoBehaviour
             i++;
         }
     }
-
+    
     //////////
     // collect references to managed objects
     // and release references to non-active objects
@@ -231,9 +234,7 @@ public class InterfaceManager : MonoBehaviour
     }
 
     void OnDisable() {
-        if(syncBox.Running()) {
-            syncBox.Do(new EventBase(syncBox.StopPulse));
-        }
+        syncBox?.StopPulse();
     }
 
     //////////
@@ -304,10 +305,10 @@ public class InterfaceManager : MonoBehaviour
     //////////
 
     public void TestSyncbox(Action callback) {
-        syncBox.Do(new EventBase(syncBox.StartPulse));
+        syncBox?.StartPulse();
         // DoIn(new EventBase(syncBox.StopPulse), (int)GetSetting("syncBoxTestLength"));
-        DoIn(new EventBase(syncBox.StopPulse), 5000); 
-        DoIn(new EventBase(callback), 5000); 
+        DoIn(new EventBase(() => syncBox?.StopPulse()), 5000);
+        DoIn(new EventBase(callback), 5000);
     }
 
     public void LaunchExperiment() {
@@ -333,11 +334,11 @@ public class InterfaceManager : MonoBehaviour
 
             Do(new EventBase(() => {
                 // Start syncbox
-                syncBox.Do(new EventBase(syncBox.StartPulse));
+                syncBox?.StartPulse();
 
-                if((bool)GetSetting("elemem")) {
+                if((bool)GetSetting("elememOn")) {
                     hostPC = new ElememInterface(this);
-                } else if((bool)GetSetting("ramulator")) {
+                } else if((bool)GetSetting("ramulatorOn")) {
                     hostPC = new RamulatorWrapper(this);
                 }
 
@@ -371,12 +372,12 @@ public class InterfaceManager : MonoBehaviour
     }
 
     public void LaunchLauncher() {
-            // reset external hardware state if exiting task
-            syncBox.StopPulse();
-            hostPC?.Disconnect();
+        // reset external hardware state if exiting task
+        syncBox?.StopPulse();
+        hostPC?.Disconnect();
 
-            mainEvents.Pause(true);
-            SceneManager.LoadScene((string)GetSetting("launcherScene"));
+        mainEvents.Pause(true);
+        SceneManager.LoadScene((string)GetSetting("launcherScene"));
     }
 
     public void LoadExperimentConfig(string name) {
