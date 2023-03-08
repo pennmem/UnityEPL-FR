@@ -27,12 +27,12 @@ public class FileManager {
         #endif
     }
 
+    // If stimMode is present, then it appends it to the end of the experiment name
     protected string genStimModeSuffix() {
         string stimMode;
         try {
             stimMode = manager.GetSetting("stimMode");
         } catch(MissingFieldException) {
-            ErrorNotification.Notify(new Exception("Missing \"stimMode\" field in experiment config"));
             return null;
         }
 
@@ -46,12 +46,12 @@ public class FileManager {
         return null;
     }
 
-    public string ExperimentPath(bool stimModeSuffix = false) {
+    public string ExperimentPath() {
         string root = ExperimentRoot();
         string experiment;
 
         try {
-            string suffix = stimModeSuffix ? genStimModeSuffix() : "";
+            string suffix = genStimModeSuffix() ?? "";
             experiment = manager.GetSetting("experimentName") + suffix;
         } catch(MissingFieldException) {
             ErrorNotification.Notify(new Exception("No experiment selected"));
@@ -67,19 +67,18 @@ public class FileManager {
     }
 
     public string ParticipantPath(string participant) {
-        string dir = ExperimentPath(true);
+        string dir = ExperimentPath();
         dir = System.IO.Path.Combine(dir, participant);
         return dir;
     }
 
     public string ParticipantPath() {
-        string dir = ExperimentPath(true);
+        string dir = ExperimentPath();
         string participant;
 
         try{
             participant = manager.GetSetting("participantCode");
-        }
-        catch(MissingFieldException) {
+        } catch(MissingFieldException) {
             ErrorNotification.Notify(new Exception("No participant selected"));
             return null;
         }
@@ -142,7 +141,7 @@ public class FileManager {
         Directory.CreateDirectory(ParticipantPath());
     }
     public void CreateExperiment() {
-        Directory.CreateDirectory(ExperimentPath(true));
+        Directory.CreateDirectory(ExperimentPath());
     }
 
     public string ConfigPath() {
