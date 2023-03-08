@@ -317,40 +317,38 @@ public class InterfaceManager : MonoBehaviour
         // call start function
 
         // Check if settings are loaded
-        if(experimentConfig != null) {
-
-            Cursor.visible = false;
-            Application.runInBackground = true;
-
-            // Make the game run as fast as possible
-            QualitySettings.vSyncCount = (int)GetSetting("vSync");
-            Application.targetFrameRate = (int)GetSetting("frameRate");
-            
-            // create path for current participant/session
-            fileManager.CreateSession();
-
-            mainEvents.Pause(true);
-            SceneManager.LoadScene((string)GetSetting("experimentScene"));
-
-            Do(new EventBase(() => {
-                // Start syncbox
-                syncBox?.StartPulse();
-
-                if((bool)GetSetting("elememOn")) {
-                    hostPC = new ElememInterface(this);
-                } else if((bool)GetSetting("ramulatorOn")) {
-                    hostPC = new RamulatorWrapper(this);
-                }
-
-                LogExperimentInfo();
-
-                Type t = Type.GetType((string)GetSetting("experimentClass")); 
-                exp = (ExperimentBase)Activator.CreateInstance(t, new object[] {this});
-            }));
-        }
-        else {
+        if (experimentConfig == null) {
             throw new Exception("No experiment configuration loaded");
         }
+
+        Cursor.visible = false;
+        Application.runInBackground = true;
+
+        // Make the game run as fast as possible
+        QualitySettings.vSyncCount = (int)GetSetting("vSync");
+        Application.targetFrameRate = (int)GetSetting("frameRate");
+            
+        // create path for current participant/session
+        fileManager.CreateSession();
+
+        mainEvents.Pause(true);
+        SceneManager.LoadScene((string)GetSetting("experimentScene"));
+
+        Do(new EventBase(() => {
+            // Start syncbox
+            syncBox?.StartPulse();
+
+            if((bool)GetSetting("elememOn")) {
+                hostPC = new ElememInterface(this);
+            } else if((bool)GetSetting("ramulatorOn")) {
+                hostPC = new RamulatorWrapper(this);
+            }
+
+            LogExperimentInfo();
+
+            Type t = Type.GetType((string)GetSetting("experimentClass")); 
+            exp = (ExperimentBase)Activator.CreateInstance(t, new object[] {this});
+        }));
     }
 
     public  void ReportEvent(string type, Dictionary<string, object> data, DateTime time) {

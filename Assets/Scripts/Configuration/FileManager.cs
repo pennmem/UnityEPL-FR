@@ -27,14 +27,33 @@ public class FileManager {
         #endif
     }
 
-    public string ExperimentPath() {
+    protected string genStimModeSuffix() {
+        string stimMode;
+        try {
+            stimMode = manager.GetSetting("stimMode");
+        } catch(MissingFieldException) {
+            ErrorNotification.Notify(new Exception("Missing \"stimMode\" field in experiment config"));
+            return null;
+        }
+
+        switch (stimMode) {
+            case "none": return "ReadOnly";
+            case "open": return "OpenLoop";
+            case "closed": return "ClosedLoop";
+        }
+        ErrorNotification.Notify(new Exception("Invalid \"stimMode\" in experiment config\n"
+            + "\"stimMode\": \"" + stimMode + "\","));
+        return null;
+    }
+
+    public string ExperimentPath(bool stimModeSuffix = false) {
         string root = ExperimentRoot();
         string experiment;
-        
+
         try {
-            experiment = manager.GetSetting("experimentName");
-        }
-        catch(MissingFieldException) {
+            string suffix = stimModeSuffix ? genStimModeSuffix() : "";
+            experiment = manager.GetSetting("experimentName") + suffix;
+        } catch(MissingFieldException) {
             ErrorNotification.Notify(new Exception("No experiment selected"));
             return null;
         }
@@ -43,17 +62,18 @@ public class FileManager {
         try {
             return manager.GetSetting("dataPath");
         } catch {
-            return  dir;
+            return dir;
         }
     }
+
     public string ParticipantPath(string participant) {
-        string dir = ExperimentPath();
+        string dir = ExperimentPath(true);
         dir = System.IO.Path.Combine(dir, participant);
         return dir;
     }
 
     public string ParticipantPath() {
-        string dir = ExperimentPath();
+        string dir = ExperimentPath(true);
         string participant;
 
         try{
@@ -93,12 +113,10 @@ public class FileManager {
             return true;
         }
 
-        string experiment, prefix;
-        try{
-            experiment = manager.GetSetting("experimentName");
+        string prefix;
+        try {
             prefix = manager.GetSetting("prefix");
-        }
-        catch(MissingFieldException) {
+        } catch(MissingFieldException) {
             return false;
         }
 
@@ -124,7 +142,7 @@ public class FileManager {
         Directory.CreateDirectory(ParticipantPath());
     }
     public void CreateExperiment() {
-        Directory.CreateDirectory(ExperimentPath());
+        Directory.CreateDirectory(ExperimentPath(true));
     }
 
     public string ConfigPath() {

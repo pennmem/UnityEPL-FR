@@ -1,6 +1,6 @@
 {
     "experimentClass": "ltpCatRepFRExperiment",
-    "experimentName": "ltpCatRepFR1",
+    "experimentName": "ltpCatRepFR",
     "experimentScene": "RepFR",
     "prefix": "LTP",
     "wordpool": "resources/ram_categorized_en.txt",

@@ -46,7 +46,7 @@ public class ParticipantSelection : MonoBehaviour
         dropdown.ClearOptions();
         dropdown.AddOptions(new List<string>() { "Select participant", "New Participant"});
 
-        string participantDirectory = manager.fileManager.ExperimentPath();
+        string participantDirectory = manager.fileManager.ExperimentPath(true);
         if(Directory.Exists(participantDirectory)) {
             string[] filepaths = System.IO.Directory.GetDirectories(participantDirectory);
             List<string> filenames = new List<string>(); 
