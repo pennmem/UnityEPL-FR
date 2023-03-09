@@ -6,8 +6,8 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-public class CatRepFRExperiment : RepFRExperiment {
-    public CatRepFRExperiment(InterfaceManager _manager) : base(_manager) {}
+public class DelayRepFRExperiment : RepFRExperiment {
+    public DelayRepFRExperiment(InterfaceManager _manager) : base(_manager) {}
 
     //////////
     // State Machine Constructor Functions

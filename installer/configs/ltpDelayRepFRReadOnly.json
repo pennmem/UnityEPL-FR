@@ -1,6 +1,6 @@
 {
-    "experimentClass": "ltpCatRepFRExperiment",
-    "experimentName": "ltpCatRepFRReadOnly",
+    "experimentClass": "ltpDelayRepFRExperiment",
+    "experimentName": "ltpDelayRepFRReadOnly",
     "experimentScene": "RepFR",
     "prefix": "LTP",
     "wordpool": "resources/ram_categorized_en.txt",

@@ -5,8 +5,8 @@ using System.IO;
 using System.Linq;
 using UnityEngine;
 
-public class ltpCatRepFRExperiment : CatRepFRExperiment {
-    public ltpCatRepFRExperiment(InterfaceManager _manager) : base(_manager) {}
+public class ltpDelayRepFRExperiment : DelayRepFRExperiment {
+    public ltpDelayRepFRExperiment(InterfaceManager _manager) : base(_manager) {}
 
     protected override void StartTrial(StateMachine state) {
         var data = new Dictionary<string, object>();
