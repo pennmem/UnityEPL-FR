@@ -27,32 +27,12 @@ public class FileManager {
         #endif
     }
 
-    // If stimMode is present, then it appends it to the end of the experiment name
-    protected string genStimModeSuffix() {
-        string stimMode;
-        try {
-            stimMode = manager.GetSetting("stimMode");
-        } catch(MissingFieldException) {
-            return null;
-        }
-
-        switch (stimMode) {
-            case "none": return "ReadOnly";
-            case "open": return "OpenLoop";
-            case "closed": return "ClosedLoop";
-        }
-        ErrorNotification.Notify(new Exception("Invalid \"stimMode\" in experiment config\n"
-            + "\"stimMode\": \"" + stimMode + "\","));
-        return null;
-    }
-
     public string ExperimentPath() {
         string root = ExperimentRoot();
         string experiment;
 
         try {
-            string suffix = genStimModeSuffix() ?? "";
-            experiment = manager.GetSetting("experimentName") + suffix;
+            experiment = manager.GetSetting("experimentName");
         } catch(MissingFieldException) {
             ErrorNotification.Notify(new Exception("No experiment selected"));
             return null;

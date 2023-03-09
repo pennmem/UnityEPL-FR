@@ -113,7 +113,7 @@ public class CatRepFRExperiment : RepFRExperiment {
 
         // copy wordpool to session directory
         string path = System.IO.Path.Combine(manager.fileManager.SessionPath(), "wordpool.txt");
-        System.IO.File.Copy(source_list, path, true);
+        File.Copy(source_list, path, true);
 
         return source_words;
     }

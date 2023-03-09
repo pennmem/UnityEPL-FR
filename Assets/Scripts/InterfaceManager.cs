@@ -328,8 +328,13 @@ public class InterfaceManager : MonoBehaviour
         QualitySettings.vSyncCount = (int)GetSetting("vSync");
         Application.targetFrameRate = (int)GetSetting("frameRate");
             
-        // create path for current participant/session
+        // Create path for current participant/session
         fileManager.CreateSession();
+
+        // Copy the experiment config to the session folder
+        string srcConfigPath = Path.Combine(fileManager.ConfigPath(), GetSetting("experimentName") + ".json");
+        string destConfigPath = Path.Combine(fileManager.SessionPath(), "experimentConfig.json");
+        File.Copy(srcConfigPath, destConfigPath, true);
 
         mainEvents.Pause(true);
         SceneManager.LoadScene((string)GetSetting("experimentScene"));
@@ -379,7 +384,7 @@ public class InterfaceManager : MonoBehaviour
     }
 
     public void LoadExperimentConfig(string name) {
-        string text = System.IO.File.ReadAllText(System.IO.Path.Combine(fileManager.ConfigPath(), name + ".json"));
+        string text = System.IO.File.ReadAllText(Path.Combine(fileManager.ConfigPath(), name + ".json"));
         experimentConfig = new ConcurrentDictionary<string, dynamic>(FlexibleConfig.LoadFromText(text));
     }
 
@@ -471,6 +476,7 @@ public class InterfaceManager : MonoBehaviour
         versionsData.Add("application version", Application.version);
         versionsData.Add("build date", BuildInfo.ToString()); // compiler magic, gives compile date
         versionsData.Add("experiment version", (string)GetSetting("experimentName"));
+        versionsData.Add("stim mode", (string)GetSetting("stimMode"));
         versionsData.Add("logfile version", "0");
         versionsData.Add("participant", (string)GetSetting("participantCode"));
         versionsData.Add("session", (int)GetSetting("session"));
