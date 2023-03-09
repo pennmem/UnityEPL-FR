@@ -8,6 +8,64 @@ using UnityEngine;
 public class ltpCatRepFRExperiment : CatRepFRExperiment {
     public ltpCatRepFRExperiment(InterfaceManager _manager) : base(_manager) {}
 
+    public override StateMachine GetStateMachine()
+    {
+        StateMachine stateMachine = new StateMachine(currentSession);
+
+        // TODO: reformat
+        stateMachine["Run"] = new ExperimentTimeline(
+            new List<Action<StateMachine>> {
+                QuitPrompt,
+                IntroductionPrompt,
+                IntroductionVideo,
+                RepeatVideo,
+                MicrophoneTest, // runs MicrophoneTest states
+
+                Practice, // runs Practice states
+                ConfirmStart,
+                MainLoop, // runs MainLoop states
+
+                FinishExperiment});
+
+        // though it is largely the same as the main loop,
+        // practice is a conceptually distinct state machine
+        // that just happens to overlap with MainLoop
+        stateMachine["Practice"] = new LoopTimeline(
+            new List<Action<StateMachine>> {
+                StartTrial,
+                NextPracticeListPrompt,
+                PreCountdownRest,
+                CountdownVideo,
+                EncodingDelay,
+                Encoding,
+                Rest,
+                RecallPrompt,
+                Recall,
+                EndPracticeTrial});
+
+        stateMachine["MainLoop"] = new LoopTimeline(
+            new List<Action<StateMachine>> {
+                StartTrial,
+                NextListPrompt,
+                PreCountdownRest,
+                CountdownVideo,
+                EncodingDelay,
+                Encoding,
+                Rest,
+                RecallPrompt,
+                Recall,
+                EndTrial});
+
+        stateMachine["MicrophoneTest"] = new LoopTimeline(
+            new List<Action<StateMachine>> {
+                MicTestPrompt,
+                RecordTest,
+                RepeatMicTest});
+
+        stateMachine.PushTimeline("Run");
+        return stateMachine;
+    }
+
     protected override void StartTrial(StateMachine state) {
         var data = new Dictionary<string, object>();
         data.Add("trial", state.currentSession.GetListIndex());

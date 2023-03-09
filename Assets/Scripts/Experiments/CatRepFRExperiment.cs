@@ -19,14 +19,16 @@ public class CatRepFRExperiment : RepFRExperiment {
         // TODO: reformat
         stateMachine["Run"] = new ExperimentTimeline(
             new List<Action<StateMachine>> {
+                QuitPrompt,
                 IntroductionPrompt,
                 IntroductionVideo,
                 RepeatVideo,
                 MicrophoneTest, // runs MicrophoneTest states
-                QuitPrompt,
+
                 Practice, // runs Practice states
                 ConfirmStart,
                 MainLoop, // runs MainLoop states
+
                 FinishExperiment});
 
         // though it is largely the same as the main loop,

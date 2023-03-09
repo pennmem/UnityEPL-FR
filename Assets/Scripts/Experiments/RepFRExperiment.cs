@@ -59,44 +59,54 @@ public class RepFRExperiment : ExperimentBase {
         StateMachine stateMachine = new StateMachine(currentSession);
 
         // TODO: reformat
-        stateMachine["Run"] = new ExperimentTimeline(new List<Action<StateMachine>> {IntroductionPrompt,
-                                                  IntroductionVideo,
-                                                  RepeatVideo,
-                                                  MicrophoneTest, // runs MicrophoneTest states
-                                                  QuitPrompt,
-                                                  Practice, // runs Practice states
-                                                  ConfirmStart,
-                                                  MainLoop, // runs MainLoop states
-                                                  FinishExperiment});
+        stateMachine["Run"] = new ExperimentTimeline(
+            new List<Action<StateMachine>> {
+                QuitPrompt,
+                IntroductionPrompt,
+                IntroductionVideo,
+                RepeatVideo,
+                MicrophoneTest, // runs MicrophoneTest states
+
+                Practice, // runs Practice states
+                ConfirmStart,
+                MainLoop, // runs MainLoop states
+
+                FinishExperiment});
 
         // though it is largely the same as the main loop,
         // practice is a conceptually distinct state machine
         // that just happens to overlap with MainLoop
-        stateMachine["Practice"] = new LoopTimeline(new List<Action<StateMachine>> {StartTrial,
-                                                                  NextPracticeListPrompt,
-                                                                  Rest,
-                                                                  CountdownVideo,
-                                                                  EncodingDelay,
-                                                                  Encoding,
-                                                                  Rest,
-                                                                  RecallPrompt,
-                                                                  Recall,
-                                                                  EndPracticeTrial});
+        stateMachine["Practice"] = new LoopTimeline(
+            new List<Action<StateMachine>> {
+                StartTrial,
+                NextPracticeListPrompt,
+                Rest,
+                CountdownVideo,
+                EncodingDelay,
+                Encoding,
+                Rest,
+                RecallPrompt,
+                Recall,
+                EndPracticeTrial});
 
-        stateMachine["MainLoop"] = new LoopTimeline(new List<Action<StateMachine>> {StartTrial,
-                                                                    NextListPrompt,
-                                                                    Rest,
-                                                                    CountdownVideo,
-                                                                    EncodingDelay,
-                                                                    Encoding,
-                                                                    Rest,
-                                                                    RecallPrompt,
-                                                                    Recall,
-                                                                    EndTrial});
+        stateMachine["MainLoop"] = new LoopTimeline(
+            new List<Action<StateMachine>> {
+                StartTrial,
+                NextListPrompt,
+                Rest,
+                CountdownVideo,
+                EncodingDelay,
+                Encoding,
+                Rest,
+                RecallPrompt,
+                Recall,
+                EndTrial});
 
-        stateMachine["MicrophoneTest"] = new LoopTimeline(new List<Action<StateMachine>> {MicTestPrompt,
-                                                                                      RecordTest,
-                                                                                      RepeatMicTest});
+        stateMachine["MicrophoneTest"] = new LoopTimeline(
+            new List<Action<StateMachine>> {
+                MicTestPrompt,
+                RecordTest,
+                RepeatMicTest});
 
         stateMachine.PushTimeline("Run");
         return stateMachine;
