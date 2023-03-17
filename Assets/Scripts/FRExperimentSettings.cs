@@ -8,7 +8,7 @@ using System.Collections;
 /// </summary>
 public struct ExperimentSettings
 {
-    public const string taskVersion = "1.6.2";
+    public const string taskVersion = "1.6.3";
 
     public WordListGenerator wordListGenerator; //how the words for this experiment will be created and organized.  for a full list of parameters and what they do, see the comments for WordListGenerator in WordListGenerator.cs
     public string experimentName; //the name of the experiment.  this will be displayed to the user and sent to ramulator.

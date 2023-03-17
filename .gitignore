@@ -39,3 +39,8 @@ sysinfo.txt
 Assets/VikingVillage/Textures/wood_tiled_01_n.tif
 
 .vscode/*
+.DS_Store
+tags
+TAGS
+tags.meta
+TAGS.meta
