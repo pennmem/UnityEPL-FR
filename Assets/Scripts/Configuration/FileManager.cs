@@ -30,11 +30,10 @@ public class FileManager {
     public string ExperimentPath() {
         string root = ExperimentRoot();
         string experiment;
-        
+
         try {
             experiment = manager.GetSetting("experimentName");
-        }
-        catch(MissingFieldException) {
+        } catch(MissingFieldException) {
             ErrorNotification.Notify(new Exception("No experiment selected"));
             return null;
         }
@@ -43,9 +42,10 @@ public class FileManager {
         try {
             return manager.GetSetting("dataPath");
         } catch {
-            return  dir;
+            return dir;
         }
     }
+
     public string ParticipantPath(string participant) {
         string dir = ExperimentPath();
         dir = System.IO.Path.Combine(dir, participant);
@@ -58,8 +58,7 @@ public class FileManager {
 
         try{
             participant = manager.GetSetting("participantCode");
-        }
-        catch(MissingFieldException) {
+        } catch(MissingFieldException) {
             ErrorNotification.Notify(new Exception("No participant selected"));
             return null;
         }
@@ -93,12 +92,10 @@ public class FileManager {
             return true;
         }
 
-        string experiment, prefix;
-        try{
-            experiment = manager.GetSetting("experimentName");
+        string prefix;
+        try {
             prefix = manager.GetSetting("prefix");
-        }
-        catch(MissingFieldException) {
+        } catch(MissingFieldException) {
             return false;
         }
 

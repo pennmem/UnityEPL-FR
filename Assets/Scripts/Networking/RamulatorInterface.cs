@@ -7,37 +7,33 @@ using UnityEngine;
 using NetMQ;
 using Newtonsoft.Json.Linq;
 
-public class RamulatorWrapper : IHostPC {
-    InterfaceManager manager;
-
-    public RamulatorWrapper(InterfaceManager _manager) {
-       manager = _manager; 
-       manager.ramulator.manager = manager;
-       Start();
+public class RamulatorWrapper : NetworkInterface {
+    public RamulatorWrapper(InterfaceManager _im) : base(_im) {
+       im.ramulator.manager = im;
        Do(new EventBase(Connect));
     } 
 
     public override void Connect() {
-        manager.ramulator.StartCoroutine(manager.ramulator.BeginNewSession(manager.GetSetting("session")));
+        im.ramulator.StartCoroutine(im.ramulator.BeginNewSession(im.GetSetting("session")));
         // CoroutineToEvent.StartCoroutine(manager.ramulator.BeginNewSession(manager.GetSetting("session")), manager);
     }
 
     public override void SendMessage(string type, Dictionary<string, object> data) {
         DataPoint point = new DataPoint(type, DataReporter.TimeStamp(), data);
         string message = point.ToJSON();
-        manager.ramulator.SendMessageToRamulator(message);
+        im.ramulator.SendMessageToRamulator(message);
     }
 
     public override void HandleMessage(NetMsg msg) {
         throw new NotImplementedException("Ramulator does not expect responses to be handled externally");
     }
-    public override JObject SendAndWait(string type, Dictionary<string, object> data, 
+    public override void SendAndWait(string type, Dictionary<string, object> data, 
                                         string response, int timeout) {
         throw new NotImplementedException("Ramulator does not expect responses to be handled externally");
     }
 
     public override void Disconnect() {
-        manager.ramulator.Disconnect();
+        im.ramulator.Disconnect();
         // manager.Do(new EventBase(() => manager.ramulator.Disconnect()));
     }
 }

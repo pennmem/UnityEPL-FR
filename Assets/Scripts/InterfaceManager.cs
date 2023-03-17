@@ -88,8 +88,7 @@ public class InterfaceManager : MonoBehaviour
     // Devices that can be accessed by managed
     // scripts
     //////////
-    public IHostPC hostPC;
-    public NonUnitySyncbox syncBox;
+    public NetworkInterface hostPC;
     public VideoControl videoControl;
     public TextDisplayer textDisplayer;
     public SoundRecorder recorder;
@@ -99,6 +98,7 @@ public class InterfaceManager : MonoBehaviour
     public AudioSource lowerBeep;
     public AudioSource playback;
     public RamulatorInterface ramulator;
+    public ISyncBox syncBox;
 
     //////////
     // Input reporters
@@ -117,7 +117,6 @@ public class InterfaceManager : MonoBehaviour
 
         // create objects not tied to unity
         fileManager = new FileManager(this);
-        syncBox = new NonUnitySyncbox(this);
         onKey = new ConcurrentQueue<Action<string, bool>>();
 
         // configure default key handling to quit experiment
@@ -150,15 +149,19 @@ public class InterfaceManager : MonoBehaviour
         }
         ChangeSetting("availableExperiments", exps);
 
-
-        // Syncbox interface
-        if(!(bool)GetSetting("isTest")) {
-            syncBox.Init();
-        }
-
         // Start experiment Launcher scene
         mainEvents.Do(new EventBase(LaunchLauncher));
         eventsPerFrame = (int)(GetSetting("eventsPerFrame") ?? 5);
+
+        // Syncbox interface
+        if (!(bool)GetSetting("isTest") && (bool)GetSetting("syncboxOn")) {
+            if ((bool)GetSetting("networkedSyncboxOn")) {
+                syncBox = new NetworkedSyncboxInterface(this);
+            } else {
+                syncBox = new NonUnitySyncbox(this);
+            }
+        }
+        mainEvents.Do(new EventBase(() => syncBox?.Init()));
     }
 
     void Update()
@@ -168,7 +171,7 @@ public class InterfaceManager : MonoBehaviour
             i++;
         }
     }
-
+    
     //////////
     // collect references to managed objects
     // and release references to non-active objects
@@ -231,9 +234,7 @@ public class InterfaceManager : MonoBehaviour
     }
 
     void OnDisable() {
-        if(syncBox.Running()) {
-            syncBox.Do(new EventBase(syncBox.StopPulse));
-        }
+        syncBox?.StopPulse();
     }
 
     //////////
@@ -304,10 +305,10 @@ public class InterfaceManager : MonoBehaviour
     //////////
 
     public void TestSyncbox(Action callback) {
-        syncBox.Do(new EventBase(syncBox.StartPulse));
+        syncBox?.StartPulse();
         // DoIn(new EventBase(syncBox.StopPulse), (int)GetSetting("syncBoxTestLength"));
-        DoIn(new EventBase(syncBox.StopPulse), 5000); 
-        DoIn(new EventBase(callback), 5000); 
+        DoIn(new EventBase(() => syncBox?.StopPulse()), 5000);
+        DoIn(new EventBase(callback), 5000);
     }
 
     public void LaunchExperiment() {
@@ -316,40 +317,43 @@ public class InterfaceManager : MonoBehaviour
         // call start function
 
         // Check if settings are loaded
-        if(experimentConfig != null) {
-
-            Cursor.visible = false;
-            Application.runInBackground = true;
-
-            // Make the game run as fast as possible
-            QualitySettings.vSyncCount = (int)GetSetting("vSync");
-            Application.targetFrameRate = (int)GetSetting("frameRate");
-            
-            // create path for current participant/session
-            fileManager.CreateSession();
-
-            mainEvents.Pause(true);
-            SceneManager.LoadScene((string)GetSetting("experimentScene"));
-
-            Do(new EventBase(() => {
-                // Start syncbox
-                syncBox.Do(new EventBase(syncBox.StartPulse));
-
-                if((bool)GetSetting("elemem")) {
-                    hostPC = new ElememInterface(this);
-                } else if((bool)GetSetting("ramulator")) {
-                    hostPC = new RamulatorWrapper(this);
-                }
-
-                LogExperimentInfo();
-
-                Type t = Type.GetType((string)GetSetting("experimentClass")); 
-                exp = (ExperimentBase)Activator.CreateInstance(t, new object[] {this});
-            }));
-        }
-        else {
+        if (experimentConfig == null) {
             throw new Exception("No experiment configuration loaded");
         }
+
+        Cursor.visible = false;
+        Application.runInBackground = true;
+
+        // Make the game run as fast as possible
+        QualitySettings.vSyncCount = (int)GetSetting("vSync");
+        Application.targetFrameRate = (int)GetSetting("frameRate");
+            
+        // Create path for current participant/session
+        fileManager.CreateSession();
+
+        // Copy the experiment config to the session folder
+        string srcConfigPath = Path.Combine(fileManager.ConfigPath(), GetSetting("experimentName") + ".json");
+        string destConfigPath = Path.Combine(fileManager.SessionPath(), "experimentConfig.json");
+        File.Copy(srcConfigPath, destConfigPath, true);
+
+        mainEvents.Pause(true);
+        SceneManager.LoadScene((string)GetSetting("experimentScene"));
+
+        Do(new EventBase(() => {
+            // Start syncbox
+            syncBox?.StartPulse();
+
+            if((bool)GetSetting("elememOn")) {
+                hostPC = new ElememInterface(this);
+            } else if((bool)GetSetting("ramulatorOn")) {
+                hostPC = new RamulatorWrapper(this);
+            }
+
+            LogExperimentInfo();
+
+            Type t = Type.GetType((string)GetSetting("experimentClass")); 
+            exp = (ExperimentBase)Activator.CreateInstance(t, new object[] {this});
+        }));
     }
 
     public  void ReportEvent(string type, Dictionary<string, object> data, DateTime time) {
@@ -371,16 +375,16 @@ public class InterfaceManager : MonoBehaviour
     }
 
     public void LaunchLauncher() {
-            // reset external hardware state if exiting task
-            syncBox.StopPulse();
-            hostPC?.Disconnect();
+        // reset external hardware state if exiting task
+        syncBox?.StopPulse();
+        hostPC?.Disconnect();
 
-            mainEvents.Pause(true);
-            SceneManager.LoadScene((string)GetSetting("launcherScene"));
+        mainEvents.Pause(true);
+        SceneManager.LoadScene((string)GetSetting("launcherScene"));
     }
 
     public void LoadExperimentConfig(string name) {
-        string text = System.IO.File.ReadAllText(System.IO.Path.Combine(fileManager.ConfigPath(), name + ".json"));
+        string text = System.IO.File.ReadAllText(Path.Combine(fileManager.ConfigPath(), name + ".json"));
         experimentConfig = new ConcurrentDictionary<string, dynamic>(FlexibleConfig.LoadFromText(text));
     }
 
@@ -472,6 +476,7 @@ public class InterfaceManager : MonoBehaviour
         versionsData.Add("application version", Application.version);
         versionsData.Add("build date", BuildInfo.ToString()); // compiler magic, gives compile date
         versionsData.Add("experiment version", (string)GetSetting("experimentName"));
+        versionsData.Add("stim mode", (string)GetSetting("stimMode"));
         versionsData.Add("logfile version", "0");
         versionsData.Add("participant", (string)GetSetting("participantCode"));
         versionsData.Add("session", (int)GetSetting("session"));
