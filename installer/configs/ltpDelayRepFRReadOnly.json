@@ -10,7 +10,7 @@
     "retrievalOnlyLists": 0,
     "encodingAndRetrievalLists": 0,
     "noStimLists": 20,
-    "restLists": [7, 14],
+    "restLists": [6, 13],
     "wordRepeats": [2, 1],
     "wordCounts": [6, 6],
     "encodingDelay": [750, 1000],

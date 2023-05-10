@@ -16,7 +16,6 @@ public class DelayRepFRExperiment : RepFRExperiment {
     public override StateMachine GetStateMachine() {
         StateMachine stateMachine = new StateMachine(currentSession);
 
-        // TODO: reformat
         stateMachine["Run"] = new ExperimentTimeline(
             new List<Action<StateMachine>> {
                 QuitPrompt,

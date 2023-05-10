@@ -8,16 +8,64 @@ using UnityEngine;
 public class ltpDelayRepFRExperiment : DelayRepFRExperiment {
     public ltpDelayRepFRExperiment(InterfaceManager _manager) : base(_manager) {}
 
-    protected override void StartTrial(StateMachine state) {
-        var data = new Dictionary<string, object>();
-        data.Add("trial", state.currentSession.GetListIndex());
-        data.Add("stim", currentSession.GetState().encoding_stim);
+    public override StateMachine GetStateMachine() {
+        StateMachine stateMachine = new StateMachine(currentSession);
 
-        ReportEvent("start trial", data);
-        SendHostPCMessage("TRIAL", data);
+        stateMachine["Run"] = new ExperimentTimeline(
+            new List<Action<StateMachine>> {
+                QuitPrompt,
+                IntroductionPrompt,
+                IntroductionVideo,
+                RepeatVideo,
+                MicrophoneTest, // runs MicrophoneTest states
 
-        var restLists = manager.GetSetting("restLists");
+                Practice, // runs Practice states
+                ConfirmStart,
+                MainLoop, // runs MainLoop states
 
+                FinishExperiment});
+
+        // though it is largely the same as the main loop,
+        // practice is a conceptually distinct state machine
+        // that just happens to overlap with MainLoop
+        stateMachine["Practice"] = new LoopTimeline(
+            new List<Action<StateMachine>> {
+                StartTrial,
+                NextPracticeListPrompt,
+                PreCountdownRest,
+                CountdownVideo,
+                EncodingDelay,
+                Encoding,
+                Rest,
+                RecallPrompt,
+                Recall,
+                EndPracticeTrial});
+
+        stateMachine["MainLoop"] = new LoopTimeline(
+            new List<Action<StateMachine>> {
+                StartTrial,
+                NextListPrompt,
+                PreCountdownRest,
+                CountdownVideo,
+                EncodingDelay,
+                Encoding,
+                Rest,
+                RecallPrompt,
+                Recall,
+                ParticipantBreak,
+                EndTrial});
+
+        stateMachine["MicrophoneTest"] = new LoopTimeline(
+            new List<Action<StateMachine>> {
+                MicTestPrompt,
+                RecordTest,
+                RepeatMicTest});
+
+        stateMachine.PushTimeline("Run");
+        return stateMachine;
+    }
+
+    protected void ParticipantBreak(StateMachine state) {
         // check if this list exists in the configuration rest list
         if (Array.IndexOf(manager.GetSetting("restLists"), state.currentSession.GetListIndex()) != -1) {
             Do(new EventBase<StateMachine>(WaitForResearcher, state));
