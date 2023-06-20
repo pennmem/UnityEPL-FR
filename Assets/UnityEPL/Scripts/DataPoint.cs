@@ -5,9 +5,9 @@ using UnityEngine;
 //data about the event is currently stored in a dictionary
 public class DataPoint
 {
-    private string type;
-    private System.Collections.Generic.Dictionary<string, object> dataDict;
-    private System.DateTime time;
+    public string type { get; private set; }
+    public System.Collections.Generic.Dictionary<string, object> dataDict { get; private set; }
+    public System.DateTime time { get; private set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="T:DataPoint"/> class.  This represents a piece of data that you might want to keep about your project.

@@ -42,7 +42,7 @@ public class VideoSelector : MonoBehaviour
             videoTransform.anchorMax = new Vector2(1, originalAnchorMax.y);
         }
 
-        if (videoPath != null)
+        if (videoPath != null && videoPath != "")
         {
             videoPlayer.clip = null;
             videoPlayer.url = videoPath;

@@ -31,6 +31,13 @@ public abstract class WordListGenerator
         string filePath = System.IO.Path.Combine(directory, wordpoolFilename);
         string[] ram_wordpool_lines = GetWordpoolLines(wordpoolFilename);
 
+        if (UnityEPL.GetUseElemem())
+        {
+            System.IO.Directory.CreateDirectory(directory);
+            System.IO.File.WriteAllLines(filePath + ".txt", ram_wordpool_lines);
+            return;
+        }
+
         if (isCategoryPool)
         {
             for (int i = 0; i < ram_wordpool_lines.Length; i++)
