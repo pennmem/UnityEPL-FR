@@ -1,6 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+public enum DistractionType {
+    Math,
+    Fixation,
+}
+
 /// <summary>
 /// This struct contains all the settings required to run an FR experiment.
 /// 
@@ -37,6 +42,7 @@ public struct ExperimentSettings
     public int listGroupSize; //if > 0, insert pauseBetweenGroups record-only pause between this many lists.
     public float pauseBetweenGroups; //seconds to pause between groupings of listGroupSize lists.
     public string wordpoolFilename; //if set, override wordpool with this one.
+    public DistractionType distrationType; //Distraction type for the experiment
 }
 
 public static class FRExperimentSettings
@@ -48,6 +54,8 @@ public static class FRExperimentSettings
                                                                      GetFR6Settings(),
                                                                      GetCatFR6Settings(),
                                                                      GetCPSSettings(),
+                                                                     GetIFR1Settings(),
+                                                                     GetICatFR1Settings(),
                                                                      GetPS5Settings(),
                                                                      GetCatPS5Settings(),
                                                                      GetPS4Settings(),
@@ -117,6 +125,7 @@ public static class FRExperimentSettings
         FR1Settings.stimMode = "none";
         FR1Settings.isTwoParter = true;
         FR1Settings.useSessionListSelection = true;
+        FR1Settings.distrationType = DistractionType.Math;
 
         FR1Settings.listGroupSize = 0;
         FR1Settings.pauseBetweenGroups = 0;
@@ -262,6 +271,42 @@ public static class FRExperimentSettings
         CatFR6Settings.experimentName = "CatFR6";
         CatFR6Settings.isCategoryPool = true;
         return CatFR6Settings;
+    }
+
+    /// <summary>
+    /// Gets the IFR 1 settings.
+    /// 
+    /// IFR1 is identical to FR1, except for the number of lists
+    /// and the distraction is a fixation instead of math problems
+    /// </summary>
+    /// <returns>The IFR 1 settings.</returns>
+    public static ExperimentSettings GetIFR1Settings() {
+        ExperimentSettings IFR1Settings = GetFR1Settings();
+        IFR1Settings.experimentName = "IFR1";
+        IFR1Settings.distractionLength = 10f;
+        IFR1Settings.numberOfLists = 26;
+        IFR1Settings.wordListGenerator = new FRListGenerator(0, 26, 0, 0, 0, 0, 0);
+        IFR1Settings.distrationType = DistractionType.Fixation;
+
+        return IFR1Settings;
+    }
+
+    /// <summary>
+    /// Gets the ICatFR 1 settings.
+    /// 
+    /// ICatFR1 is identical to CatFR1, except for the number of lists
+    /// and the distraction is a fixation instead of math problems
+    /// </summary>
+    /// <returns>The ICatFR 1 settings.</returns>
+    public static ExperimentSettings GetICatFR1Settings() {
+        ExperimentSettings ICatFR1Settings = GetCatFR1Settings();
+        ICatFR1Settings.experimentName = "ICatFR1";
+        ICatFR1Settings.distractionLength = 10f;
+        ICatFR1Settings.numberOfLists = 26;
+        ICatFR1Settings.wordListGenerator = new FRListGenerator(0, 26, 0, 0, 0, 0, 0);
+        ICatFR1Settings.distrationType = DistractionType.Fixation;
+
+        return ICatFR1Settings;
     }
 
     /// <summary>
