@@ -56,6 +56,8 @@ public static class FRExperimentSettings
                                                                      GetCPSSettings(),
                                                                      GetIFR1Settings(),
                                                                      GetICatFR1Settings(),
+                                                                     GetIFR6Settings(),
+                                                                     GetICatFR6Settings(),
                                                                      GetPS5Settings(),
                                                                      GetCatPS5Settings(),
                                                                      GetPS4Settings(),
@@ -307,6 +309,42 @@ public static class FRExperimentSettings
         ICatFR1Settings.distrationType = DistractionType.Fixation;
 
         return ICatFR1Settings;
+    }
+
+    /// <summary>
+    /// Gets the IFR 6 settings.
+    /// 
+    /// IFR6 is identical to FR6, except for the number of lists
+    /// and the distraction is a fixation instead of math problems
+    /// </summary>
+    /// <returns>The IFR 6 settings.</returns>
+    public static ExperimentSettings GetIFR6Settings() {
+        ExperimentSettings IFR6Settings = GetFR6Settings();
+        IFR6Settings.experimentName = "IFR1";
+        IFR6Settings.distractionLength = 10f;
+        IFR6Settings.numberOfLists = 26;
+        IFR6Settings.wordListGenerator = new FRListGenerator(0, 26, 0, 0, 0, 0, 0);
+        IFR6Settings.distrationType = DistractionType.Fixation;
+
+        return IFR6Settings;
+    }
+
+    /// <summary>
+    /// Gets the ICatFR 6 settings.
+    /// 
+    /// ICatFR6 is identical to CatFR6, except for the number of lists
+    /// and the distraction is a fixation instead of math problems
+    /// </summary>
+    /// <returns>The ICatFR 6 settings.</returns>
+    public static ExperimentSettings GetICatFR6Settings() {
+        ExperimentSettings ICatFR6Settings = GetCatFR6Settings();
+        ICatFR6Settings.experimentName = "ICatFR1";
+        ICatFR6Settings.distractionLength = 10f;
+        ICatFR6Settings.numberOfLists = 26;
+        ICatFR6Settings.wordListGenerator = new FRListGenerator(0, 26, 0, 0, 0, 0, 0);
+        ICatFR6Settings.distrationType = DistractionType.Fixation;
+
+        return ICatFR6Settings;
     }
 
     /// <summary>

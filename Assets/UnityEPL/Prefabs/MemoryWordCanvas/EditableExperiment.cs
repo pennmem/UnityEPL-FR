@@ -371,6 +371,7 @@ private IEnumerator DoDistractor()
         if (currentSettings.distrationType == DistractionType.Fixation) {
             textDisplayer.DisplayText("display distractor fixation cross", "+");
             yield return new WaitForSeconds(currentSettings.distractionLength);
+            textDisplayer.ClearText();
             yield break;
         }
 
