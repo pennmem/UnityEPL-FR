@@ -368,6 +368,7 @@ public class EditableExperiment : CoroutineExperiment
 
 private IEnumerator DoDistractor()
     {
+        // Fixation Distractor
         if (currentSettings.distrationType == DistractionType.Fixation) {
             textDisplayer.DisplayText("display distractor fixation cross", "+");
             yield return new WaitForSeconds(currentSettings.distractionLength);
@@ -375,6 +376,7 @@ private IEnumerator DoDistractor()
             yield break;
         }
 
+        // Math Distractor
         float endTime = Time.time + currentSettings.distractionLength;
 
         string distractor = "";

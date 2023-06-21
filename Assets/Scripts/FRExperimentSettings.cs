@@ -320,7 +320,7 @@ public static class FRExperimentSettings
     /// <returns>The IFR 6 settings.</returns>
     public static ExperimentSettings GetIFR6Settings() {
         ExperimentSettings IFR6Settings = GetFR6Settings();
-        IFR6Settings.experimentName = "IFR1";
+        IFR6Settings.experimentName = "IFR6";
         IFR6Settings.distractionLength = 10f;
         IFR6Settings.numberOfLists = 26;
         IFR6Settings.wordListGenerator = new FRListGenerator(0, 26, 0, 0, 0, 0, 0);
@@ -338,7 +338,7 @@ public static class FRExperimentSettings
     /// <returns>The ICatFR 6 settings.</returns>
     public static ExperimentSettings GetICatFR6Settings() {
         ExperimentSettings ICatFR6Settings = GetCatFR6Settings();
-        ICatFR6Settings.experimentName = "ICatFR1";
+        ICatFR6Settings.experimentName = "ICatFR6";
         ICatFR6Settings.distractionLength = 10f;
         ICatFR6Settings.numberOfLists = 26;
         ICatFR6Settings.wordListGenerator = new FRListGenerator(0, 26, 0, 0, 0, 0, 0);
