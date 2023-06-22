@@ -12,6 +12,7 @@ public class VideoSelector : MonoBehaviour
     public UnityEngine.Video.VideoClip CatFR6clip;
     public UnityEngine.Video.VideoClip PS5frClip;
     public UnityEngine.Video.VideoClip CatPS5frClip;
+    public UnityEngine.Video.VideoClip ICatFRclip;
 
     public string videoPath = null;
 
@@ -24,6 +25,8 @@ public class VideoSelector : MonoBehaviour
             videoPlayer.clip = FR1clip;
         else if (UnityEPL.GetExperimentName().Equals("CatFR1"))
             videoPlayer.clip = CatFR1clip;
+        else if (UnityEPL.GetExperimentName().Equals("ICatFR1"))
+            videoPlayer.clip = ICatFRclip;
         else if (UnityEPL.GetExperimentName().Equals("FR6"))
             videoPlayer.clip = FR6clip;
         else if (UnityEPL.GetExperimentName().Equals("CatFR6"))
@@ -35,6 +38,7 @@ public class VideoSelector : MonoBehaviour
 
         if (UnityEPL.GetExperimentName().Equals("FR1") ||
             UnityEPL.GetExperimentName().Equals("CatFR1") ||
+            UnityEPL.GetExperimentName().Equals("ICatFR1") ||
             UnityEPL.GetExperimentName().Equals("PS5_FR") ||
             UnityEPL.GetExperimentName().Equals("PS5_CatFR") )
         {

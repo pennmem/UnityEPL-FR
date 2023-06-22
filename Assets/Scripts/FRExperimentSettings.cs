@@ -13,7 +13,7 @@ public enum DistractionType {
 /// </summary>
 public struct ExperimentSettings
 {
-    public const string taskVersion = "1.6.3";
+    public const string taskVersion = "1.6.4";
 
     public WordListGenerator wordListGenerator; //how the words for this experiment will be created and organized.  for a full list of parameters and what they do, see the comments for WordListGenerator in WordListGenerator.cs
     public string experimentName; //the name of the experiment.  this will be displayed to the user and sent to ramulator.
@@ -56,6 +56,8 @@ public static class FRExperimentSettings
                                                                      GetCPSSettings(),
                                                                      GetIFR1Settings(),
                                                                      GetICatFR1Settings(),
+                                                                     GetIFR5Settings(),
+                                                                     GetICatFR5Settings(),
                                                                      GetIFR6Settings(),
                                                                      GetICatFR6Settings(),
                                                                      GetPS5Settings(),
@@ -309,6 +311,42 @@ public static class FRExperimentSettings
         ICatFR1Settings.distrationType = DistractionType.Fixation;
 
         return ICatFR1Settings;
+    }
+
+    /// <summary>
+    /// Gets the IFR 5 settings.
+    /// 
+    /// IFR5 is identical to FR5, except for the number of lists
+    /// and the distraction is a fixation instead of math problems
+    /// </summary>
+    /// <returns>The IFR 5 settings.</returns>
+    public static ExperimentSettings GetIFR5Settings() {
+        ExperimentSettings IFR5Settings = GetFR5Settings();
+        IFR5Settings.experimentName = "IFR5";
+        IFR5Settings.distractionLength = 10f;
+        IFR5Settings.numberOfLists = 26;
+        IFR5Settings.wordListGenerator = new FRListGenerator(0, 26, 0, 0, 0, 0, 0);
+        IFR5Settings.distrationType = DistractionType.Fixation;
+
+        return IFR5Settings;
+    }
+
+    /// <summary>
+    /// Gets the ICatFR 5 settings.
+    /// 
+    /// ICatFR5 is identical to CatFR5, except for the number of lists
+    /// and the distraction is a fixation instead of math problems
+    /// </summary>
+    /// <returns>The ICatFR 5 settings.</returns>
+    public static ExperimentSettings GetICatFR5Settings() {
+        ExperimentSettings ICatFR5Settings = GetCatFR5Settings();
+        ICatFR5Settings.experimentName = "ICatFR6";
+        ICatFR5Settings.distractionLength = 10f;
+        ICatFR5Settings.numberOfLists = 26;
+        ICatFR5Settings.wordListGenerator = new FRListGenerator(0, 26, 0, 0, 0, 0, 0);
+        ICatFR5Settings.distrationType = DistractionType.Fixation;
+
+        return ICatFR5Settings;
     }
 
     /// <summary>
