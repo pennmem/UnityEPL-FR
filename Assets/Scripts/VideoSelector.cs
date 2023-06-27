@@ -27,10 +27,14 @@ public class VideoSelector : MonoBehaviour
             videoPlayer.clip = CatFR1clip;
         else if (UnityEPL.GetExperimentName().Equals("ICatFR1"))
             videoPlayer.clip = ICatFRclip;
+        else if (UnityEPL.GetExperimentName().Equals("ICatFR5"))
+            videoPlayer.clip = ICatFRclip;
         else if (UnityEPL.GetExperimentName().Equals("FR6"))
             videoPlayer.clip = FR6clip;
         else if (UnityEPL.GetExperimentName().Equals("CatFR6"))
             videoPlayer.clip = CatFR6clip;
+        else if (UnityEPL.GetExperimentName().Equals("ICatFR6"))
+            videoPlayer.clip = ICatFRclip;
         else if (UnityEPL.GetExperimentName().Equals("PS5_FR"))
             videoPlayer.clip = PS5frClip;
         else if (UnityEPL.GetExperimentName().Equals("PS5_CatFR"))

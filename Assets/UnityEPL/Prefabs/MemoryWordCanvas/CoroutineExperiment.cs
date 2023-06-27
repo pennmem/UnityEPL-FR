@@ -106,7 +106,7 @@ public abstract class CoroutineExperiment : MonoBehaviour
             SetRamulatorState("INSTRUCT", false, new Dictionary<string, object>());
             
             SetRamulatorState("WAITING", true, new Dictionary<string, object>());
-            SetElememState("INSTRUCT", new Dictionary<string, object>());
+            SetElememState("WAITING", new Dictionary<string, object>());
             textDisplayer.DisplayText("repeat video prompt", "Press Y to continue to practice list, \n Press N to replay instructional video.");
             while (!Input.GetKeyDown(KeyCode.Y) && !Input.GetKeyDown(KeyCode.N))
             {
