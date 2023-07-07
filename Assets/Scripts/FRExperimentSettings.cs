@@ -13,7 +13,7 @@ public enum DistractionType {
 /// </summary>
 public struct ExperimentSettings
 {
-    public const string taskVersion = "1.6.5";
+    public const string taskVersion = "1.6.6";
 
     public WordListGenerator wordListGenerator; //how the words for this experiment will be created and organized.  for a full list of parameters and what they do, see the comments for WordListGenerator in WordListGenerator.cs
     public string experimentName; //the name of the experiment.  this will be displayed to the user and sent to ramulator.
@@ -288,6 +288,7 @@ public static class FRExperimentSettings
         ExperimentSettings IFR1Settings = GetFR1Settings();
         IFR1Settings.experimentName = "IFR1";
         IFR1Settings.distractionLength = 10f;
+        IFR1Settings.isTwoParter = false;
         IFR1Settings.numberOfLists = 26;
         IFR1Settings.wordListGenerator = new FRListGenerator(0, 26, 0, 0, 0, 0, 0);
         IFR1Settings.distrationType = DistractionType.Fixation;
@@ -306,6 +307,7 @@ public static class FRExperimentSettings
         ExperimentSettings ICatFR1Settings = GetCatFR1Settings();
         ICatFR1Settings.experimentName = "ICatFR1";
         ICatFR1Settings.distractionLength = 10f;
+        ICatFR1Settings.isTwoParter = false;
         ICatFR1Settings.numberOfLists = 26;
         ICatFR1Settings.wordListGenerator = new FRListGenerator(0, 26, 0, 0, 0, 0, 0);
         ICatFR1Settings.distrationType = DistractionType.Fixation;
