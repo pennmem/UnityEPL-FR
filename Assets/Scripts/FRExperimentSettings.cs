@@ -54,11 +54,11 @@ public static class FRExperimentSettings
                                                                      GetFR6Settings(),
                                                                      GetCatFR6Settings(),
                                                                      GetCPSSettings(),
-                                                                     //GetIFR1Settings(),
+                                                                     GetIFR1Settings(),
                                                                      GetICatFR1Settings(),
-                                                                     //GetIFR5Settings(),
+                                                                     GetIFR5Settings(),
                                                                      GetICatFR5Settings(),
-                                                                     //GetIFR6Settings(),
+                                                                     GetIFR6Settings(),
                                                                      GetICatFR6Settings(),
                                                                      GetPS5Settings(),
                                                                      GetCatPS5Settings(),
@@ -318,8 +318,8 @@ public static class FRExperimentSettings
     /// <summary>
     /// Gets the IFR 5 settings.
     /// 
-    /// IFR5 is identical to FR5, except for the number of lists
-    /// and the distraction is a fixation instead of math problems
+    /// IFR5 is identical to FR5, except the distraction is a
+    /// fixation instead of math problems
     /// </summary>
     /// <returns>The IFR 5 settings.</returns>
     public static ExperimentSettings GetIFR5Settings() {
@@ -334,8 +334,8 @@ public static class FRExperimentSettings
     /// <summary>
     /// Gets the ICatFR 5 settings.
     /// 
-    /// ICatFR5 is identical to CatFR5, except for the number of lists
-    /// and the distraction is a fixation instead of math problems
+    /// ICatFR5 is identical to CatFR5, except the distraction is a
+    /// fixation instead of math problems
     /// </summary>
     /// <returns>The ICatFR 5 settings.</returns>
     public static ExperimentSettings GetICatFR5Settings() {
@@ -350,8 +350,8 @@ public static class FRExperimentSettings
     /// <summary>
     /// Gets the IFR 6 settings.
     /// 
-    /// IFR6 is identical to FR6, except for the number of lists
-    /// and the distraction is a fixation instead of math problems
+    /// IFR6 is identical to FR6, except the distraction is a
+    /// fixation instead of math problems
     /// </summary>
     /// <returns>The IFR 6 settings.</returns>
     public static ExperimentSettings GetIFR6Settings() {
@@ -366,8 +366,8 @@ public static class FRExperimentSettings
     /// <summary>
     /// Gets the ICatFR 6 settings.
     /// 
-    /// ICatFR6 is identical to CatFR6, except for the number of lists
-    /// and the distraction is a fixation instead of math problems
+    /// ICatFR6 is identical to CatFR6, except the distraction is a
+    /// fixation instead of math problems
     /// </summary>
     /// <returns>The ICatFR 6 settings.</returns>
     public static ExperimentSettings GetICatFR6Settings() {
