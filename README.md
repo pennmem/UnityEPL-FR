@@ -3,6 +3,8 @@ FR experimental tasks built using UnityEPL
 
 Please navigate to UnityEPL-FR/Assets/Scripts/FRExperimentSettings.cs for documentation of FR experiment design.
 
+Required submodules exist for building this, so clone with "git clone --recurse-submodules" or do "git submodule update --init --recursive --remote" after cloning.
+
 # Adding a new experiment
 To add a new experiment, you will need to modify FRExperimentSettings.cs.
 
@@ -12,7 +14,7 @@ First, create a static method of the FRExperimentSettings that creates and retur
 ExperimentSettings MyNewSettings = new ExperimentSettings();
 ```
 Alternatively, base your settings off an existing experiment.  For example:
-     
+
 ```
 ExperimentSettings MyNewSettings = GetFR1Settings();
 ```
@@ -22,7 +24,7 @@ ExperimentSettings MyNewSettings = GetFR1Settings();
 ```
 return MyNewSettings;
 ```
-        
+
 Second, add your new settings to the activeExperimentSettings member array of FRExperimentSettings.  For example:
 ```
 private static ExperimentSettings[] activeExperimentSettings = { GetFR1Settings(),
