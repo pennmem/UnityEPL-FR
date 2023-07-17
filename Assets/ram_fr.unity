@@ -863,7 +863,7 @@ MonoBehaviour:
   FR1clip: {fileID: 32900000, guid: 29221bc02853e47dea3133b8b51416d0, type: 3}
   CatFR1clip: {fileID: 32900000, guid: 593e0ce69a113465abcc63e07d2125e1, type: 3}
   FR6clip: {fileID: 32900000, guid: 84ab708a7b8d748e8bc380d372bb7f63, type: 3}
-  CatFR6clip: {fileID: 32900000, guid: 84ab708a7b8d748e8bc380d372bb7f63, type: 3}
+  CatFR6clip: {fileID: 32900000, guid: ae8139412d89a4faa84d59d92426c648, type: 3}
   PS5frClip: {fileID: 32900000, guid: 29221bc02853e47dea3133b8b51416d0, type: 3}
   CatPS5frClip: {fileID: 32900000, guid: 593e0ce69a113465abcc63e07d2125e1, type: 3}
   IFRclip: {fileID: 32900000, guid: c4baf2bcb1b5049f097ff4edcf867589, type: 3}
