@@ -81,10 +81,19 @@ public class LaunchExperiment : MonoBehaviour
         bool isTest = name.Equals("TEST");
         if (isTest)
             return true;
-        if (name.Length != 6)
+        if (name.Length == 6)
+        {
+            bool isValidRAMName = name[0].Equals('R') && name[1].Equals('1') && char.IsDigit(name[2]) && char.IsDigit(name[3]) && char.IsDigit(name[4]) && char.IsUpper(name[5]);
+            bool isValidSCALPName = char.IsUpper(name[0]) && char.IsUpper(name[1]) && char.IsUpper(name[2]) && char.IsDigit(name[3]) && char.IsDigit(name[4]) && char.IsDigit(name[5]);
+            return isValidRAMName || isValidSCALPName;
+        }
+        if (name.Length == 8)
+        {
+            bool isValidRAMName = name[0].Equals('R') && name[1].Equals('1') && char.IsDigit(name[2]) && char.IsDigit(name[3]) && char.IsDigit(name[4]) && char.IsUpper(name[5]) && name[6].Equals('_') && char.IsDigit(name[7]);
+            return isValidRAMName;
+        }
+
+        else
             return false;
-        bool isValidRAMName = name[0].Equals('R') && name[1].Equals('1') && char.IsDigit(name[2]) && char.IsDigit(name[3]) && char.IsDigit(name[4]) && char.IsUpper(name[5]);
-        bool isValidSCALPName = char.IsUpper(name[0]) && char.IsUpper(name[1]) && char.IsUpper(name[2]) && char.IsDigit(name[3]) && char.IsDigit(name[4]) && char.IsDigit(name[5]);
-        return isValidRAMName || isValidSCALPName;
     }
 }
