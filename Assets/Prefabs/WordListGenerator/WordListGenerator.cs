@@ -20,11 +20,11 @@ public abstract class WordListGenerator
         if (wordpoolFilename.Length == 0) {
             if (isCategoryPool)
             {
-                wordpoolFilename = "ram_categorized_en";
+                wordpoolFilename = "ram_categorized_v2_sp";
             }
             else
             {
-                wordpoolFilename = "ram_wordpool_en";
+                wordpoolFilename = "ram_wordpool_v2_sp";
             }
         }
 
@@ -347,11 +347,11 @@ public class FRListGenerator : WordListGenerator
         if (wordpoolFilename.Length == 0) {
             if (isCategoryPool)
             {
-                wordpoolFilename = "ram_categorized_en";
+                wordpoolFilename = "ram_categorized_v2_sp";
             }
             else
             {
-                wordpoolFilename = "ram_wordpool_en";
+                wordpoolFilename = "ram_wordpool_v2_sp";
             }
         }
         Debug.Log("Reading words from wordpool:");
