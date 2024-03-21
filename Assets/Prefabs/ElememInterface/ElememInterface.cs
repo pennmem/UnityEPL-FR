@@ -402,7 +402,7 @@ public class ElememInterface : MonoBehaviour
     public void SendStimSelectMessage(string tag)
     {
         var data = new Dictionary<string, object>();
-        data.Add("tag", tag);
+        data.Add("stimtag", tag);
         SendMessage("STIMSELECT", data);
     }
 

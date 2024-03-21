@@ -281,9 +281,21 @@ public class EditableExperiment : CoroutineExperiment
         int currentList = wordsSeen / currentSettings.wordsPerList;
         wordsSeen = (ushort)(currentList * currentSettings.wordsPerList);
         Debug.Log("Beginning list index " + currentList.ToString());
-
         SetRamulatorState("ORIENT", true, new Dictionary<string, object>());
         SetElememState("ORIENT");
+        if (expName == "FR6" || expName == "IFR6" ||
+            expName == "CatFR6" || expName == "ICatFR6") {
+
+            if (current_phase_type == "STIM") {
+                string stimTag = (string)words[wordsSeen]["stim_channels"];
+                elememInterface.SendStimSelectMessage(stimTag);
+                var stim_selection = new Dictionary<string, object> {
+                    { "stim_channels", stimTag } };
+                scriptedEventReporter.ReportScriptedEvent("stim_selection",
+                    stim_selection);
+                Debug.Log("This Trial is using " + stimTag + " for stim");
+            }
+        }
         textDisplayer.DisplayText("orientation stimulus", "+");
         yield return PausableWait(UnityEngine.Random.Range(currentSettings.minOrientationStimulusLength, currentSettings.maxOrientationStimulusLength));
         textDisplayer.ClearText();
@@ -296,7 +308,10 @@ public class EditableExperiment : CoroutineExperiment
             textDisplayer.DisplayText("word stimulus", word);
 
             string expName = UnityEPL.GetExperimentName();
-            if (expName == "FR5" || expName == "FR6" || expName == "CatFR5") {
+            if (expName == "FR5" || expName == "FR6" ||
+                expName == "CatFR5" || expName == "CatFR6" ||
+                expName == "IFR5" || expName == "IFR6" ||
+                expName == "ICatFR5" || expName == "ICatFR6") {
                 if (current_phase_type == "STIM")
                 {
                     elememInterface.SendCLMessage("CLSTIM", currentSettings.clDuration);
