@@ -283,6 +283,8 @@ public class EditableExperiment : CoroutineExperiment
         Debug.Log("Beginning list index " + currentList.ToString());
         SetRamulatorState("ORIENT", true, new Dictionary<string, object>());
         SetElememState("ORIENT");
+        string expName = UnityEPL.GetExperimentName();
+
         if (expName == "FR6" || expName == "IFR6" ||
             expName == "CatFR6" || expName == "ICatFR6") {
 
@@ -307,7 +309,6 @@ public class EditableExperiment : CoroutineExperiment
             string word = (string)words[wordsSeen]["word"];
             textDisplayer.DisplayText("word stimulus", word);
 
-            string expName = UnityEPL.GetExperimentName();
             if (expName == "FR5" || expName == "FR6" ||
                 expName == "CatFR5" || expName == "CatFR6" ||
                 expName == "IFR5" || expName == "IFR6" ||
