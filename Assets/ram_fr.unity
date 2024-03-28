@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.4465788, g: 0.49641287, b: 0.5748173, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657826, g: 0.49641263, b: 0.57481676, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -866,8 +866,8 @@ MonoBehaviour:
   CatFR6clip: {fileID: 32900000, guid: ae8139412d89a4faa84d59d92426c648, type: 3}
   PS5frClip: {fileID: 32900000, guid: 29221bc02853e47dea3133b8b51416d0, type: 3}
   CatPS5frClip: {fileID: 32900000, guid: 593e0ce69a113465abcc63e07d2125e1, type: 3}
-  IFRclip: {fileID: 32900000, guid: c4baf2bcb1b5049f097ff4edcf867589, type: 3}
-  ICatFRclip: {fileID: 32900000, guid: c2358df683ed54b70b7b3dc8f1737db2, type: 3}
+  IFRclip: {fileID: 32900000, guid: 123fdb96392161d4ca9e3bb79d3833fd, type: 3}
+  ICatFRclip: {fileID: 32900000, guid: 73246b86515bc834b97bb97774d72d9a, type: 3}
   videoPath: 
 --- !u!224 &874305718 stripped
 RectTransform:

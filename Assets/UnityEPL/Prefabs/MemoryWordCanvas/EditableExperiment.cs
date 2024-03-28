@@ -543,6 +543,7 @@ private IEnumerator DoDistractor()
     public static void SaveState()
     {
         string filePath = SessionFilePath(session, UnityEPL.GetParticipants()[0]);
+        Debug.Log("file path: " + filePath);
         string[] lines = new string[currentSettings.numberOfLists * currentSettings.wordsPerList + 3];
         lines[0] = session.ToString();
         lines[1] = wordsSeen.ToString();
@@ -554,12 +555,15 @@ private IEnumerator DoDistractor()
         {
             foreach (string key in word.Keys)
             {
+                Debug.Log("key: " + key);
                 string value_string = word[key] == null ? "" : word[key].ToString();
+                Debug.Log("word: " + value_string);
                 lines[i] = lines[i] + key + ":" + value_string + ";";
             }
             i++;
         }
         System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(filePath));
+        Debug.Log(filePath);
         System.IO.File.WriteAllLines(filePath, lines);
     }
 
@@ -600,8 +604,10 @@ private IEnumerator DoDistractor()
         bool isTwoParter = currentSettings.isTwoParter;
         if (words == null) {
             Debug.Log("Setting Words");
+            Debug.Log("wordpoolFilename: " + currentSettings.wordpoolFilename);
             SetWords(currentSettings.wordListGenerator.GenerateListsAndWriteWordpool(currentSettings.numberOfLists, currentSettings.wordsPerList, currentSettings.isCategoryPool, isTwoParter, isEvenNumberSession, UnityEPL.GetParticipants()[0], currentSettings.wordpoolFilename));
             Debug.Log("Words were set.");
+            Debug.Log(words);
         }
         SaveState();
         Debug.Log("State saved.");

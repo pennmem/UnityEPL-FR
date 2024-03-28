@@ -36,6 +36,8 @@ public class VideoSelector : MonoBehaviour
             videoPlayer.clip = FR6clip;
         else if (UnityEPL.GetExperimentName().Equals("CatFR6"))
             videoPlayer.clip = CatFR6clip;
+        else if (UnityEPL.GetExperimentName().Equals("IFR6"))
+            videoPlayer.clip = IFRclip;
         else if (UnityEPL.GetExperimentName().Equals("ICatFR6"))
             videoPlayer.clip = ICatFRclip;
         else if (UnityEPL.GetExperimentName().Equals("PS5_FR"))
